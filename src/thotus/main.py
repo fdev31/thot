@@ -22,6 +22,16 @@ def help():
 
 commands = dict(capture=capture, analyse=recognise, exit=exit, help=help)
 
+def wanna_leave():
+    print("Aborted !")
+    try:
+        text = prompt(u'Exit (Y/n) ? ', completer=WordCompleter( ('yes', 'no') , ignore_case=True))
+    except KeyboardInterrupt:
+        raise SystemExit(0)
+    else:
+        if text.lower()[0] != 'n':
+            raise SystemExit(0)
+
 while not leave_now:
     try:
         text = prompt(u'Scan Bot> ',
@@ -29,14 +39,18 @@ while not leave_now:
                 )
     except EOFError:
         break
-    if not text.strip():
-        continue
-    try:
-        if commands[text]() != 3:
+    except KeyboardInterrupt:
+        wanna_leave()
+
+    if text.strip():
+        try:
+            if commands[text]() != 3:
+                print("")
+        except KeyboardInterrupt:
+            wanna_leave()
+        except Exception as e:
             print("")
-    except Exception as e:
-        print("")
-        if DEBUG:
-            traceback.print_exc()
-        else:
-            print("Error occured")
+            if DEBUG:
+                traceback.print_exc()
+            else:
+                print("Error occured")

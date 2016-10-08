@@ -47,6 +47,14 @@ def find_lines(img):
                 else:
                     avg = np.average(v)-1
 
+    def reguess(new_ref, margin):
+        shift = max(0, new_ref-margin)
+        second_guess = img[n][int(shift+0.5): int(new_ref+margin+0.5)]
+        second_best_move = np.max(second_guess)
+        best = keep_best(second_guess, second_best_move/2)
+        if best:
+            return shift + best
+
     for n in range(img.shape[0]):
         if not BBOX_MIN < n < BBOX_MAX: # y bounding box
             continue
@@ -55,14 +63,14 @@ def find_lines(img):
             if y and y[-1] + 5 >= n: # continuation of a line
                 old_x = x[-1] # old vertical position
                 old_y = y[-1] # old horizontal position
-#                oldref = img[n-1][old_x] # old pixel value
                 if not (old_x- 10 <= val <= old_x + 10):
-                    shift = max(0, old_x-20)
-                    second_guess = img[n][shift : old_x+20]
-                    second_best_move = np.max(second_guess)
-                    best = keep_best(second_guess, second_best_move/2)
-                    if best:
-                        val = shift + best
+                    g = reguess(old_x, 20)
+                    if g:
+                        val = g
+            elif val < 50:
+                g = reguess(img.shape[1]/2, 300)
+                if g:
+                    val = g
             y.append(n)
             x.append(val)
 

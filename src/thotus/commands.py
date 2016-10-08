@@ -18,7 +18,7 @@ from thotus.scanner import Scanner
 from thotus.projection import CalibrationData, PointCloudGeneration, clean_model
 from thotus.ply import save_scene
 
-SLOWDOWN=0
+SLOWDOWN = 1
 
 WORKDIR="./capture"
 
@@ -31,6 +31,7 @@ def capture():
     s = Scanner(out=WORKDIR)
     try:
         _scan(s)
+        print("")
     except KeyboardInterrupt:
         print("\naborting...")
     s.close()
@@ -115,7 +116,7 @@ def recognise():
 
             diff[:,:,1] = processed
 
-            img = diff[400:-100,:].copy()
+            img = diff[200:-100,:].copy()
 
             gui.display(img,"lines")
 
