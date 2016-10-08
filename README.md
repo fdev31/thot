@@ -1,8 +1,6 @@
-# A Ciclop client
+# A Ciclop 3D Scanner client
 
 ## Introduction
-
-A Ciclop 3D Scanner client
 
 I got a Ciclop 3D scanner, figured it can't work well on modern Linux distributions, started to hack...
 
