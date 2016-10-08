@@ -198,12 +198,13 @@ class Board(object):
     def _send_command(self, req, callback=None, read_lines=False):
         """Sends the request and returns the response"""
         ret = ''
+        req = req.encode('ascii')
         if self._is_connected and req != '':
             if self._serial_port is not None and self._serial_port.isOpen():
                 try:
                     self._serial_port.flushInput()
                     self._serial_port.flushOutput()
-                    self._serial_port.write(req.encode('ascii') + b"\r\n")
+                    self._serial_port.write(req + b"\r\n")
                     while req != b'~' and req != b'!' and ret == b'':
                         ret = self.read(read_lines)
                         time.sleep(0.01)

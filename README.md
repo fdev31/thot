@@ -16,17 +16,19 @@ In case someone is interested on my patches on Horus, making it work on unmodifi
 
 Useable for some people already, probably developers:
 
-- Works on python 2.7+ & python 3
 - No patched OpenCV needed
 - Simple and friendly CLI
+- Python 2 & 3 compatible
 
 ## Installation
 
 On archlinux system:
 
-    % yaourt -S opencv python2-v4l2capture python2-numpy libwebcamlibwebcam python2-scipy
+    % yaourt -S opencv python-v4l2capture python-numpy libwebcam python-scipy
     % wget https://github.com/fdev31/thot/archive/master.zip
     % unzip master.zip
+
+> If you prefer using python2, just replace "python" with "python2" on the lines above
 
 > You may also want to install *guvcview* to setup the webcam before starting the app
 
@@ -76,9 +78,9 @@ For a few extra features (will be optional in the future):
 
 ## Bugs
 
-- uses subprocess to set camera settings
-- no release yet: may not work out of the box
+- no easily accessible settings yet, need to edit code...
+- no release yet: may not work out of the box, consider unstable
+- No good way to set camera settings yet
+- Not able to compute calibration data on itself
 - Exit of app not handled correctly (using ^C is quite mandatory after exit...)
-- Bad timings when using Python3
-
 

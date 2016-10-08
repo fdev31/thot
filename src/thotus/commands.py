@@ -22,6 +22,11 @@ SLOWDOWN=1
 
 WORKDIR="./capture"
 
+try:
+    os.mkdir(WORKDIR)
+except:
+    pass
+
 def capture():
     s = Scanner(out=WORKDIR)
     for n in range(3):
