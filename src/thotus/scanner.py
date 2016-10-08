@@ -57,7 +57,7 @@ class Scanner:
 
     @property
     def frame_interval(self):
-        return max(1/30.0, self.exposure/10000.0)
+        return max(2/15.0, self.exposure/10000.0)
 
     def wait_capture(self, frames=2):
         sleep(self.frame_interval * frames)

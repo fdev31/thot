@@ -18,7 +18,7 @@ from thotus.scanner import Scanner
 from thotus.projection import CalibrationData, PointCloudGeneration, clean_model
 from thotus.ply import save_scene
 
-SLOWDOWN=1
+SLOWDOWN=0
 
 WORKDIR="./capture"
 
