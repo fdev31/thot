@@ -12,12 +12,15 @@ class Scanner:
 
     def __init__(self, speed=2000, out=os.path.curdir):
         self.writer_t = ImageSaver(out)
-        self.cap = Camcorder()
         self.b = Board()
-        self.b.connect()
+        try:
+            self.b.connect()
+        except Exception as e:
+            raise RuntimeError("Can't connect to board, is it plugged to USB & Powered on ?")
         self.b.lasers_off()
         self.b.motor_enable()
         self.set_speed(speed)
+        self.cap = Camcorder()
         self.writer_t.start()
 
         def ctl(param, val=None):
@@ -33,6 +36,7 @@ class Scanner:
             except Exception as e:
                 print("Error calling %s: %s"%(' '.join(param), e))
 
+        """
         ctl('Exposure, Auto', 3)
         # must sleep this number of ms
         ctl('Exposure (Absolute)', 333)
@@ -41,6 +45,7 @@ class Scanner:
         ctl('Contrast', 16)
         ctl('Saturation', 0)
         ctl('Backlight Compensation', 0)
+        """
         self.exposure = ctl('Exposure (Absolute)')
         if not self.exposure:
             self.exposure = 333

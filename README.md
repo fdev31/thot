@@ -52,10 +52,11 @@ Convert images to .ply file:
 Images are saved into **capture/** folder
 Pointcloud is saved as **capture.ply**
 
-## Future
+## Future / TODO
 
 If enough time...
 
+- Allow display of cam + add commands to change settings
 - Automated calibration
 - Blender integration
 - Color support

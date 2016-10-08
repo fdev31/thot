@@ -27,7 +27,10 @@ class Camcorder(Thread):
         Thread.__init__(self)
         self.setDaemon(True)
         # Open the video device.
-        self.dev = glob.glob("/dev/video*")[-1]
+        try:
+            self.dev = glob.glob("/dev/video*")[-1]
+        except IndexError:
+            raise RuntimeError("Check your webcam device (unplugged ?)")
         video = v4l2capture.Video_device(self.dev)
         # Suggest an image size to the device. The device may choose and
         # return another size if it doesn't support the suggested one.
@@ -42,14 +45,15 @@ class Camcorder(Thread):
         self.video = video
         self.terminate = False
         self.video.start()
+        print("Waiting for cam to be ready...")
         for n in range(10):
             try:
                 self._cap()
                 break
             except Exception as e:
-                print("Waiting for cam to be ready... %s"%e)
-#                import traceback
-#                traceback.print_exc()
+                if not ( e.args and e.args[0] == 11):
+                    import traceback
+                    traceback.print_exc()
                 sleep(1)
         else:
             raise RuntimeError("Can't init camera")

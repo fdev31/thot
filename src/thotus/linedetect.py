@@ -9,6 +9,20 @@ import math
 
 METHOD = 'sgf' # refinement method: sgf, ransac or None
 
+# thanks stackoverflow for those two functions !
+
+def find_nearest(array,value):
+    return (np.abs(array-value)).argmin()
+
+def find_subsequence(seq, subseq):
+    target = np.dot(subseq, subseq)
+    candidates = np.where(np.correlate(seq,
+                                       subseq, mode='valid') == target)[0]
+    # some of the candidates entries may be false positives, double check
+    check = candidates[:, np.newaxis] + np.arange(len(subseq))
+    mask = np.all((np.take(seq, check) == subseq), axis=-1)
+    return candidates[mask]
+
 def compute_line_image(points, image):
     if points is not None:
         u, v = points
@@ -19,6 +33,49 @@ def compute_line_image(points, image):
         return image
 
 class LineMaker:
+    def from_lineimage2(self, img, laser_nr=0):
+        # Do Canny then
+        # find "couples", average the values
+        # do an average of all "y" values, call it avg
+        # loop again:
+        #  for each line, take the option nearest from "avg"
+        # OR?
+        #  for each line, take the option nearest from previous, take avg for the first
+        return
+
+    def from_lineimage(self, img, laser_nr=0):
+        idx = 0 if laser_nr == 0 else -1
+        import cv2
+        u = []
+        v = []
+        line_map = cv2.Canny(img,50,200)
+        for n in range(line_map.shape[0]):
+            r = np.where(line_map[n] == 255)[0]
+            if r.size > 0:
+                #TODO: if they are too far from previous, discard them
+#                if r.size > 1:
+                    # TODO
+                    # re-compute points, merging couples and trying to follow the "top" line
+                    # if the sequence is not a "couple" (255, ...., 255)
+                    # then try to match the top move
+#                    pass
+                v.append(n)
+                u.append(r[idx])
+#                for p in r:
+#                    v.append(n)
+#                    u.append(p)
+        if u:
+            self.points = (np.array(u),np.array(v))
+
+            if METHOD == 'ransac':
+                x = ransac( self.points[0], self.points[1])
+            elif METHOD == 'sgf':
+                s = img.sum(axis=1)
+                x = sgf( self.points[0], s )
+
+            return compute_line_image(self.points, img)
+        return img
+
     def from_image(self, img):
         point2d = find_lines(img)
 

@@ -27,8 +27,31 @@ try:
 except:
     pass
 
+scanner = None
+def get_scanner():
+    global scanner
+    if not scanner:
+        try:
+            scanner = Scanner(out=WORKDIR)
+        except RuntimeError as e:
+            print("Can't init board: %s"%e.args[0])
+    return scanner
+
+lasers = False
+def switch_lasers():
+    global lasers
+    lasers = not lasers
+    s = get_scanner()
+    if s:
+        if lasers:
+            s.b.lasers_on()
+        else:
+            s.b.lasers_off()
+
 def capture():
-    s = Scanner(out=WORKDIR)
+    s = get_scanner()
+    if not s:
+        return
     try:
         _scan(s)
         print("")
@@ -99,7 +122,8 @@ def recognise():
 
             diff = np.rot90(cv2.absdiff(i1, i2), 3)
 
-            processed = lm.from_image(diff[:,:,0])
+            processed = lm.from_lineimage(diff[:,:,0], laser)
+#            processed = lm.from_image(diff[:,:,0])
 
             gui.progress("analyse", n, 360)
 
@@ -119,7 +143,6 @@ def recognise():
             img = diff[200:-100,:].copy()
 
             gui.display(img,"lines")
-
 
     for angle, lasers in sliced_lines.items():
         pc = pcg.compute_point_cloud(*lasers[0])

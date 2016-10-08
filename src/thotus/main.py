@@ -4,7 +4,7 @@ import traceback
 from prompt_toolkit import prompt
 from prompt_toolkit.contrib.completers import WordCompleter
 
-from thotus.commands import capture, recognise
+from thotus.commands import capture, recognise, switch_lasers
 from thotus.ui import gui
 
 leave_now = False
@@ -21,7 +21,7 @@ def help():
         print(" - %s"%c)
     return 3
 
-commands = dict(capture=capture, analyse=recognise, exit=exit, help=help)
+commands = dict(capture=capture, analyse=recognise, exit=exit, help=help, lasers=switch_lasers)
 
 def wanna_leave():
     print("Aborted !")
