@@ -20,10 +20,21 @@ Useable for some people already, probably developers:
 - No patched OpenCV needed
 - Simple and friendly CLI
 
+## Installation
+
+On archlinux system:
+
+    % yaourt -S opencv python2-v4l2capture python2-numpy libwebcamlibwebcam python2-scipy
+    % wget https://github.com/fdev31/thot/archive/master.zip
+    % unzip master.zip
+
+> You may also want to install *guvcview* to setup the webcam before starting the app
+
 ## Usage
 
 After installing all dependencies, unpack sources and open a terminal emulator:
 
+    % cd thot-master
     % ./run.sh
 
 Capture images:
