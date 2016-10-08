@@ -9,16 +9,15 @@ from thotus.capture import Camcorder
 from thotus.workers import ImageSaver
 
 class Scanner:
-    writer_t = ImageSaver()
 
     def __init__(self, speed=2000, out=os.path.curdir):
+        self.writer_t = ImageSaver(out)
         self.cap = Camcorder()
         self.b = Board()
         self.b.connect()
         self.b.lasers_off()
         self.b.motor_enable()
         self.set_speed(speed)
-        self.writer_t.out = out
         self.writer_t.start()
 
         def ctl(param, val=None):
@@ -71,8 +70,11 @@ class Scanner:
         return img
 
     def close(self):
-        self.writer_t.stop()
-        self.cap.stop()
+        print("Closing device...")
         self.b.lasers_off()
         self.b.motor_disable()
+        self.writer_t.stop()
+        self.cap.stop()
+        self.writer_t.join()
+        self.cap.join()
 

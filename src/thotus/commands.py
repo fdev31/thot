@@ -29,17 +29,15 @@ except:
 
 def capture():
     s = Scanner(out=WORKDIR)
-    for n in range(3):
-        print("%d..."%(n+1))
     try:
         _scan(s)
     except KeyboardInterrupt:
-        s.close()
-        print("bye bye")
+        print("\naborting...")
+    s.close()
 
 def _scan(b, definition=1):
     def disp(img, text):
-        gui.display(np.rot90(img, 3), text='scan', resize=(640,480))
+        gui.display(np.rot90(img, 3), text=text, resize=(640,480))
 
     for n in range(360):
         if definition > 1 and n%definition != 0:
