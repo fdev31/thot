@@ -6,9 +6,11 @@ I got a Ciclop 3D scanner, figured it can't work well on modern Linux distributi
 
 ## Status
 
-Not useful on its own yet since it requires you to copy Horus' *calibration.json* to the project folder.
+Not useful on its own yet since it requires you to first have performed the calibration using [Horus](https://github.com/bqlabs/horus).
 
-Useable for some people already:
+In case someone is interested on my patches on Horus, making it work on unmodified opencv but slow as hell, just ask.
+
+Useable for some people already, probably developers:
 
 - Works on python 2.7+ & python 3
 - No patched OpenCV needed
