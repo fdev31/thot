@@ -4,6 +4,12 @@
 
 I got a Ciclop 3D scanner, figured it can't work well on modern Linux distributions, started to hack...
 
+This scanner is fully opensource, uses double lasers and is quite decent for the price.
+
+You can find some for [around $100](https://fr.aliexpress.com/w/wholesale-ciclop.html?initiative_id=SB_20161008042416&site=fra&groupsort=1&SortType=price_asc&g=y&SearchText=ciclop) on the web.
+
+This software only targets Linux users.
+
 ## Status
 
 Not useful on its own yet since it requires you to first have performed the calibration using [Horus](https://github.com/bqlabs/horus).
