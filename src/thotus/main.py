@@ -5,6 +5,7 @@ from prompt_toolkit import prompt
 from prompt_toolkit.contrib.completers import WordCompleter
 
 from thotus.commands import capture, recognise
+from thotus.ui import gui
 
 leave_now = False
 DEBUG = True
@@ -54,3 +55,4 @@ while not leave_now:
                 traceback.print_exc()
             else:
                 print("Error occured")
+    gui.clear()
