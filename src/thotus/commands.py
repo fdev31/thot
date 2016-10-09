@@ -3,6 +3,7 @@ from __future__ import print_function
 import os
 import json
 from collections import defaultdict
+from threading import Thread
 
 try:
     import pudb
@@ -14,7 +15,7 @@ import numpy as np
 from thotus import model
 from thotus.ui import gui
 from thotus.linedetect import LineMaker
-from thotus.scanner import Scanner
+from thotus.scanner import Scanner, get_board, get_controllers
 from thotus.projection import CalibrationData, PointCloudGeneration, clean_model
 from thotus.ply import save_scene
 
@@ -26,6 +27,16 @@ try:
     os.mkdir(WORKDIR)
 except:
     pass
+
+COLOR, LASER1, LASER2 = 1, 2, 4 # bit mask
+ALL = COLOR | LASER1 | LASER2
+
+def stop():
+    global scanner
+    if scanner:
+        scanner.close()
+    if Viewer.instance:
+        Viewer.instance.stop()
 
 scanner = None
 def get_scanner():
@@ -41,45 +52,84 @@ lasers = False
 def switch_lasers():
     global lasers
     lasers = not lasers
-    s = get_scanner()
-    if s:
+    b = get_board()
+    if b:
         if lasers:
-            s.b.lasers_on()
+            b.lasers_on()
         else:
-            s.b.lasers_off()
+            b.lasers_off()
 
-def capture():
+class Viewer(Thread):
+    instance = None
+
+    def stop(self):
+        self.running = False
+        self.join()
+        self.__class__.instance = None
+        gui.clear()
+
+    def run(self):
+        s = get_scanner()
+        self.running = True
+        while self.running:
+            s.wait_capture(1)
+            gui.display(np.rot90(s.cap.buff, 3), "live", resize=(640,480))
+
+def view():
+    if Viewer.instance:
+        Viewer.instance.stop()
+    else:
+        Viewer.instance = Viewer()
+        Viewer.instance.start()
+
+def capture_color():
+    return capture(COLOR)
+
+def capture_lasers():
+    return capture(LASER1|LASER2)
+
+def capture(kind=ALL):
+    print("Capture %d"%kind)
     s = get_scanner()
     if not s:
         return
     try:
-        _scan(s)
+        _scan(s, kind)
         print("")
     except KeyboardInterrupt:
         print("\naborting...")
-    s.close()
 
-def _scan(b, definition=1):
+def _scan(b, kind=ALL, definition=1):
+    print("scan %d / %d"%(kind, ALL))
     def disp(img, text):
         gui.display(np.rot90(img, 3), text=text, resize=(640,480))
+
+    b.lasers_off()
 
     for n in range(360):
         if definition > 1 and n%definition != 0:
             continue
-        b.wait_capture()
-        disp( b.save('color_%03d.png'%n) , '')
-        b.laser_on(0)
-        b.wait_capture(2+SLOWDOWN)
-        disp( b.save('laser0_%03d.png'%n), 'LEFT')
-        b.laser_off(0)
-        b.laser_on(1)
-        b.wait_capture(2+SLOWDOWN)
-        disp( b.save('laser1_%03d.png'%n) , 'RIGHT')
-        b.laser_off(1)
-        b.motor_move(1*definition)
         gui.progress("scan", n, 360)
+        if kind & COLOR:
+            b.laser_off(1)
+            b.motor_move(1*definition)
+            b.wait_capture()
+            disp( b.save('color_%03d.png'%n) , '')
+        if kind & LASER1:
+            b.laser_on(0)
+            b.wait_capture(2+SLOWDOWN)
+            disp( b.save('laser0_%03d.png'%n), 'LEFT')
+        if kind & LASER2:
+            b.laser_off(0)
+            b.laser_on(1)
+            b.wait_capture(2+SLOWDOWN)
+            disp( b.save('laser1_%03d.png'%n) , 'RIGHT')
+    gui.clear()
 
-def recognise():
+def recognize_pure():
+    return recognize(pure_images=True)
+
+def recognize(pure_images=False):
     path = os.path.expanduser('~/.horus/calibration.json')
     settings = json.load(open(path))['calibration_settings']
     calibration_data = CalibrationData()
@@ -116,14 +166,17 @@ def recognise():
     sliced_lines = defaultdict(lambda: [None, None])
 
     for n in range(360):
-        i2 = cv2.imread(WORKDIR+'/color_%03d.png'%n)
+        if not pure_images:
+            i2 = cv2.imread(WORKDIR+'/color_%03d.png'%n)
         for laser in range(2):
             i1 = cv2.imread(WORKDIR+'/laser%d_%03d.png'%(laser, n))
+            if pure_images:
+                diff = i1
+            else:
+                diff = np.rot90(cv2.absdiff(i1, i2), 3)
 
-            diff = np.rot90(cv2.absdiff(i1, i2), 3)
-
-            processed = lm.from_lineimage(diff[:,:,0], laser)
-#            processed = lm.from_image(diff[:,:,0])
+#            processed = lm.from_lineimage(diff[:,:,0], laser)
+            processed = lm.from_image(diff[:,:,0])
 
             gui.progress("analyse", n, 360)
 
@@ -155,4 +208,5 @@ def recognise():
     # post-process the mesh
     obj = clean_model(obj)
     save_scene(WORKDIR+".ply", obj)
+    gui.clear()
 

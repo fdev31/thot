@@ -8,45 +8,86 @@ from thotus.board import Board
 from thotus.capture import Camcorder
 from thotus.workers import ImageSaver
 
+_board = None
+
+controls = """
+Brightness
+Contrast
+Saturation
+#White Balance Temperature, Auto
+Gain
+#Power Line Frequency
+#White Balance Temperature
+Sharpness
+#Backlight Compensation
+#Exposure, Auto
+Exposure (Absolute)
+#Exposure, Auto Priority
+""".strip().split('\n')
+
+def get_board():
+    global _board
+    if not _board:
+        _board = Board()
+        try:
+            _board.connect()
+        except Exception as e:
+            raise RuntimeError("Can't connect to board, is it plugged to USB & Powered on ?")
+    return _board
+
+
+def get_controllers():
+    import re
+    import glob
+    from functools import partial
+    words = re.compile(r'\W+')
+    dev = glob.glob("/dev/video*")[-1]
+
+    functions = {}
+    for ctl_name in controls:
+        if ctl_name[0] != '#':
+            shortname = words.sub('', ctl_name)
+            functions["set"+shortname] = partial(ctl_param, dev, ctl_name, show=True)
+    return functions
+
+def ctl_param(dev, param, val=None, show=False):
+    try:
+        p = ['uvcdynctrl', '-d', dev]
+        if val:
+            p.extend(['-s', param, str(val)])
+        else:
+            p.extend(['-g', param])
+        ret = subprocess.check_output(p)
+        if not val:
+            if show:
+                print("%d"%int(ret))
+            else:
+                return int(ret)
+    except Exception as e:
+        print("Error calling %s: %s"%(' '.join(param), e))
+
+
 class Scanner:
 
     def __init__(self, speed=2000, out=os.path.curdir):
         self.writer_t = ImageSaver(out)
-        self.b = Board()
-        try:
-            self.b.connect()
-        except Exception as e:
-            raise RuntimeError("Can't connect to board, is it plugged to USB & Powered on ?")
+        self.b = get_board()
         self.b.lasers_off()
         self.b.motor_enable()
         self.set_speed(speed)
         self.cap = Camcorder()
         self.writer_t.start()
 
-        def ctl(param, val=None):
-            try:
-                p = ['uvcdynctrl', '-d', self.cap.dev]
-                if val:
-                    p.extend(['-s', param, str(val)])
-                else:
-                    p.extend(['-g', param])
-                ret = subprocess.check_output(p)
-                if not val:
-                    return int(ret)
-            except Exception as e:
-                print("Error calling %s: %s"%(' '.join(param), e))
-
-        """
-        ctl('Exposure, Auto', 3)
+        ctl_param(self.cap.dev, 'Exposure, Auto', 1)
         # must sleep this number of ms
-        ctl('Exposure (Absolute)', 333)
-        ctl('Gain', 0)
-        ctl('Brightness', 0)
-        ctl('Contrast', 16)
-        ctl('Saturation', 0)
-        ctl('Backlight Compensation', 0)
-        """
-        self.exposure = ctl('Exposure (Absolute)')
+        ctl_param(self.cap.dev, 'Exposure (Absolute)', 5)
+        ctl_param(self.cap.dev, 'Gain', 255)
+        ctl_param(self.cap.dev, 'Brightness', 0)
+        ctl_param(self.cap.dev, 'Contrast', 24)
+        ctl_param(self.cap.dev, 'Saturation', 20)
+        ctl_param(self.cap.dev, 'Backlight Compensation', 0)
+        ctl_param(self.cap.dev, 'Exposure, Auto Pirority', 1)
+        self.exposure = ctl_param(self.cap.dev, 'Exposure (Absolute)')
         if not self.exposure:
             self.exposure = 333
         print("Exposure: %s"%self.exposure)
