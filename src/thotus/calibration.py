@@ -4,6 +4,9 @@ from thotus.projection import CalibrationData, PointCloudGeneration, clean_model
 
 import pickle
 
+def _view_matrix(m):
+    m = eval(repr(m)[5:])
+    return str(m)
 
 def calibrate():
     COLLECTED_SETTINGS = {}
@@ -60,7 +63,7 @@ def calibrate():
 
     pattern_size = (11, 6)
     pattern_square_size = 13.0
-    origin_distance = 38.0 # camera to disc origin distance ?
+    origin_distance = 38.88 # distance plateau to second row of pattern
     estimated_t = [-5, 90, 320] # reference 
     pattern_points = np.zeros((np.prod(pattern_size), 3), np.float32)
     pattern_points[:, :2] = np.indices(pattern_size).T.reshape(-1, 2)
@@ -72,8 +75,8 @@ def calibrate():
     from collections import defaultdict
     image_metadata = defaultdict(lambda: {})
     # basic + webcam calibration data
-    for fn in img_names:
-        print('processing %s... ' % fn, end='')
+    for idx, fn in enumerate(img_names):
+        gui.progress('processing %s... ' % fn, idx, len(img_names))
         img = cv2.imread(fn, 0)
         # rotation:
         img = cv2.transpose(img)
@@ -85,7 +88,6 @@ def calibrate():
 
         w, h = img.shape[:2]
         found, corners = cv2.findChessboardCorners(img, pattern_size, flags=cv2.CALIB_CB_FAST_CHECK )
-        print(found)
         image_metadata[fn]['chess_corners'] = corners
         if SKIP > 1:
             continue
@@ -94,23 +96,20 @@ def calibrate():
             cv2.cornerSubPix(img, corners, (5, 5), (-1, -1), term)
             # platform calibration data
 
-        if True:
+        if False:
             vis = cv2.cvtColor(img, cv2.COLOR_GRAY2BGR)
             cv2.drawChessboardCorners(vis, pattern_size, corners, found)
             gui.display(vis, 'chess')
 
         if not found:
-            print('chessboard not found')
             continue
 
         img_points.append(corners.reshape(-1, 2))
         obj_points.append(pattern_points)
 
-        print('ok')
-
     # calculate camera distortion
     if SKIP < 2:
-        print("computing calibration...")
+        print("\ncomputing calibration...")
         # NOT GOOD :((((
         rms, camera_matrix, dist_coefs, rvecs, tvecs = cv2.calibrateCamera(obj_points, img_points, (w, h), None, None)
         print("\nRMS:", rms)
@@ -125,9 +124,10 @@ def calibrate():
         dist_coefs = COLLECTED_SETTINGS['distortion_vector']
         roi = COLLECTED_SETTINGS['roi']
 
-    print("camera matrix:\n", camera_matrix)
-    print("distortion coefficients: ", dist_coefs)
-    print("ROI: ", roi)
+    print("")
+    print("camera matrix:\n%s"% _view_matrix(camera_matrix))
+    print("distortion coefficients: %s"% _view_matrix(dist_coefs))
+    print("ROI: %s"%(repr(roi)))
 
     # now platform calibration
 
@@ -148,7 +148,7 @@ def calibrate():
             try:
                 ret, rvecs, tvecs = cv2.solvePnP(objp, corners, camera_matrix, dist_coefs)
             except Exception as e:
-                print("Error solving %s : %s"%(fn, e))
+#                print("Error solving %s : %s"%(fn, e))
                 ret = None
             if ret:
                 pose = (cv2.Rodrigues(rvecs)[0], tvecs, corners)
@@ -170,7 +170,7 @@ def calibrate():
     y = np.array(y)
     z = np.array(z)
     print("Points: %d"%x.size)
-    points = np.array(list(zip(y, x, z)))
+    points = np.array(list(zip(x, y, z)))
 
     """
     import matplotlib.pyplot as plt
@@ -196,9 +196,9 @@ def calibrate():
         if t is not None:
 
             print("Platform calibration ")
-            print(" Translation: " + str(t))
-            print(" Rotation: " + str(R).replace('\n', ''))
-            print(" Normal: " + str(normal))
+            print(" Translation: " , _view_matrix(t))
+            print(" Rotation: " , _view_matrix(R))
+            print(" Normal: " , _view_matrix(normal))
             if np.linalg.norm(t - estimated_t) > 100:
                 print("PAS BON !! %s !~= %s"%(t, estimated_t))
 
@@ -208,4 +208,5 @@ def calibrate():
             save_data(COLLECTED_SETTINGS)
 
     # Now final step: lasers
+    gui.clear()
     return 3

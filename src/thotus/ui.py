@@ -9,7 +9,7 @@ class GUI:
         cv2.namedWindow('output')
 
     def progress(self, text, val, total=100):
-        print("\r%s %d/%d # %3d%%"%(text, val, total, int(100.0*val/total)), end='')
+        print("\r%s [%d] @ %3d%%"%(text, val, int(100.0*val/total)), end='')
         sys.stdout.flush()
 
     def clear(self):
@@ -27,10 +27,10 @@ class GUI:
         if text:
             black = (0, 0, 0)
             white = (255, 255, 255)
-            cv2.putText(image, text, (9, 99), cv2.FONT_HERSHEY_SIMPLEX, 2.0, (255, 255, 255))
-            cv2.putText(image, text, (12, 102), cv2.FONT_HERSHEY_SIMPLEX, 2.0, (255, 255, 255))
-            cv2.putText(image, text, (10, 100), cv2.FONT_HERSHEY_SIMPLEX, 2.0, (0, 0, 0))
-            cv2.putText(image, text, (11, 101), cv2.FONT_HERSHEY_SIMPLEX, 2.0, (0, 0, 0))
+            cv2.putText(image, text, (9, 99), cv2.FONT_HERSHEY_SIMPLEX, 2.0, black)
+            cv2.putText(image, text, (12, 102), cv2.FONT_HERSHEY_SIMPLEX, 2.0, black)
+            cv2.putText(image, text, (10, 100), cv2.FONT_HERSHEY_SIMPLEX, 2.0, white)
+            cv2.putText(image, text, (11, 101), cv2.FONT_HERSHEY_SIMPLEX, 2.0, white)
 
         if resize:
             image = imresize(image, resize)

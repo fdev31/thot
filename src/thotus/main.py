@@ -103,8 +103,10 @@ while not leave_now:
             if commands[text](*params) != 3:
                 print("")
         except KeyboardInterrupt:
+            gui.clear()
             wanna_leave()
         except Exception as e:
+            gui.clear()
             print("")
             if DEBUG:
                 traceback.print_exc()
