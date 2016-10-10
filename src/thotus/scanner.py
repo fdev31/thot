@@ -108,7 +108,7 @@ class Scanner:
             filename += '.png'
 
         img = self.cap.get()
-        self.writer_t.q.put( (img, filename, processing) )
+        self.writer_t.q.put( (img, filename) )
         return img
 
     def close(self):
