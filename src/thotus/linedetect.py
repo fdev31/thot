@@ -47,7 +47,33 @@ class LineMaker:
         #  for each line, take the option nearest from previous, take avg for the first
         return
 
-    def from_pureimage(self, img, threshold=40):
+    def from_simpleline(self, img, laser_nr=0):
+        idx = 0 if laser_nr == 0 else -1
+        import cv2
+        u = []
+        v = []
+        line_map = cv2.Canny(img,50,200)
+        for n in range(line_map.shape[0]):
+            if n < img.shape[0]*0.6:
+                continue
+            r = np.where(line_map[n] == 255)[0]
+            if r.size == 2:
+                v.append(n)
+                u.append(np.average(r))
+        if u:
+            self.points = (np.array(u),np.array(v))
+
+            self.points = (ransac( self.points[0], self.points[1]), self.points[1])
+#            if METHOD == 'ransac':
+#                x = ransac( self.points[0], self.points[1])
+#            elif METHOD == 'sgf':
+#                s = img.sum(axis=1)
+#                x = sgf( self.points[0], s )
+
+            return compute_line_image(self.points, img)
+        return img
+
+    def from_pureimage(self, img, laser_nr, threshold=40):
         x = []
         y = []
 
@@ -130,7 +156,7 @@ class LineMaker:
             return compute_line_image(self.points, img)
         return img
 
-    def from_image(self, img):
+    def from_image(self, img, laser_nr):
         point2d = find_lines(img)
 
         self.points = point2d
