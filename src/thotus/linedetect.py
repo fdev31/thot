@@ -27,12 +27,16 @@ def compute_line_image(points, image):
     if points is not None:
         u, v = points
         image = np.zeros_like(image)
-        image[v.astype(int), np.around(u).astype(int) - 1] = 128
-        image[v.astype(int), np.around(u).astype(int)] = 255
-        image[v.astype(int), np.around(u).astype(int) + 1] = 128
+        try:
+            image[v.astype(int), np.around(u).astype(int) - 1] = 128
+            image[v.astype(int), np.around(u).astype(int)] = 255
+            image[v.astype(int), np.around(u).astype(int) + 1] = 128
+        except IndexError:
+            pass
         return image
 
 class LineMaker:
+    points = None
     def from_lineimage2(self, img, laser_nr=0):
         # Do Canny then
         # find "couples", average the values
@@ -42,6 +46,55 @@ class LineMaker:
         # OR?
         #  for each line, take the option nearest from previous, take avg for the first
         return
+
+    def from_pureimage(self, img, threshold=40):
+        x = []
+        y = []
+
+#        vals = [np.max(img[n]) for n in samples]
+#        peak = np.max(vals)
+#        threshold = peak/5
+
+        cur_chunk = []
+        for n in range(img.shape[0]):
+            max_val = np.max(img[n])
+            if max_val < threshold:
+                continue
+#            scipy.signal.find_peaks_cwt(img[n], 
+            peaks = np.where(img[n] > 0.3*max_val)[0]
+            oldidx = -10
+            if peaks.size:
+                for idx in peaks:
+                    if idx > 900: # skip some lines
+                        continue
+                    if oldidx + 1 == idx:
+                        cur_chunk.append(idx)
+                    else:
+                        if cur_chunk:
+                            y.append(n)
+                            x.append(np.max(img[n][cur_chunk]))
+                        cur_chunk.clear()
+                    oldidx = idx
+
+                if len(cur_chunk) > 2:
+                    y.append(n)
+                    x.append(int(0.5 + np.average(cur_chunk)))
+#            y.extend(n for _ in range(len(peaks)))
+#            x.extend(peaks)
+
+        y = np.array(y)
+        x = np.array(x)
+
+#        if METHOD == 'ransac':
+#            x = ransac( x, y )
+#        elif METHOD == 'sgf':
+#            s = img.sum(axis=1)
+#            x = sgf( x, s )
+        self.points = (x, y)
+        if self.points:
+            return compute_line_image(self.points, img)
+        else:
+            return img
 
     def from_lineimage(self, img, laser_nr=0):
         idx = 0 if laser_nr == 0 else -1
@@ -59,11 +112,12 @@ class LineMaker:
                     # if the sequence is not a "couple" (255, ...., 255)
                     # then try to match the top move
 #                    pass
-                v.append(n)
-                u.append(r[idx])
-#                for p in r:
-#                    v.append(n)
-#                    u.append(p)
+
+#                v.append(n)
+#                u.append(r[idx])
+                for p in r:
+                    v.append(n)
+                    u.append(p)
         if u:
             self.points = (np.array(u),np.array(v))
 
@@ -121,7 +175,10 @@ def find_lines(img):
                 old_x = x[-1] # old vertical position
                 old_y = y[-1] # old horizontal position
                 if not (old_x- 10 <= val <= old_x + 10):
-                    g = reguess(old_x, 20)
+                    try:
+                        g = reguess(old_x, 20)
+                    except ValueError:
+                        g = None
                     if g:
                         val = g
             elif val < 50:
@@ -129,7 +186,7 @@ def find_lines(img):
                 if g:
                     val = g
             y.append(n)
-            x.append(val)
+            x.append(min(val, img.shape[1]-1))
 
     y = np.array(y)
     if METHOD == 'ransac':

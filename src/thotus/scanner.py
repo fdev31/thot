@@ -35,7 +35,6 @@ def get_board():
             raise RuntimeError("Can't connect to board, is it plugged to USB & Powered on ?")
     return _board
 
-
 def get_controllers():
     import re
     import glob
@@ -78,18 +77,15 @@ class Scanner:
         self.cap = Camcorder()
         self.writer_t.start()
 
-        ctl_param(self.cap.dev, 'Exposure, Auto', 1)
-        # must sleep this number of ms
-        ctl_param(self.cap.dev, 'Exposure (Absolute)', 5)
+        print(self.cap.set_exposure_auto(1))
+        print(self.cap.set_auto_white_balance(0))
+        self.exposure = self.cap.set_exposure_absolute(333)
         ctl_param(self.cap.dev, 'Gain', 255)
         ctl_param(self.cap.dev, 'Brightness', 0)
-        ctl_param(self.cap.dev, 'Contrast', 24)
+        ctl_param(self.cap.dev, 'Contrast', 32)
         ctl_param(self.cap.dev, 'Saturation', 20)
         ctl_param(self.cap.dev, 'Backlight Compensation', 0)
         ctl_param(self.cap.dev, 'Exposure, Auto Pirority', 1)
-        self.exposure = ctl_param(self.cap.dev, 'Exposure (Absolute)')
-        if not self.exposure:
-            self.exposure = 333
         print("Exposure: %s"%self.exposure)
         self.cap.start()
 
@@ -102,17 +98,17 @@ class Scanner:
 
     @property
     def frame_interval(self):
-        return max(2/15.0, self.exposure/10000.0)
+        return max(1/self.cap.fps, self.exposure/10000.0)
 
     def wait_capture(self, frames=2):
         sleep(self.frame_interval * frames)
 
-    def save(self, filename):
+    def save(self, filename, processing=None):
         if not '.' in filename:
             filename += '.png'
 
         img = self.cap.get()
-        self.writer_t.q.put( (img, filename) )
+        self.writer_t.q.put( (img, filename, processing) )
         return img
 
     def close(self):

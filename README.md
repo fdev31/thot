@@ -60,7 +60,7 @@ If enough time...
 - Automated calibration
 - Blender integration
 - Color support
-- replace uvcdynctl by syscalls/ctypes/whatever
+- replace uvcdynctl by a custom v4l2capture fork / ask the maintainer of py3k branch
 - find or write some blender extension to clean the pointcloud
 - re-use older project to compute mesh from pointcloud automatically
 

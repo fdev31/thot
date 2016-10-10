@@ -14,12 +14,68 @@ except ImportError:
 
 import cv2
 import numpy as np
+from scipy import optimize
 
 from thotus.model import Model
 
 def clean_model(obj, delta=0.5, threshold=10):
     # delta is max distance
     return obj # remove lost vertex (no friends, less than threshold)
+
+def residuals_circle(parameters, points, s, r, point):
+    r_, s_, Ri = parameters
+    plane_point = s_ * s + r_ * r + np.array(point)
+    distance = [np.linalg.norm(plane_point - np.array([x, y, z])) for x, y, z in points]
+    res = [(Ri - dist) for dist in distance]
+    return res
+
+def distance2plane(p0, n0, p):
+    return np.dot(np.array(n0), np.array(p) - np.array(p0))
+
+def residuals_plane(parameters, data_point):
+    px, py, pz, theta, phi = parameters
+    nx, ny, nz = np.sin(theta) * np.cos(phi), np.sin(theta) * np.sin(phi), np.cos(theta)
+    distances = [distance2plane(
+        [px, py, pz], [nx, ny, nz], [x, y, z]) for x, y, z in data_point]
+    return distances
+
+def fit_plane(data):
+    estimate = [0, 0, 0, 0, 0]  # px,py,pz and zeta, phi
+    # you may automize this by using the center of mass data
+    # note that the normal vector is given in polar coordinates
+    best_fit_values, ier = optimize.leastsq(residuals_plane, estimate, args=(data))
+    xF, yF, zF, tF, pF = best_fit_values
+
+    # point  = [xF,yF,zF]
+    point = data[0]
+    normal = -np.array([np.sin(tF) * np.cos(pF), np.sin(tF) * np.sin(pF), np.cos(tF)])
+
+    return point, normal
+
+def fit_circle(point, normal, points):
+    # creating two inplane vectors
+    # assuming that normal not parallel x!
+    s = np.cross(np.array([1, 0, 0]), np.array(normal))
+    s = s / np.linalg.norm(s)
+    r = np.cross(np.array(normal), s)
+    r = r / np.linalg.norm(r)  # should be normalized already, but anyhow
+
+    # Define rotation
+    R = np.array([s, r, normal]).T
+
+    estimate_circle = [0, 0, 0]  # px,py,pz and zeta, phi
+    best_circle_fit_values, ier = optimize.leastsq(
+        residuals_circle, estimate_circle, args=(points, s, r, point))
+
+    rF, sF, RiF = best_circle_fit_values
+
+    # Synthetic Data
+    center_point = sF * s + rF * r + np.array(point)
+    synthetic = [list(center_point + RiF * np.cos(phi) * r + RiF * np.sin(phi) * s)
+                 for phi in np.linspace(0, 2 * np.pi, 50)]
+    [cxTupel, cyTupel, czTupel] = [x for x in zip(*synthetic)]
+
+    return center_point, R, [cxTupel, cyTupel, czTupel]
 
 class PointCloudGeneration(object):
 
@@ -91,6 +147,18 @@ class CalibrationData(object):
             self.width = width
             self.height = height
             self._compute_weight_matrix()
+
+    def undistort_image(self, image):
+        x, roi = cv2.getOptimalNewCameraMatrix(self.camera_matrix, self.distortion_vector, image.shape[:2], 1, image.shape[:2])
+        dst = cv2.undistort(image,
+                self.camera_matrix,
+                self.distortion_vector,
+                None,
+                x)
+        x, y, w, h = roi
+        dst = dst[y:y+h, x:x+w]
+        return dst
+
 
     @property
     def camera_matrix(self):

@@ -25,7 +25,12 @@ class GUI:
         if resize:
             image = image.copy()
         if text:
-            cv2.putText(image, text, (10, 100), cv2.FONT_HERSHEY_SIMPLEX, 2.0, (255, 255, 255))
+            black = (0, 0, 0)
+            white = (255, 255, 255)
+            cv2.putText(image, text, (9, 99), cv2.FONT_HERSHEY_SIMPLEX, 2.0, (255, 255, 255))
+            cv2.putText(image, text, (12, 102), cv2.FONT_HERSHEY_SIMPLEX, 2.0, (255, 255, 255))
+            cv2.putText(image, text, (10, 100), cv2.FONT_HERSHEY_SIMPLEX, 2.0, (0, 0, 0))
+            cv2.putText(image, text, (11, 101), cv2.FONT_HERSHEY_SIMPLEX, 2.0, (0, 0, 0))
 
         if resize:
             image = imresize(image, resize)

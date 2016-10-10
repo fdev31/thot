@@ -11,12 +11,14 @@ except ImportError:
     pass
 import cv2
 import numpy as np
+from time import sleep
 
 from thotus import model
 from thotus.ui import gui
 from thotus.linedetect import LineMaker
 from thotus.scanner import Scanner, get_board, get_controllers
-from thotus.projection import CalibrationData, PointCloudGeneration, clean_model
+from thotus.projection import CalibrationData, PointCloudGeneration, clean_model, fit_plane, fit_circle
+from thotus.calibration import calibrate
 from thotus.ply import save_scene
 
 SLOWDOWN = 1
@@ -76,6 +78,7 @@ class Viewer(Thread):
             gui.display(np.rot90(s.cap.buff, 3), "live", resize=(640,480))
 
 def view():
+    get_scanner() # sync scanner startup
     if Viewer.instance:
         Viewer.instance.stop()
     else:
@@ -105,42 +108,50 @@ def _scan(b, kind=ALL, definition=1):
         gui.display(np.rot90(img, 3), text=text, resize=(640,480))
 
     b.lasers_off()
+    D = 0.15
 
     for n in range(360):
         if definition > 1 and n%definition != 0:
             continue
         gui.progress("scan", n, 360)
+        b.motor_move(1*definition)
+        sleep(0.2)
         if kind & COLOR:
-            b.laser_off(1)
-            b.motor_move(1*definition)
-            b.wait_capture()
             disp( b.save('color_%03d.png'%n) , '')
         if kind & LASER1:
             b.laser_on(0)
-            b.wait_capture(2+SLOWDOWN)
+#            b.wait_capture(2+SLOWDOWN)
+            sleep(D)
             disp( b.save('laser0_%03d.png'%n), 'LEFT')
-        if kind & LASER2:
             b.laser_off(0)
+        if kind & LASER2:
             b.laser_on(1)
-            b.wait_capture(2+SLOWDOWN)
+#            b.wait_capture(2+SLOWDOWN)
+            sleep(D)
             disp( b.save('laser1_%03d.png'%n) , 'RIGHT')
+            b.laser_off(1)
     gui.clear()
 
 def recognize_pure():
     return recognize(pure_images=True)
 
-def recognize(pure_images=False):
+def recognize(pure_images=False, rotated=False):
     path = os.path.expanduser('~/.horus/calibration.json')
     settings = json.load(open(path))['calibration_settings']
     calibration_data = CalibrationData()
-    calibration_data.camera_matrix = np.array( settings['camera_matrix']['value'] )
+
     calibration_data.distortion_vector = np.array(settings['distortion_vector']['value'])
+    calibration_data.camera_matrix = np.array( settings['camera_matrix']['value'] )
+
     calibration_data.laser_planes[0].distance = settings['distance_left']['value']
     calibration_data.laser_planes[0].normal = settings['normal_left']['value']
     calibration_data.laser_planes[1].distance = settings['distance_right']['value']
     calibration_data.laser_planes[1].normal = settings['normal_right']['value']
+
     calibration_data.platform_rotation = settings['rotation_matrix']['value']
     calibration_data.platform_translation = settings['translation_vector']['value']
+
+    calibration_data._roi = (9, 8, 1262, 942) # hardcoded ROI
 
     # Pointcloudize !!
     obj = model.Model(None, is_point_cloud=True)
@@ -149,8 +160,16 @@ def recognize(pure_images=False):
 
     color = (255, 0, 0)
 
-    def append_point(point):
-        for i in range(point.shape[1]):
+    def append_point(point, radius=0.1, height=15):
+        point = point / 1000.0
+        rho = np.abs(np.sqrt(np.square(point[0, :]) + np.square(point[1, :])))
+        z = point[2, :]
+
+        idx = np.where((z >= 0) &
+                       (z <= height) &
+                       (rho < radius))[0]
+
+        for i in idx:
             obj._mesh._add_vertex(
                 point[0][i], point[1][i], point[2][i],
                 color[0], color[1], color[2])
@@ -167,16 +186,21 @@ def recognize(pure_images=False):
 
     for n in range(360):
         if not pure_images:
-            i2 = cv2.imread(WORKDIR+'/color_%03d.png'%n)
+            i2 = calibration_data.undistort_image(cv2.imread(WORKDIR+'/color_%03d.png'%n))
         for laser in range(2):
-            i1 = cv2.imread(WORKDIR+'/laser%d_%03d.png'%(laser, n))
+            i1 = calibration_data.undistort_image(cv2.imread(WORKDIR+'/laser%d_%03d.png'%(laser, n)))
             if pure_images:
                 diff = i1
             else:
-                diff = np.rot90(cv2.absdiff(i1, i2), 3)
+                diff = cv2.absdiff(i1, i2)
 
-#            processed = lm.from_lineimage(diff[:,:,0], laser)
-            processed = lm.from_image(diff[:,:,0])
+            if not rotated:
+                diff = np.rot90(diff, 3)
+
+
+            processed = lm.from_lineimage(diff[:,:,0], laser) # good for lines
+#            processed = lm.from_image(diff[:,:,0])
+#            processed = lm.from_pureimage(diff[:,:,0]) # good for model
 
             gui.progress("analyse", n, 360)
 
@@ -192,6 +216,7 @@ def recognize(pure_images=False):
             # now transform for display
 
             diff[:,:,1] = processed
+            diff = diff * 10
 
             img = diff[200:-100,:].copy()
 
@@ -207,6 +232,6 @@ def recognize(pure_images=False):
 
     # post-process the mesh
     obj = clean_model(obj)
-    save_scene(WORKDIR+".ply", obj)
+    save_scene("capture.ply", obj)
     gui.clear()
 

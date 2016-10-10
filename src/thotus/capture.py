@@ -34,10 +34,11 @@ class Camcorder(Thread):
         video = v4l2capture.Video_device(self.dev)
         # Suggest an image size to the device. The device may choose and
         # return another size if it doesn't support the suggested one.
-        size_x, size_y = video.set_format(width, height, 1)
+        size_x, size_y = video.set_format(width, height, 1, fourcc='I')
         self.size = (size_x, size_y)
         self.ppf = np.multiply(*self.size) # pixels per frame
-        print("Got %sx%s"%self.size)
+        self.fps = video.set_fps(30)
+        print("Got %sx%s @ %s"%(size_x, size_y, self.fps))
 
         video.create_buffers(1)
 
@@ -58,6 +59,9 @@ class Camcorder(Thread):
         else:
             raise RuntimeError("Can't init camera")
 
+    def __getattr__(self, name):
+        return getattr(self.video, name)
+
     def stop(self):
         self.terminate = True
 
@@ -71,16 +75,10 @@ class Camcorder(Thread):
 
     def run(self):
         # Start the device. This lights the LED if it's a camera that has one.
-        print("start capture")
-
+        print("Starting capture")
         size_x, size_y = self.size
 
-
         while not self.terminate:
-            key = cv2.waitKey(1)
-            if key & 0xFF == ord('q'):
-                raise SystemExit()
-
             select.select((self.video,), (), ())
             self._cap()
 
