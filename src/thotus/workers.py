@@ -29,10 +29,14 @@ class ImageSaver(Thread):
         while self.running:
             try:
                 r = self.q.get(block=True, timeout=3)
-                if len(r) > 2:
-                    img = r[2](r[0])
-                    path = r[1]
-                else:
+                print(r)
+                try:
+                    if len(r) > 2:
+                        img = r[2](r[0])
+                        path = r[1]
+                    else:
+                        img, path = r
+                except:
                     img, path = r
             except Empty:
                 sleep(0.5)
