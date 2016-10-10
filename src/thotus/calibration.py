@@ -1,14 +1,20 @@
+import os
+import sys
+import json
+import pickle
+from glob import glob
+from collections import defaultdict
+
 SKIP = 3
 from thotus.ui import gui
 from thotus.projection import CalibrationData, PointCloudGeneration, clean_model, fit_plane, fit_circle
-from thotus.linedetect import LineMaker
+from thotus.linedetect import LineMaker, compute_plane
 from thotus.cloudify import cloudify
 from thotus.ply import save_scene
 
+import cv2
+import numpy as np
 from scipy.sparse import linalg
-
-
-import pickle
 
 def _view_matrix(m):
     m = eval(repr(m)[5:])
@@ -25,9 +31,6 @@ def calibrate():
     def save_data(s):
         pickle.dump(s, open('cam_data.bin', 'wb'))
 
-    import os
-    import json
-    import numpy as np
     path = os.path.expanduser('~/.horus/calibration.json')
     settings = json.load(open(path))['calibration_settings']
     calibration_data = CalibrationData()
@@ -41,50 +44,18 @@ def calibrate():
     calibration_data.platform_rotation = settings['rotation_matrix']['value']
     calibration_data.platform_translation = settings['translation_vector']['value']
 
-
-    import numpy as np
-    import cv2
-
-    # local modules
-    def splitfn(p):
-        p, e = p.rsplit('.', 1)
-        p, d = p.rsplit('/', 1)
-        return p, d, e
-
-    # built-in modules
-    import os
-
-    import sys
-    import getopt
-    from glob import glob
-
-    args, img_mask = getopt.getopt(sys.argv[1:], '', ['debug=', 'square_size='])
-    args = dict(args)
-    args.setdefault('--debug', './output/')
-    args.setdefault('--square_size', 1.0)
-    if not img_mask:
-        img_mask = './calibration_target/color_0*.png'
-    else:
-        img_mask = img_mask[0]
-
+    img_mask = './capture/color_0*.png'
     img_names = glob(img_mask)
-    debug_dir = args.get('--debug')
-    if not os.path.isdir(debug_dir):
-        os.mkdir(debug_dir)
-    square_size = float(args.get('--square_size'))
-
     pattern_size = (11, 6)
     pattern_square_size = 13.0
     origin_distance = 38.88 # distance plateau to second row of pattern
     estimated_t = [-5, 90, 320] # reference 
     pattern_points = np.zeros((np.prod(pattern_size), 3), np.float32)
     pattern_points[:, :2] = np.indices(pattern_size).T.reshape(-1, 2)
-    pattern_points *= square_size
 
     obj_points = []
     img_points = []
     h, w = 0, 0
-    from collections import defaultdict
     image_metadata = defaultdict(lambda: {})
     # basic + webcam calibration data
     for idx, fn in enumerate(img_names):
@@ -108,7 +79,7 @@ def calibrate():
             cv2.cornerSubPix(img, corners, (5, 5), (-1, -1), term)
             # platform calibration data
 
-        if False:
+        if True:
             vis = cv2.cvtColor(img, cv2.COLOR_GRAY2BGR)
             cv2.drawChessboardCorners(vis, pattern_size, corners, found)
             gui.display(vis, 'chess')
@@ -231,26 +202,12 @@ def calibrate():
 
     ranges = [ int(fn.rsplit('/')[-1].split('_')[1].split('.')[0]) for fn in good_images ]
     ranges.sort()
+    margin = 50
     for laser in range(2):
-        obj = cloudify(calibration_data, './capture', [laser], ranges[:-50] if laser == 0 else ranges[10:], pure_images=True, method='simpleline')
+        obj = cloudify(calibration_data, './capture', [laser], ranges[:-margin] if laser == 0 else ranges[margin:], pure_images=True, method='simpleline')
+        dist, normal, std = compute_pc(obj._mesh.vertexes)
 
-
-        X = obj._mesh.vertexes
-        n = X.shape[0]
-        Xm = X.sum(axis=0) / n
-        M = np.array(X - Xm).T
-
-        # Equivalent to:
-        #  numpy.linalg.svd(M)[0][:,2]
-        # But 1200x times faster for large point clouds
-        U = linalg.svds(M, k=2)[0]
-        normal = np.cross(U.T[0], U.T[1])
-        if normal[2] < 0:
-            normal *= -1
-
-        dist = np.dot(normal, Xm)
-        std = np.dot(M.T, normal).std()
-
+#        dist, normal, std = compute_plane(obj._mesh.vertexes)
         print("\nNormal vector\n\n%r\n"%(_view_matrix(normal)))
         print("\nPlane distance\n\n%.4f mm\n"%(dist))
         print("\nStandard deviation\n\n{0} mm\n".format(std))
@@ -258,3 +215,22 @@ def calibrate():
         save_scene("calibration_laser_%d.ply"%laser, obj)
 
     gui.clear()
+
+def compute_pc(X):
+    # Load point cloud
+
+    n = X.shape[0]
+    Xm = X.sum(axis=0) / n
+    M = np.array(X - Xm).T
+
+    # Equivalent to:
+    #  numpy.linalg.svd(M)[0][:,2]
+    # But 1200x times faster for large point clouds
+    U = linalg.svds(M, k=2)[0]
+    normal = np.cross(U.T[0], U.T[1])
+    if normal[2] < 0:
+        normal *= -1
+
+    dist = np.dot(normal, Xm)
+    std = np.dot(M.T, normal).std()
+    return (dist, normal, std)

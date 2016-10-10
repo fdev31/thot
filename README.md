@@ -69,6 +69,7 @@ If enough time...
 - Python (2 or 3)
 - opencv
 - numpy
+- pyserial
 - v4l2capture (check https://github.com/rmca/python-v4l2capture/tree/py3k for Python3 support)
 
 For a few extra features (will be optional in the future):

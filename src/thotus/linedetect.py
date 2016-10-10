@@ -318,4 +318,46 @@ class LinearLeastSquares2D(object):
     def is_degenerate(self, sample):
         return False
 
+class PlaneDetection(object):
+
+    def fit(self, X):
+        M, Xm = self._compute_m(X)
+        # U = linalg.svds(M, k=2)[0]
+        # normal = np.cross(U.T[0], U.T[1])
+        normal = np.linalg.svd(M)[0][:, 2]
+        if normal[2] < 0:
+            normal *= -1
+        dist = np.dot(normal, Xm)
+        return dist, normal, M
+
+    def residuals(self, model, X):
+        _, normal, _ = model
+        M, Xm = self._compute_m(X)
+        return np.abs(np.dot(M.T, normal))
+
+    def is_degenerate(self, sample):
+        return False
+
+    def _compute_m(self, X):
+        n = X.shape[0]
+        Xm = X.sum(axis=0) / n
+        M = np.array(X - Xm).T
+        return M, Xm
+
+
+def compute_plane(X):
+    if X is not None and X.shape[0] > 3:
+        model, inliers = _ransac(X, PlaneDetection(), 3, 0.1, max_trials=10)
+
+        distance, normal, M = model
+        std = np.dot(M.T, normal).std()
+
+        logger.info(" Distance: " + str(distance))
+        logger.info(" Normal: " + str(normal))
+        logger.info(" Standard deviation: " + str(std))
+        logger.info(" Point cloud size: " + str(len(inliers)))
+
+        return distance, normal, std
+    else:
+        return None, None, None
 

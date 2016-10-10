@@ -83,7 +83,6 @@ def cloudify(calibration_data, folder, lasers, sequence, pure_images, rotated=Fa
 
                 # now transform for display
                 diff[:,:,1] = processed
-                diff = diff * 2
                 gui.display(diff[200:-100,:].copy(), 'diff')
 
     for angle, l in sliced_lines.items():
