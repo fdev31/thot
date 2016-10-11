@@ -90,6 +90,23 @@ def capture_color():
 def capture_lasers():
     return capture(LASER1|LASER2)
 
+def rotate(val):
+    s = get_scanner()
+    if s:
+        s.b.motor_move(int(val))
+
+def capture_pattern():
+    s = get_scanner()
+    s.motor_move(-50)
+    if not s:
+        return
+    try:
+        _scan(s, ALL, angle=100)
+        print("")
+    except KeyboardInterrupt:
+        print("\naborting...")
+    s.motor_move(-50)
+
 def capture(kind=ALL):
     print("Capture %d"%kind)
     s = get_scanner()
@@ -101,7 +118,7 @@ def capture(kind=ALL):
     except KeyboardInterrupt:
         print("\naborting...")
 
-def _scan(b, kind=ALL, definition=1):
+def _scan(b, kind=ALL, definition=1, angle=360):
     print("scan %d / %d"%(kind, ALL))
     def disp(img, text):
         gui.display(np.rot90(img, 3), text=text, resize=(640,480))
@@ -109,10 +126,10 @@ def _scan(b, kind=ALL, definition=1):
     b.lasers_off()
     D = 0.15
 
-    for n in range(360):
+    for n in range(angle):
         if definition > 1 and n%definition != 0:
             continue
-        gui.progress("scan", n, 360)
+        gui.progress("scan", n, angle)
         b.motor_move(1*definition)
         sleep(0.2)
         if kind & COLOR:

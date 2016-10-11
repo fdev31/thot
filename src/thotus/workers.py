@@ -29,7 +29,6 @@ class ImageSaver(Thread):
         while self.running:
             try:
                 r = self.q.get(block=True, timeout=3)
-                print(r)
                 try:
                     if len(r) > 2:
                         img = r[2](r[0])

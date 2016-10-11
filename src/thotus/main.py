@@ -9,7 +9,7 @@ from prompt_toolkit.token import Token
 from prompt_toolkit.styles import style_from_dict
 
 from thotus.commands import capture, capture_color, capture_lasers, recognize, switch_lasers, view, stop
-from thotus.commands import recognize_pure, get_controllers, calibrate
+from thotus.commands import recognize_pure, get_controllers, calibrate, rotate, capture_pattern
 from thotus.ui import gui
 history = InMemoryHistory()
 
@@ -49,8 +49,10 @@ commands = dict(
         capture        = capture,
         capture_color  = capture_color,
         capture_lasers = capture_lasers,
+        capture_pattern= capture_pattern,
         analyse        = recognize,
         analyse_pure   = recognize_pure,
+        rotate         = rotate,
         view           = view,
         exit           = exit,
         quit           = exit,
@@ -90,6 +92,9 @@ while not leave_now:
         break
     except KeyboardInterrupt:
         wanna_leave()
+
+    if leave_now:
+        break
 
     timers['execution'] = time()
     if text.strip():
