@@ -5,7 +5,7 @@ import pickle
 from glob import glob
 from collections import defaultdict
 
-SKIP = 3
+SKIP = 0
 from thotus.ui import gui
 from thotus.projection import CalibrationData, PointCloudGeneration, clean_model, fit_plane, fit_circle
 from thotus.linedetect import LineMaker, compute_plane
@@ -52,6 +52,7 @@ def calibrate():
     estimated_t = [-5, 90, 320] # reference 
     pattern_points = np.zeros((np.prod(pattern_size), 3), np.float32)
     pattern_points[:, :2] = np.indices(pattern_size).T.reshape(-1, 2)
+    pattern_points *= pattern_square_size
 
     obj_points = []
     img_points = []
@@ -143,6 +144,7 @@ def calibrate():
                     corner = pose[2]
                     normal = R.T[2]
                     distance = np.dot(normal, t)
+                    image_metadata[fn]['plane'] = [distance, normal]
                     if corners is not None:
                         origin = corners[pattern_size[0] * (pattern_size[1] - 1)][0]
                         origin = np.array([[origin[0]], [origin[1]]])
@@ -196,15 +198,21 @@ def calibrate():
         t = COLLECTED_SETTINGS['translation_vector']
         R = COLLECTED_SETTINGS['rotation_matrix']
 
+    calibration_data.platform_rotation = R
+    calibration_data.platform_translation = t
     # Now final step: lasers
     good_images = set(image_metadata)
     good_images.difference_update(buggy_captures)
-
+    good_images = list(good_images)
+    good_images.sort()
+    plop = int(len(good_images)/3)
     ranges = [ int(fn.rsplit('/')[-1].split('_')[1].split('.')[0]) for fn in good_images ]
-    ranges.sort()
-    margin = 50
+    ranges = ranges[plop:-plop]
+
     for laser in range(2):
-        obj = cloudify(calibration_data, './capture', [laser], ranges[:-margin] if laser == 0 else ranges[margin:], pure_images=True, method='simpleline')
+        im = [image_metadata[x] for x in good_images]
+
+        obj = cloudify(calibration_data, './capture', [laser], ranges, pure_images=True, method='simpleline', camera=im)
         dist, normal, std = compute_pc(obj._mesh.vertexes)
 
 #        dist, normal, std = compute_plane(obj._mesh.vertexes)

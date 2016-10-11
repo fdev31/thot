@@ -9,7 +9,7 @@ from thotus.ui import gui
 
 METHODS = ('pureimage', 'lineimage', 'image')
 
-def cloudify(calibration_data, folder, lasers, sequence, pure_images, rotated=False, method=None):
+def cloudify(calibration_data, folder, lasers, sequence, pure_images, rotated=False, method=None, camera=False):
     lm = LineMaker()
     if method is None:
         method = METHODS[0]
@@ -47,25 +47,23 @@ def cloudify(calibration_data, folder, lasers, sequence, pure_images, rotated=Fa
 
     if pure_images:
         for laser in lasers:
-            for n in sequence:
+            for i, n in enumerate(sequence):
                 diff = calibration_data.undistort_image(cv2.imread(WORKDIR+'/laser%d_%03d.png'%(laser, n)))
                 if not rotated:
                     diff = np.rot90(diff, 3)
                 processed = lineprocessor(diff[:,:,0], laser)
                 gui.progress("analyse", n, 360)
                 if lm.points:
-                    sliced_lines[n][laser] = (
-                        np.deg2rad(n),
-                        lm.points,
-                        laser
-                    )
+                    if camera:
+                        sliced_lines[n][laser] = [ lm.points ] + camera[i]['plane']
+                    else:
+                        sliced_lines[n][laser] = [ np.deg2rad(n), lm.points, laser ]
                 diff[:,:,1] = processed
-                diff = diff * 10
                 img = diff[200:-100,:].copy()
                 gui.display(img,"laser %d"%laser)
 
     else:
-        for n in sequence:
+        for i, n in enumerate(sequence):
             i2 = calibration_data.undistort_image(cv2.imread(WORKDIR+'/color_%03d.png'%n))
             lsr_img = []
             for laser in lasers:
@@ -79,16 +77,30 @@ def cloudify(calibration_data, folder, lasers, sequence, pure_images, rotated=Fa
                 # project 3D point
 
                 if lm.points:
-                    sliced_lines[n][laser] = ( np.deg2rad(n), lm.points, laser)
+                    if camera:
+                        sliced_lines[n][laser] = [ lm.points ] + camera[i]['plane']
+                    else:
+                        sliced_lines[n][laser] = [ np.deg2rad(n), lm.points, laser ]
 
                 # now transform for display
                 diff[:,:,1] = processed
                 gui.display(diff[200:-100,:].copy(), 'diff')
 
-    for angle, l in sliced_lines.items():
-        for laser in lasers:
-            pc = pcg.compute_point_cloud(*l[laser])
-            if pc is not None:
-                append_point(pc)
+
+    if camera:
+        computer = pcg.compute_camera_point_cloud
+        for angle, l in sliced_lines.items():
+            for laser in lasers:
+                pc = computer(*l[laser])
+                if pc is not None:
+                    append_point(pc)
+    else:
+        computer = pcg.compute_point_cloud
+        for angle, l in sliced_lines.items():
+            for laser in lasers:
+                pc = computer(*l[laser])
+                if pc is not None:
+                    append_point(pc)
+
 
     return obj
