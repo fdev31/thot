@@ -6,7 +6,7 @@ import pickle
 from glob import glob
 from collections import defaultdict
 
-SKIP = 0
+SKIP_CAM_CALIBRATION = 0
 from thotus.ui import gui
 from thotus.projection import CalibrationData, PointCloudGeneration, clean_model, fit_plane, fit_circle
 from thotus.linedetect import LineMaker, compute_plane
@@ -17,51 +17,163 @@ import cv2
 import numpy as np
 from scipy.sparse import linalg
 
+PATTERN_MATRIX_SIZE = (11, 6)
+PATTERN_SQUARE_SIZE = 13.0
+PATTERN_ORIGIN = 38.88 # distance plateau to second row of pattern
+ESTIMATED_PLATFORM_TRANSLAT = [-5, 90, 320] # reference 
+
+COLLECTED_SETTINGS = {}
+METADATA = defaultdict(lambda: {})
+
+def load_data():
+    global COLLECTED_SETTINGS
+    COLLECTED_SETTINGS.update( pickle.load( open('cam_data.bin', 'rb')) )
+
+def save_data(s):
+    pickle.dump(s, open('cam_data.bin', 'wb'))
+
+def plot(xyz):
+    import matplotlib.pyplot as plt
+    from mpl_toolkits.mplot3d import Axes3D
+
+    fig = plt.figure()
+    ax = fig.gca(projection = '3d')
+    ax.scatter(x, y, z)
+    while True:
+        plt.show()
+        key = cv2.waitKey(100)
+        if key & 0xFF == 'q':
+            break
+
 def _view_matrix(m):
     m = eval(repr(m)[5:])
     return str(m)
 
+def lasers_calibration(calibration_data, images):
+    margin = int(len(images)/3)
 
-COLLECTED_SETTINGS = {}
-def calibrate():
+    def compute_pc(X):
+        # Load point cloud
 
-    def load_data():
-        global COLLECTED_SETTINGS
-        COLLECTED_SETTINGS.update( pickle.load( open('cam_data.bin', 'rb')) )
+        n = X.shape[0]
+        Xm = X.sum(axis=0) / n
+        M = np.array(X - Xm).T
 
-    def save_data(s):
-        pickle.dump(s, open('cam_data.bin', 'wb'))
+        # Equivalent to:
+        #  numpy.linalg.svd(M)[0][:,2]
+        # But 1200x times faster for large point clouds
+        U = linalg.svds(M, k=2)[0]
+        normal = np.cross(U.T[0], U.T[1])
+        if normal[2] < 0:
+            normal *= -1
 
-    path = os.path.expanduser('~/.horus/calibration.json')
-    settings = json.load(open(path))['calibration_settings']
-    calibration_data = CalibrationData()
+        dist = np.dot(normal, Xm)
+        std = np.dot(M.T, normal).std()
+        return (dist, normal, std)
 
+    images = images[margin:-margin]
+    for laser in range(2):
+        ranges = [ int(fn.rsplit('/')[-1].split('_')[1].split('.')[0]) for fn in  images]
+        im = [METADATA[x] for x in images]
 
-    calibration_data.laser_planes[0].distance = settings['distance_left']['value']
-    calibration_data.laser_planes[0].normal = settings['normal_left']['value']
-    calibration_data.laser_planes[1].distance = settings['distance_right']['value']
-    calibration_data.laser_planes[1].normal = settings['normal_right']['value']
+        assert len(ranges) == len(im)
 
-    calibration_data.platform_rotation = settings['rotation_matrix']['value']
-    calibration_data.platform_translation = settings['translation_vector']['value']
+        obj = cloudify(calibration_data, './capture', [laser], ranges, pure_images=True, method='simpleline', camera=im)
+        dist, normal, std = compute_pc(obj._mesh.vertexes)
 
-    img_mask = './capture/color_0*.png'
-    img_names = glob(img_mask)
-    pattern_size = (11, 6)
-    pattern_square_size = 13.0
-    origin_distance = 38.88 # distance plateau to second row of pattern
-    estimated_t = [-5, 90, 320] # reference 
-    pattern_points = np.zeros((np.prod(pattern_size), 3), np.float32)
-    pattern_points[:, :2] = np.indices(pattern_size).T.reshape(-1, 2)
-    pattern_points *= pattern_square_size
+        print("laser %d:"%laser)
+        print("Normal vector    %s"%(_view_matrix(normal)))
+        print("Plane distance    %.4f mm"%(dist))
+#        print("Standard deviation    {0} mm".format(std))
 
+        save_scene("calibration_laser_%d.ply"%laser, obj)
+
+def platform_calibration(calibration_data):
+    x = []
+    y = []
+    z = []
+
+    buggy_captures = set()
+
+    pcg = PointCloudGeneration(calibration_data)
+    for i, fn in enumerate(METADATA):
+        gui.progress('Platform calibration', i, len(METADATA))
+        corners = METADATA[fn]['chess_corners']
+        objp = np.zeros((np.multiply(*PATTERN_MATRIX_SIZE), 3), np.float32)
+        objp[:, :2] = np.mgrid[0:PATTERN_MATRIX_SIZE[0], 0:PATTERN_MATRIX_SIZE[1]].T.reshape(-1, 2)
+        objp = np.multiply(objp, PATTERN_SQUARE_SIZE)
+        if objp.size:
+            try:
+                ret, rvecs, tvecs = cv2.solvePnP(objp, corners, calibration_data.camera_matrix, calibration_data.distortion_vector)
+            except Exception as e:
+                buggy_captures.add(fn)
+                print("Error solving %s : %s"%(fn, e))
+                ret = None
+            if ret:
+                pose = (cv2.Rodrigues(rvecs)[0], tvecs, corners)
+                R = pose[0]
+                t = pose[1].T[0]
+                corner = pose[2]
+                normal = R.T[2]
+                distance = np.dot(normal, t)
+                METADATA[fn]['plane'] = [distance, normal]
+                if corners is not None:
+                    origin = corners[PATTERN_MATRIX_SIZE[0] * (PATTERN_MATRIX_SIZE[1] - 1)][0]
+                    origin = np.array([[origin[0]], [origin[1]]])
+                    t = pcg.compute_camera_point_cloud(origin, distance, normal)
+                    if t is not None:
+                        x += [t[0][0]]
+                        y += [t[1][0]]
+                        z += [t[2][0]]
+
+#        x = np.array(x)
+#        y = np.array(y)
+#        z = np.array(z)
+    print("\nBuggy Captures: %d"%len(buggy_captures))
+    points = np.array(list(zip(x, y, z)))
+
+    if points.size > 4:
+        # Fitting a plane
+        point, normal = fit_plane(points)
+        if normal[1] > 0:
+            normal = -normal
+        # Fitting a circle inside the plane
+        center, R, circle = fit_circle(point, normal, points)
+        # Get real origin
+        t = center - PATTERN_ORIGIN * np.array(normal)
+        if t is not None:
+
+            print("Platform calibration ")
+            print(" Translation: " , _view_matrix(t))
+            print(" Rotation: " , _view_matrix(R))
+            if np.linalg.norm(t - ESTIMATED_PLATFORM_TRANSLAT) > 100:
+                print("ISNOGOOD !! %s !~= %s"%(t, ESTIMATED_PLATFORM_TRANSLAT))
+
+            COLLECTED_SETTINGS['translation_vector'] = t
+            COLLECTED_SETTINGS['rotation_matrix'] = R
+
+            calibration_data.platform_rotation = R
+            calibration_data.platform_translation = t
+
+            save_data(COLLECTED_SETTINGS)
+
+    print("")
+    return buggy_captures
+
+def webcam_calibration(calibration_data, images):
     obj_points = []
     img_points = []
-    h, w = 0, 0
-    image_metadata = defaultdict(lambda: {})
-    # basic + webcam calibration data
-    for idx, fn in enumerate(img_names):
-        gui.progress('processing %s... ' % fn, idx, len(img_names))
+    found_nr = 0
+
+    pattern_points = np.zeros((np.prod(PATTERN_MATRIX_SIZE), 3), np.float32)
+    pattern_points[:, :2] = np.indices(PATTERN_MATRIX_SIZE).T.reshape(-1, 2)
+#    pattern_points *= (PATTERN_SQUARE_SIZE)
+
+    failed_serie = 0
+    term = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_COUNT, 30, 0.1)
+
+    for idx, fn in enumerate(images):
+        gui.progress('Webcam calibration %s (%d found)... ' % (fn, found_nr), idx, len(images))
         img = cv2.imread(fn, 0)
         # rotation:
         img = cv2.transpose(img)
@@ -72,177 +184,97 @@ def calibrate():
             continue
 
         w, h = img.shape[:2]
-        found, corners = cv2.findChessboardCorners(img, pattern_size, flags=cv2.CALIB_CB_FAST_CHECK )
-        image_metadata[fn]['chess_corners'] = corners
-        if SKIP > 1:
-            continue
-        if found:
-            term = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_COUNT, 30, 0.1)
-            cv2.cornerSubPix(img, corners, (5, 5), (-1, -1), term)
-            # platform calibration data
 
-        if True:
-            vis = cv2.cvtColor(img, cv2.COLOR_GRAY2BGR)
-            cv2.drawChessboardCorners(vis, pattern_size, corners, found)
-            gui.display(vis[int(vis.shape[0]/3):-100,], 'chess')
+        found, corners = cv2.findChessboardCorners(img, PATTERN_MATRIX_SIZE, flags=cv2.CALIB_CB_FAST_CHECK+cv2.CALIB_CB_NORMALIZE_IMAGE)
 
         if not found:
+            if found_nr > 20 and failed_serie > 10:
+                break
+            failed_serie += 1
             continue
 
+        failed_serie = 0
+        found_nr += 1
+        cv2.cornerSubPix(img, corners, (11, 11), (-1, -1), term)
+
+        # save data
+        METADATA[fn]['chess_corners'] = corners
         img_points.append(corners.reshape(-1, 2))
         obj_points.append(pattern_points)
 
-    # calculate camera distortion
-    if SKIP < 2:
-        print("\ncomputing calibration...")
-        # NOT GOOD :((((
-        rms, camera_matrix, dist_coefs, rvecs, tvecs = cv2.calibrateCamera(obj_points, img_points, (w, h), None, None)
-        print("\nRMS:", rms)
-        camera_matrix, roi = cv2.getOptimalNewCameraMatrix(camera_matrix, dist_coefs, (w, h), 1, (w, h))
-        COLLECTED_SETTINGS['camera_matrix'] = camera_matrix
-        COLLECTED_SETTINGS['distortion_vector'] = dist_coefs.ravel()
-        COLLECTED_SETTINGS['roi'] = roi
-        save_data(COLLECTED_SETTINGS)
-    else:
-        load_data()
-        camera_matrix = COLLECTED_SETTINGS['camera_matrix']
-        dist_coefs = COLLECTED_SETTINGS['distortion_vector']
-        roi = COLLECTED_SETTINGS['roi']
+        # display
+        vis = cv2.cvtColor(img, cv2.COLOR_GRAY2BGR)
+        cv2.drawChessboardCorners(vis, PATTERN_MATRIX_SIZE, corners, found)
+        gui.display(vis[int(vis.shape[0]/3):-100,], 'chess')
 
-    print("")
+    print("\nComputing calibration...")
+    if SKIP_CAM_CALIBRATION:
+        calibration_data.camera_matrix = np.array( [[1432.67615, 0.0, 487.896461], [0.0, 1426.651, 645.154025], [0.0, 0.0, 1.0]])
+        calibration_data.distortion_vector = np.array([[-0.02902898, 0.16920005, -0.00041681, -0.00092935, 0.3478203]])
+        return
+
+    rms, camera_matrix, dist_coefs, rvecs, tvecs = cv2.calibrateCamera(obj_points, img_points, (w, h), None, None)
+    camera_matrix, roi = cv2.getOptimalNewCameraMatrix(camera_matrix, dist_coefs, (w, h), 1, (w, h))
+
+    COLLECTED_SETTINGS['camera_matrix'] = camera_matrix
+    COLLECTED_SETTINGS['distortion_vector'] = dist_coefs.ravel()
+    COLLECTED_SETTINGS['roi'] = roi
+
+    calibration_data.camera_matrix = camera_matrix
+    calibration_data.distortion_vector = dist_coefs
+
     print("camera matrix:\n%s"% _view_matrix(camera_matrix))
     print("distortion coefficients: %s"% _view_matrix(dist_coefs))
     print("ROI: %s"%(repr(roi)))
 
-    # now platform calibration
+    save_data(COLLECTED_SETTINGS)
 
-    x = []
-    y = []
-    z = []
 
-    calibration_data.camera_matrix = camera_matrix
-    calibration_data.distortion_vector = dist_coefs
-    buggy_captures = set()
+def calibrate():
 
-    if SKIP < 3:
-        pcg = PointCloudGeneration(calibration_data)
-        for fn in image_metadata:
-            corners = image_metadata[fn]['chess_corners']
-            objp = np.zeros((np.multiply(*pattern_size), 3), np.float32)
-            objp[:, :2] = np.mgrid[0:pattern_size[0], 0:pattern_size[1]].T.reshape(-1, 2)
-            objp = np.multiply(objp, pattern_square_size)
-            if objp.size:
-                try:
-                    ret, rvecs, tvecs = cv2.solvePnP(objp, corners, camera_matrix, dist_coefs)
-                except Exception as e:
-                    buggy_captures.add(fn)
-    #                print("Error solving %s : %s"%(fn, e))
-                    ret = None
-                if ret:
-                    pose = (cv2.Rodrigues(rvecs)[0], tvecs, corners)
-                    R = pose[0]
-                    t = pose[1].T[0]
-                    corner = pose[2]
-                    normal = R.T[2]
-                    distance = np.dot(normal, t)
-                    image_metadata[fn]['plane'] = [distance, normal]
-                    if corners is not None:
-                        origin = corners[pattern_size[0] * (pattern_size[1] - 1)][0]
-                        origin = np.array([[origin[0]], [origin[1]]])
-                        t = pcg.compute_camera_point_cloud(origin, distance, normal)
-                        if t is not None:
-                            x += [t[0][0]]
-                            y += [t[1][0]]
-                            z += [t[2][0]]
+    path = os.path.expanduser('~/.horus/calibration.json')
+    settings = json.load(open(path))['calibration_settings']
+    calibration_data = CalibrationData()
 
-        x = np.array(x)
-        y = np.array(y)
-        z = np.array(z)
-        print("Points: %d"%x.size)
-        points = np.array(list(zip(x, y, z)))
+    calibration_data.laser_planes[0].distance = settings['distance_left']['value']
+    calibration_data.laser_planes[0].normal = settings['normal_left']['value']
+    calibration_data.laser_planes[1].distance = settings['distance_right']['value']
+    calibration_data.laser_planes[1].normal = settings['normal_right']['value']
 
-        """
-        import matplotlib.pyplot as plt
-        from mpl_toolkits.mplot3d import Axes3D
+    calibration_data.platform_rotation = settings['rotation_matrix']['value']
+    calibration_data.platform_translation = settings['translation_vector']['value']
 
-        fig = plt.figure()
-        ax = fig.gca(projection = '3d')
-        ax.scatter(x, y, z)
-        while True:
-            plt.show()
-            cv2.waitKey(100)
-        """
+    calibration_data.camera_matrix = settings['camera_matrix']['value']
+    calibration_data.distorsion_vector = settings['distortion_vector']['value']
 
-        if points.size > 4:
-            # Fitting a plane
-            point, normal = fit_plane(points)
-            if normal[1] > 0:
-                normal = -normal
-            # Fitting a circle inside the plane
-            center, R, circle = fit_circle(point, normal, points)
-            # Get real origin
-            t = center - origin_distance * np.array(normal)
-            if t is not None:
+    if os.path.exists('cam_data.bin'):
+        o =  pickle.load( open('cam_data.bin', 'rb'))
+        calibration_data.platform_translation = o['translation_vector']
+        calibration_data.platform_rotation = o['rotation_matrix']
+        calibration_data.distortion_vector = o['distortion_vector']
+        calibration_data.camera_matrix = o['camera_matrix']
 
-                print("Platform calibration ")
-                print(" Translation: " , _view_matrix(t))
-                print(" Rotation: " , _view_matrix(R))
-                if np.linalg.norm(t - estimated_t) > 100:
-                    print("ISNOGOOD !! %s !~= %s"%(t, estimated_t))
+    img_mask = './capture/color_*.png'
+    img_names = sorted(glob(img_mask))
 
-                COLLECTED_SETTINGS['translation_vector'] = t
-                COLLECTED_SETTINGS['rotation_matrix'] = R
-
-                save_data(COLLECTED_SETTINGS)
-    else:
-        load_data()
-        t = COLLECTED_SETTINGS['translation_vector']
-        R = COLLECTED_SETTINGS['rotation_matrix']
-
-    calibration_data.platform_rotation = R
-    calibration_data.platform_translation = t
     # Now final step: lasers
-    good_images = set(image_metadata)
-    good_images.difference_update(buggy_captures)
-    for img in list(good_images):
-        d, n = image_metadata[img]['plane']
-        if not abs(np.rad2deg(math.acos(n[2])) * math.copysign(1, n[0])) < 30:
-            good_images.discard(img)
 
+    webcam_calibration(calibration_data, img_names)
+    buggy_captures = platform_calibration(calibration_data)
+
+    good_images = set(METADATA)
+    good_images.difference_update(buggy_captures)
     good_images = list(good_images)
     good_images.sort()
-    margin = int(len(good_images)/3)
+    import pickle
+    pickle.dump(dict(
+            images = good_images,
+            metadata = dict(METADATA),
+            settings = COLLECTED_SETTINGS
+            )
+            , open('images.js', 'wb'))
 
-    for laser in range(2):
-        ranges = [ int(fn.rsplit('/')[-1].split('_')[1].split('.')[0]) for fn in good_images[margin:-margin] ]
-        im = [image_metadata[x] for x in good_images]
-
-        obj = cloudify(calibration_data, './capture', [laser], ranges, pure_images=True, method='simpleline', camera=im)
-        dist, normal, std = compute_pc(obj._mesh.vertexes)
-
-        print("\nNormal vector\n\n%r\n"%(_view_matrix(normal)))
-        print("\nPlane distance\n\n%.4f mm\n"%(dist))
-        print("\nStandard deviation\n\n{0} mm\n".format(std))
-
-        save_scene("calibration_laser_%d.ply"%laser, obj)
-
+    lasers_calibration(calibration_data, good_images)
+    METADATA.clear()
     gui.clear()
 
-def compute_pc(X):
-    # Load point cloud
-
-    n = X.shape[0]
-    Xm = X.sum(axis=0) / n
-    M = np.array(X - Xm).T
-
-    # Equivalent to:
-    #  numpy.linalg.svd(M)[0][:,2]
-    # But 1200x times faster for large point clouds
-    U = linalg.svds(M, k=2)[0]
-    normal = np.cross(U.T[0], U.T[1])
-    if normal[2] < 0:
-        normal *= -1
-
-    dist = np.dot(normal, Xm)
-    std = np.dot(M.T, normal).std()
-    return (dist, normal, std)

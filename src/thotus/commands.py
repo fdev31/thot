@@ -2,6 +2,7 @@ from __future__ import print_function
 
 import os
 import json
+import pickle
 from threading import Thread
 
 try:
@@ -151,6 +152,13 @@ def recognize(pure_images=False, rotated=False):
     calibration_data.platform_translation = settings['translation_vector']['value']
 
     calibration_data._roi = (9, 8, 1262, 942) # hardcoded ROI
+
+    if os.path.exists('cam_data.bin'):
+        o =  pickle.load( open('cam_data.bin', 'rb'))
+        calibration_data.platform_translation = o['translation_vector']
+        calibration_data.platform_rotation = o['rotation_matrix']
+        calibration_data.distortion_vector = o['distortion_vector']
+        calibration_data.camera_matrix = o['camera_matrix']
 
     obj = cloudify(calibration_data, WORKDIR, range(2), range(360), pure_images, rotated)
     save_scene("model.ply", obj)

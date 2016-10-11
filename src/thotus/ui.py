@@ -5,16 +5,17 @@ import cv2
 from scipy.misc import imresize
 
 class GUI:
+    name = 'Thot display'
     def __init__(self):
-        cv2.namedWindow('output')
+        cv2.namedWindow(self.name)
 
     def progress(self, text, val, total=100):
         print("\r%s [%d] @ %3d%%"%(text, val, int(100.0*val/total)), end='')
         sys.stdout.flush()
 
     def clear(self):
-        cv2.destroyWindow('output')
-        cv2.imshow('output', 0)
+        cv2.destroyWindow(self.name)
+        cv2.imshow(self.name, 0)
         self._wk()
 
     def _wk(self):
@@ -34,7 +35,7 @@ class GUI:
 
         if resize:
             image = imresize(image, resize)
-        cv2.imshow('output', image)
+        cv2.imshow(self.name, image)
         self._wk()
 
 gui = GUI()

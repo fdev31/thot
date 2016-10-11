@@ -23,7 +23,6 @@ def cloudify(calibration_data, folder, lasers, sequence, pure_images, rotated=Fa
     color = (50, 180, 180)
 
     def append_point(point, radius=0.1, height=15):
-        point = point / 1000.0
         rho = np.abs(np.sqrt(np.square(point[0, :]) + np.square(point[1, :])))
         z = point[2, :]
 
@@ -31,7 +30,7 @@ def cloudify(calibration_data, folder, lasers, sequence, pure_images, rotated=Fa
                        (z <= height) &
                        (rho < radius))[0]
 
-        for i in idx:
+        for i in range(point.shape[1]):
             obj._mesh._add_vertex(
                 point[0][i], point[1][i], point[2][i],
                 color[0], color[1], color[2])
@@ -70,7 +69,7 @@ def cloudify(calibration_data, folder, lasers, sequence, pure_images, rotated=Fa
                 if not rotated:
                     diff = np.rot90(diff, 3)
                 processed = lineprocessor(diff[:,:,0], laser)
-                gui.progress("analyse", n, 360)
+                gui.progress("analyse", n, len(sequence))
 
                 # project 3D point
 
@@ -96,7 +95,7 @@ def cloudify(calibration_data, folder, lasers, sequence, pure_images, rotated=Fa
             for laser in lasers:
                 pc = computer(*l[laser])
                 if pc is not None:
-                    append_point(pc)
+                    append_point(pc/1000.0)
 
 
     return obj
