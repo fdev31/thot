@@ -52,15 +52,13 @@ def cloudify(calibration_data, folder, lasers, sequence, pure_images, rotated=Fa
                 if not rotated:
                     diff = np.rot90(diff, 3)
                 processed = lineprocessor(diff[:,:,0], laser)
-                gui.progress("analyse", n, 360)
+                gui.progress("analyse", i, len(sequence))
                 if lm.points:
                     if camera:
                         sliced_lines[n][laser] = [ lm.points ] + camera[i]['plane']
                     else:
                         sliced_lines[n][laser] = [ np.deg2rad(n), lm.points, laser ]
-                diff[:,:,1] = processed
-                img = diff[200:-100,:].copy()
-                gui.display(img,"laser %d"%laser)
+                gui.display(processed,"laser %d"%laser, resize=(640, 480))
 
     else:
         for i, n in enumerate(sequence):
@@ -82,9 +80,7 @@ def cloudify(calibration_data, folder, lasers, sequence, pure_images, rotated=Fa
                     else:
                         sliced_lines[n][laser] = [ np.deg2rad(n), lm.points, laser ]
 
-                # now transform for display
-                diff[:,:,1] = processed
-                gui.display(diff[200:-100,:].copy(), 'diff')
+                gui.display(processed, 'diff', resize=(640, 480))
 
 
     if camera:

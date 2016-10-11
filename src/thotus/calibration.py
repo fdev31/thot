@@ -1,6 +1,7 @@
 import os
 import sys
 import json
+import math
 import pickle
 from glob import glob
 from collections import defaultdict
@@ -83,7 +84,7 @@ def calibrate():
         if True:
             vis = cv2.cvtColor(img, cv2.COLOR_GRAY2BGR)
             cv2.drawChessboardCorners(vis, pattern_size, corners, found)
-            gui.display(vis, 'chess')
+            gui.display(vis[int(vis.shape[0]/3):-100,], 'chess')
 
         if not found:
             continue
@@ -203,19 +204,22 @@ def calibrate():
     # Now final step: lasers
     good_images = set(image_metadata)
     good_images.difference_update(buggy_captures)
+    for img in list(good_images):
+        d, n = image_metadata[img]['plane']
+        if not abs(np.rad2deg(math.acos(n[2])) * math.copysign(1, n[0])) < 30:
+            good_images.discard(img)
+
     good_images = list(good_images)
     good_images.sort()
-    plop = int(len(good_images)/3)
-    ranges = [ int(fn.rsplit('/')[-1].split('_')[1].split('.')[0]) for fn in good_images ]
-    ranges = ranges[plop:-plop]
+    margin = int(len(good_images)/3)
 
     for laser in range(2):
+        ranges = [ int(fn.rsplit('/')[-1].split('_')[1].split('.')[0]) for fn in good_images[margin:-margin] ]
         im = [image_metadata[x] for x in good_images]
 
         obj = cloudify(calibration_data, './capture', [laser], ranges, pure_images=True, method='simpleline', camera=im)
         dist, normal, std = compute_pc(obj._mesh.vertexes)
 
-#        dist, normal, std = compute_plane(obj._mesh.vertexes)
         print("\nNormal vector\n\n%r\n"%(_view_matrix(normal)))
         print("\nPlane distance\n\n%.4f mm\n"%(dist))
         print("\nStandard deviation\n\n{0} mm\n".format(std))
