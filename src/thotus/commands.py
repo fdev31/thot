@@ -19,6 +19,7 @@ from thotus.projection import CalibrationData
 from thotus.calibration import calibrate
 from thotus.cloudify import cloudify
 from thotus.ply import save_scene
+from thotus.settings import load_data
 
 SLOWDOWN = 1
 
@@ -47,6 +48,8 @@ def get_scanner():
             scanner = Scanner(out=WORKDIR)
         except RuntimeError as e:
             print("Can't init board: %s"%e.args[0])
+
+    scanner.refresh_params()
     return scanner
 
 lasers = False
@@ -95,17 +98,24 @@ def rotate(val):
     if s:
         s.b.motor_move(int(val))
 
-def capture_pattern():
+def _capture_pattern(t):
     s = get_scanner()
     s.motor_move(-50)
+    sleep(1)
     if not s:
         return
     try:
-        _scan(s, ALL, angle=100)
+        _scan(s, t, angle=100)
         print("")
     except KeyboardInterrupt:
         print("\naborting...")
     s.motor_move(-50)
+
+def capture_pattern_lasers():
+    _capture_pattern(LASER1|LASER2)
+
+def capture_pattern_colors():
+    _capture_pattern(COLOR)
 
 def capture(kind=ALL):
     print("Capture %d"%kind)
@@ -124,35 +134,33 @@ def _scan(b, kind=ALL, definition=1, angle=360):
         gui.display(np.rot90(img, 3), text=text, resize=(640,480))
 
     b.lasers_off()
-    D = 0.15
 
     for n in range(angle):
         if definition > 1 and n%definition != 0:
             continue
         gui.progress("scan", n, angle)
         b.motor_move(1*definition)
-        sleep(0.2)
+        sleep(0.1) # wait for motor
+        b.wait_capture(2+SLOWDOWN, min_val=0.2)
         if kind & COLOR:
             disp( b.save('color_%03d.png'%n) , '')
         if kind & LASER1:
             b.laser_on(0)
-#            b.wait_capture(2+SLOWDOWN)
-            sleep(D)
+            b.wait_capture(2+SLOWDOWN)
             disp( b.save('laser0_%03d.png'%n), 'LEFT')
             b.laser_off(0)
         if kind & LASER2:
             b.laser_on(1)
-#            b.wait_capture(2+SLOWDOWN)
-            sleep(D)
+            b.wait_capture(2+SLOWDOWN)
             disp( b.save('laser1_%03d.png'%n) , 'RIGHT')
             b.laser_off(1)
     gui.clear()
 
 def recognize_pure():
-    return recognize(pure_images=True)
+    return recognize(pure_images=True, method='simpleline')
 
 
-def recognize(pure_images=False, rotated=False):
+def recognize(pure_images=False, rotated=False, method=None):
     path = os.path.expanduser('~/.horus/calibration.json')
     settings = json.load(open(path))['calibration_settings']
     calibration_data = CalibrationData()
@@ -169,15 +177,9 @@ def recognize(pure_images=False, rotated=False):
     calibration_data.platform_translation = settings['translation_vector']['value']
 
     calibration_data._roi = (9, 8, 1262, 942) # hardcoded ROI
+    load_data(calibration_data) # overwrite with custom settings
 
-    if os.path.exists('cam_data.bin'):
-        o =  pickle.load( open('cam_data.bin', 'rb'))
-        calibration_data.platform_translation = o['translation_vector']
-        calibration_data.platform_rotation = o['rotation_matrix']
-        calibration_data.distortion_vector = o['distortion_vector']
-        calibration_data.camera_matrix = o['camera_matrix']
-
-    obj = cloudify(calibration_data, WORKDIR, range(2), range(360), pure_images, rotated)
+    obj = cloudify(calibration_data, WORKDIR, range(2), range(360), pure_images, rotated, method=method)
     save_scene("model.ply", obj)
     gui.clear()
 

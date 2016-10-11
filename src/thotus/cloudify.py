@@ -7,7 +7,7 @@ from thotus.ply import save_scene
 from collections import defaultdict
 from thotus.ui import gui
 
-METHODS = ('pureimage', 'lineimage', 'image')
+METHODS = ('pureimage', 'lineimage', 'image', 'simpleline')
 
 def cloudify(calibration_data, folder, lasers, sequence, pure_images, rotated=False, method=None, camera=False):
     lm = LineMaker()
@@ -86,16 +86,23 @@ def cloudify(calibration_data, folder, lasers, sequence, pure_images, rotated=Fa
         computer = pcg.compute_camera_point_cloud
         for angle, l in sliced_lines.items():
             for laser in lasers:
-                pc = computer(*l[laser])
-                if pc is not None:
-                    append_point(pc)
+                try:
+                    pc = computer(*l[laser])
+                except Exception as e:
+                    print("Err: %s"%e)
+                else:
+                    if pc is not None:
+                        append_point(pc/1000.0)
     else:
+        pu.db
         computer = pcg.compute_point_cloud
         for angle, l in sliced_lines.items():
             for laser in lasers:
-                pc = computer(*l[laser])
-                if pc is not None:
-                    append_point(pc/1000.0)
+                x = l[laser]
+                if x:
+                    pc = computer(*x)
+                    if pc is not None:
+                        append_point(pc/1000.0)
 
 
     return obj

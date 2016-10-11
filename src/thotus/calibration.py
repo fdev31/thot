@@ -12,6 +12,7 @@ from thotus.projection import CalibrationData, PointCloudGeneration, clean_model
 from thotus.linedetect import LineMaker, compute_plane
 from thotus.cloudify import cloudify
 from thotus.ply import save_scene
+from thotus.settings import save_data, load_data
 
 import cv2
 import numpy as np
@@ -25,12 +26,6 @@ ESTIMATED_PLATFORM_TRANSLAT = [-5, 90, 320] # reference
 COLLECTED_SETTINGS = {}
 METADATA = defaultdict(lambda: {})
 
-def load_data():
-    global COLLECTED_SETTINGS
-    COLLECTED_SETTINGS.update( pickle.load( open('cam_data.bin', 'rb')) )
-
-def save_data(s):
-    pickle.dump(s, open('cam_data.bin', 'wb'))
 
 def plot(xyz):
     import matplotlib.pyplot as plt
@@ -72,6 +67,7 @@ def lasers_calibration(calibration_data, images):
         return (dist, normal, std)
 
     images = images[margin:-margin]
+
     for laser in range(2):
         ranges = [ int(fn.rsplit('/')[-1].split('_')[1].split('.')[0]) for fn in  images]
         im = [METADATA[x] for x in images]
@@ -81,12 +77,20 @@ def lasers_calibration(calibration_data, images):
         obj = cloudify(calibration_data, './capture', [laser], ranges, pure_images=True, method='simpleline', camera=im)
         dist, normal, std = compute_pc(obj._mesh.vertexes)
 
+        if laser == 0:
+            name = 'left'
+        else:
+            name = 'right'
+
+        COLLECTED_SETTINGS[name+'_plane_normal'] = normal
+        COLLECTED_SETTINGS[name+'_plane_distance'] = dist
         print("laser %d:"%laser)
         print("Normal vector    %s"%(_view_matrix(normal)))
         print("Plane distance    %.4f mm"%(dist))
 #        print("Standard deviation    {0} mm".format(std))
 
         save_scene("calibration_laser_%d.ply"%laser, obj)
+    save_data(calibration_data)
 
 def platform_calibration(calibration_data):
     x = []
@@ -185,7 +189,7 @@ def webcam_calibration(calibration_data, images):
 
         w, h = img.shape[:2]
 
-        found, corners = cv2.findChessboardCorners(img, PATTERN_MATRIX_SIZE, flags=cv2.CALIB_CB_FAST_CHECK+cv2.CALIB_CB_NORMALIZE_IMAGE)
+        found, corners = cv2.findChessboardCorners(img, PATTERN_MATRIX_SIZE, flags=cv2.CALIB_CB_NORMALIZE_IMAGE)
 
         if not found:
             if found_nr > 20 and failed_serie > 10:
@@ -247,12 +251,7 @@ def calibrate():
     calibration_data.camera_matrix = settings['camera_matrix']['value']
     calibration_data.distorsion_vector = settings['distortion_vector']['value']
 
-    if os.path.exists('cam_data.bin'):
-        o =  pickle.load( open('cam_data.bin', 'rb'))
-        calibration_data.platform_translation = o['translation_vector']
-        calibration_data.platform_rotation = o['rotation_matrix']
-        calibration_data.distortion_vector = o['distortion_vector']
-        calibration_data.camera_matrix = o['camera_matrix']
+    load_data(calibration_data)
 
     img_mask = './capture/color_*.png'
     img_names = sorted(glob(img_mask))
@@ -266,7 +265,6 @@ def calibrate():
     good_images.difference_update(buggy_captures)
     good_images = list(good_images)
     good_images.sort()
-    import pickle
     pickle.dump(dict(
             images = good_images,
             metadata = dict(METADATA),

@@ -92,6 +92,9 @@ class Scanner:
     def __getattr__(self, name):
         return getattr(self.b, name)
 
+    def refresh_params(self):
+        self.exposure = self.cap.get_exposure_absolute()
+
     def set_speed(self, speed):
         self.b.motor_speed(speed/10)
         self.b.motor_acceleration(speed/10)
@@ -100,8 +103,10 @@ class Scanner:
     def frame_interval(self):
         return max(1/self.cap.fps, self.exposure/10000.0)
 
-    def wait_capture(self, frames=2):
-        sleep(self.frame_interval * frames)
+    def wait_capture(self, frames=2, min_val=0.150):
+        x = self.frame_interval * frames
+        sleep(max(x, min_val))
+        return x
 
     def save(self, filename, processing=None):
         if not '.' in filename:
