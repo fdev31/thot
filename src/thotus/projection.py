@@ -156,6 +156,7 @@ class CalibrationData(object):
                 None,
                 x)
         x, y, w, h = roi
+        print(roi)
         dst = dst[y:y+h, x:x+w]
         return dst
 
@@ -177,10 +178,6 @@ class CalibrationData(object):
     def distortion_vector(self, value):
         self._distortion_vector = value
         self._compute_dist_camera_matrix()
-
-    @property
-    def roi(self):
-        return self._roi
 
     @property
     def dist_camera_matrix(self):
