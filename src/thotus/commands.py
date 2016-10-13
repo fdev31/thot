@@ -21,7 +21,7 @@ from thotus.cloudify import cloudify
 from thotus.ply import save_scene
 from thotus.settings import load_data
 
-SLOWDOWN = 1
+SLOWDOWN = 0
 
 WORKDIR="./capture"
 
@@ -151,7 +151,7 @@ def _scan(b, kind=ALL, definition=1, angle=360):
             b.laser_off(0)
         if kind & LASER2:
             b.laser_on(1)
-            b.wait_capture(2+SLOWDOWN)
+            b.wait_capture(2+SLOWDOWN) # sometimes a bit slow to react, so adding one frame
             disp( b.save('laser1_%03d.png'%n) , 'RIGHT')
             b.laser_off(1)
     gui.clear()
@@ -176,8 +176,8 @@ def recognize(pure_images=False, rotated=False, method=None):
     calibration_data.platform_rotation = settings['rotation_matrix']['value']
     calibration_data.platform_translation = settings['translation_vector']['value']
 
-    calibration_data._roi = (9, 8, 1262, 942) # hardcoded ROI
-    load_data(calibration_data) # overwrite with custom settings
+#    calibration_data._roi = (9, 8, 1262, 942) # hardcoded ROI
+#    load_data(calibration_data) # overwrite with custom settings
 
     obj = cloudify(calibration_data, WORKDIR, range(2), range(360), pure_images, rotated, method=method)
     save_scene("model.ply", obj)
