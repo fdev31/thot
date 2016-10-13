@@ -1,5 +1,6 @@
 #!/usr/bin/python2
 import traceback
+import sys
 from time import time
 
 from prompt_toolkit import prompt
@@ -77,22 +78,26 @@ def wanna_leave():
     except KeyboardInterrupt:
         leave_now = True
     else:
-        if text.lower()[0] != 'n':
+        if not text or text.lower()[0] != 'n':
             leave_now = True
 
 while not leave_now:
-    try:
-        text = prompt(u'Scan Bot> ',
-                history=history,
-                get_bottom_toolbar_tokens=get_bottom_toolbar_tokens,
-                style=style,
-                completer = WordCompleter(commands, ignore_case=True, match_middle=False,
+    if len(sys.argv) > 1:
+        text = ' '.join(sys.argv[1:])
+        sys.argv[:] = [sys.argv[0]]
+    else:
+        try:
+            text = prompt(u'Scan Bot> ',
+                    history=history,
+                    get_bottom_toolbar_tokens=get_bottom_toolbar_tokens,
+                    style=style,
+                    completer = WordCompleter(commands, ignore_case=True, match_middle=False,
+                        )
                     )
-                )
-    except EOFError:
-        break
-    except KeyboardInterrupt:
-        wanna_leave()
+        except EOFError:
+            break
+        except KeyboardInterrupt:
+            wanna_leave()
 
     if leave_now:
         break
@@ -111,6 +116,8 @@ while not leave_now:
         except KeyboardInterrupt:
             gui.clear()
             wanna_leave()
+        except KeyError:
+            print("Command not found: %s"%text)
         except Exception as e:
             gui.clear()
             print("")
