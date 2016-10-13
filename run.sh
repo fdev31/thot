@@ -1,2 +1,2 @@
 export PYTHONPATH="./src/"
-python -m thotus.main
+python -m thotus.main $*
