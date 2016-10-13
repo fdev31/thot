@@ -63,7 +63,9 @@ class LineMaker:
         if u:
             self.points = (np.array(u),np.array(v))
 
-            self.points = (ransac( self.points[0], self.points[1]), self.points[1])
+            # TODO: do this for laser detection
+#            self.points = (ransac( self.points[0], self.points[1]), self.points[1])
+
 #            if METHOD == 'ransac':
 #                x = ransac( self.points[0], self.points[1])
 #            elif METHOD == 'sgf':
