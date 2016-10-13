@@ -156,8 +156,7 @@ class CalibrationData(object):
                 None,
                 x)
         x, y, w, h = roi
-        print(roi)
-        dst = dst[y:y+h, x:x+w]
+#        dst = dst[x:x+w,y:y+h]
         return dst
 
 
