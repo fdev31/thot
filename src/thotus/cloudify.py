@@ -1,3 +1,4 @@
+import pickle
 import cv2
 import numpy as np
 from thotus import model
@@ -9,20 +10,18 @@ from thotus.ui import gui
 
 METHODS = ('pureimage', 'lineimage', 'image', 'simpleline')
 
-def cloudify(calibration_data, folder, lasers, sequence, pure_images, rotated=False, method=None, camera=False):
-    lm = LineMaker()
-    if method is None:
-        method = METHODS[0]
-    lineprocessor = getattr(lm, 'from_'+method)
-    WORKDIR = folder
-    # Pointcloudize !!
-    obj = model.Model(None, is_point_cloud=True)
-    obj._add_mesh()
-    obj._mesh._prepare_vertex_count(4000000)
+class Mesh:
+    def __init__(self):
+        self.obj = model.Model(None, is_point_cloud=True)
+        self.obj._add_mesh()
+        self.obj._mesh._prepare_vertex_count(4000000)
 
-    color = (50, 180, 180)
+    def get(self):
+        return self.obj
 
-    def append_point(point, radius=0.1, height=15):
+    def append_point(self, point, radius=10, height=10):
+        color = (50, 180, 180)  # TODO: :(
+        obj = self.obj
         rho = np.abs(np.sqrt(np.square(point[0, :]) + np.square(point[1, :])))
         z = point[2, :]
 
@@ -30,7 +29,7 @@ def cloudify(calibration_data, folder, lasers, sequence, pure_images, rotated=Fa
                        (z <= height) &
                        (rho < radius))[0]
 
-        for i in range(point.shape[1]):
+        for i in idx:
             obj._mesh._add_vertex(
                 point[0][i], point[1][i], point[2][i],
                 color[0], color[1], color[2])
@@ -40,25 +39,42 @@ def cloudify(calibration_data, folder, lasers, sequence, pure_images, rotated=Fa
             if zmax > obj._size[2]:
                 obj._size[2] = zmax
 
-    pcg = PointCloudGeneration(calibration_data)
+def cloudify(calibration_data, folder, lasers, sequence, pure_images, rotated=False, method=None, camera=False):
+    lm = LineMaker()
+    if method is None:
+        method = METHODS[0]
+    lineprocessor = getattr(lm, 'from_'+method)
+    WORKDIR = folder
+    # Pointcloudize !!
 
     sliced_lines = defaultdict(lambda: [None, None])
+    color_slices =  defaultdict(lambda: [None, None])
 
-    if pure_images:
-        for laser in lasers:
-            for i, n in enumerate(sequence):
-                diff = calibration_data.undistort_image(cv2.imread(WORKDIR+'/laser%d_%03d.png'%(laser, n)))
-                if not rotated:
-                    diff = np.rot90(diff, 3)
-                processed = lineprocessor(diff[:,:,0], laser)
-                gui.progress("analyse", i, len(sequence))
-                if lm.points:
-                    if camera:
-                        sliced_lines[n][laser] = [ lm.points ] + camera[i]['plane']
-                    else:
-                        sliced_lines[n][laser] = [ np.deg2rad(n), lm.points, laser ]
-                gui.display(processed,"laser %d"%laser, resize=(640, 480))
+    S_SZ = 10
+    for laser in lasers:
+        for i, n in enumerate(sequence):
+            diff = calibration_data.undistort_image(cv2.imread(WORKDIR+'/laser%d_%03d.png'%(laser, n)))
+            if not pure_images:
+                diff_mean = cv2.mean(diff[0:S_SZ,0:S_SZ])[0]
+                i2 = calibration_data.undistort_image(cv2.imread(WORKDIR+'/color_%03d.png'%n))
+                i2_mean = cv2.mean(i2[0:S_SZ,0:S_SZ])[0]
+                diff = diff - ((diff_mean/i2_mean)*i2)
+            if not rotated:
+#                diff = np.rot90(diff, 3)
+                diff = cv2.flip(cv2.transpose(diff), 1)
+            processed = lineprocessor(diff[:,:,0], laser)
+            gui.progress("analyse", i, len(sequence))
+            if lm.points:
+                if camera:
+                    sliced_lines[n][laser] = [ lm.points ] + camera[i]['plane']
+                else:
+                    sliced_lines[n][laser] = [ np.deg2rad(n), lm.points, laser ]
+                    if not pure_images:
+                        color_slices[n][laser] = i2[lm.points]
 
+            gui.display(processed,"laser %d"%laser, resize=(640, 480))
+
+    '''
     else:
         for i, n in enumerate(sequence):
             i2 = calibration_data.undistort_image(cv2.imread(WORKDIR+'/color_%03d.png'%n))
@@ -80,29 +96,24 @@ def cloudify(calibration_data, folder, lasers, sequence, pure_images, rotated=Fa
                         sliced_lines[n][laser] = [ np.deg2rad(n), lm.points, laser ]
 
                 gui.display(processed, 'diff', resize=(640, 480))
+    '''
 
 
-    if camera:
-        computer = pcg.compute_camera_point_cloud
-        for angle, l in sliced_lines.items():
-            for laser in lasers:
-                try:
-                    pc = computer(*l[laser])
-                except Exception as e:
-                    print("Err: %s"%e)
-                else:
-                    if pc is not None:
-                        append_point(pc/1000.0)
-    else:
-        pu.db
-        computer = pcg.compute_point_cloud
-        for angle, l in sliced_lines.items():
-            for laser in lasers:
-                x = l[laser]
-                if x:
-                    pc = computer(*x)
-                    if pc is not None:
-                        append_point(pc/1000.0)
+    pickle.dump(dict(sliced_lines), open('lines2d.pyk', 'wb+'))
+    return meshify(calibration_data, sliced_lines, camera)
 
+def meshify(calibration_data, lines=None, camera=False, lasers=range(2)):
+    pcg = PointCloudGeneration(calibration_data)
+    if not lines:
+        lines = pickle.load(open('lines2d.pyk', 'rb+'))
 
-    return obj
+    obj = Mesh()
+    computer = pcg.compute_camera_point_cloud if camera else pcg.compute_point_cloud
+    for angle, l in lines.items():
+        for laser in lasers:
+            x = l[laser]
+            if x:
+                pc = computer(*x)
+                if pc is not None:
+                    obj.append_point(pc/10.0)
+    return obj.get()

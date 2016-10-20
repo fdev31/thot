@@ -17,7 +17,7 @@ from thotus.ui import gui
 from thotus.scanner import Scanner, get_board, get_controllers
 from thotus.projection import CalibrationData
 from thotus.calibration import calibrate
-from thotus.cloudify import cloudify
+from thotus.cloudify import cloudify, meshify
 from thotus.ply import save_scene
 from thotus.settings import load_data
 
@@ -78,6 +78,12 @@ class Viewer(Thread):
         while self.running:
             s.wait_capture(1)
             gui.display(np.rot90(s.cap.buff, 3), "live", resize=(640,480))
+
+def remesh():
+    cd = _load_calibration_data()
+#    cd.laser_planes[0].distance += 0.5
+    obj = meshify(cd)
+    save_scene("model.ply", obj)
 
 def view():
     get_scanner() # sync scanner startup
@@ -159,8 +165,7 @@ def _scan(b, kind=ALL, definition=1, angle=360):
 def recognize_pure():
     return recognize(pure_images=True, method='simpleline')
 
-
-def recognize(pure_images=False, rotated=False, method=None):
+def _load_calibration_data():
     path = os.path.expanduser('~/.horus/calibration.json')
     settings = json.load(open(path))['calibration_settings']
     calibration_data = CalibrationData()
@@ -175,6 +180,10 @@ def recognize(pure_images=False, rotated=False, method=None):
 
     calibration_data.platform_rotation = settings['rotation_matrix']['value']
     calibration_data.platform_translation = settings['translation_vector']['value']
+    return calibration_data
+
+def recognize(pure_images=False, rotated=False, method='simpleline'):
+    calibration_data = _load_calibration_data()
 
 #    calibration_data._roi = (9, 8, 1262, 942) # hardcoded ROI
 #    load_data(calibration_data) # overwrite with custom settings

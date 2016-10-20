@@ -9,7 +9,7 @@ from prompt_toolkit.history import InMemoryHistory
 from prompt_toolkit.token import Token
 from prompt_toolkit.styles import style_from_dict
 
-from thotus.commands import capture, capture_color, capture_lasers, recognize, switch_lasers, view, stop
+from thotus.commands import capture, capture_color, capture_lasers, recognize, switch_lasers, view, stop, remesh
 from thotus.commands import recognize_pure, get_controllers, calibrate, rotate, capture_pattern_lasers, capture_pattern_colors
 from thotus.ui import gui
 history = InMemoryHistory()
@@ -46,6 +46,7 @@ def help():
     return 3
 
 commands = dict(
+        remesh = remesh,
         calibrate      = calibrate,
         capture        = capture,
         capture_color  = capture_color,
