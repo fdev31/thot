@@ -149,15 +149,14 @@ class CalibrationData(object):
             self._compute_weight_matrix()
 
     def undistort_image(self, image):
-        return image
-        x, roi = cv2.getOptimalNewCameraMatrix(self.camera_matrix, self.distortion_vector, image.shape[:2], 1, image.shape[:2])
+        cam_matrix , roi = cv2.getOptimalNewCameraMatrix(self.camera_matrix, self.distortion_vector, image.shape[:2], 1, image.shape[:2])
         dst = cv2.undistort(image,
                 self.camera_matrix,
                 self.distortion_vector,
                 None,
-                x)
+                cam_matrix)
         x, y, w, h = roi
-#        dst = dst[x:x+w,y:y+h]
+        dst = dst[x:x+w,y:y+h]
         return dst
 
 
