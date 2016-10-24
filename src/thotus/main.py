@@ -82,11 +82,14 @@ def wanna_leave():
         if not text or text.lower()[0] != 'n':
             leave_now = True
 
+leave_after = False
+if len(sys.argv) > 1:
+    text = ' '.join(sys.argv[1:])
+    sys.argv[:] = [sys.argv[0]]
+    leave_after = True
+
 while not leave_now:
-    if len(sys.argv) > 1:
-        text = ' '.join(sys.argv[1:])
-        sys.argv[:] = [sys.argv[0]]
-    else:
+    if not leave_after:
         try:
             text = prompt(u'Scan Bot> ',
                     history=history,
@@ -127,5 +130,7 @@ while not leave_now:
             else:
                 print("Error occured")
     timers['end_execution'] = time()
+    if leave_after:
+        leave_now = True
 
 stop()
