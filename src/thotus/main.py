@@ -9,8 +9,8 @@ from prompt_toolkit.history import InMemoryHistory
 from prompt_toolkit.token import Token
 from prompt_toolkit.styles import style_from_dict
 
-from thotus.commands import capture, capture_color, capture_lasers, recognize, switch_lasers, view, stop, remesh
-from thotus.commands import recognize_pure, get_controllers, calibrate, rotate, capture_pattern_lasers, capture_pattern_colors
+from thotus import commands as cmds
+from thotus import settings
 from thotus.ui import gui
 history = InMemoryHistory()
 
@@ -45,26 +45,60 @@ def help():
         print(" - %s"%c)
     return 3
 
+def set_horus_cfg():
+    settings.configuration = 'horus'
+
+def set_thot_cfg():
+    settings.configuration = 'thot'
+
+def set_single_laser(laser_number):
+    i = int(laser_number)
+    if i not in (1, 2):
+        print("Laser number must be 1 or 2")
+    settings.single_laser = i-1
+
+def set_dual_laser():
+    settings.single_laser = None
+
+def scan():
+    cmds.capture_color()
+    cmds.capture_lasers()
+    return cmds.recognize()
+
 commands = dict(
-        remesh = remesh,
-        calibrate      = calibrate,
-        capture        = capture,
-        capture_color  = capture_color,
-        capture_lasers = capture_lasers,
-        pattern_colors = capture_pattern_colors,
-        pattern_lasers = capture_pattern_lasers,
-        analyse        = recognize,
-        analyse_pure   = recognize_pure,
-        rotate         = rotate,
-        view           = view,
+        debug_settings = settings.compare,
+        # calibrate
+        calibrate      = cmds.calibrate,
+
+        # all in one scan
+        scan           = scan,
+        # acquire pictures
+        capture        = cmds.capture,
+        capture_color  = cmds.capture_color,
+        capture_lasers = cmds.capture_lasers,
+        pattern_colors = cmds.capture_pattern_colors,
+        pattern_lasers = cmds.capture_pattern_lasers,
+
+
+        # scan
+        analyse        = cmds.recognize,
+        analyse_pure   = cmds.recognize_pure,
+
+        # misc
+        view           = cmds.view,
+        rotate         = cmds.rotate,
+        lasers         = cmds.switch_lasers,
         exit           = exit,
         quit           = exit,
         help           = help,
-        lasers         = switch_lasers,
+        use_horus_cfg  = set_horus_cfg,
+        use_thot_cfg   = set_thot_cfg,
+        set_single_laser = set_single_laser,
+        set_dual_laser = set_dual_laser,
     )
 
 try:
-    commands.update(get_controllers())
+    commands.update(cmds.get_controllers())
 except IndexError:
     print("Unable to find camera, is it plugged ?")
 
@@ -76,7 +110,7 @@ def wanna_leave():
     try:
         text = prompt(u'Exit (Y/n) ? ', completer=WordCompleter( ('yes', 'no') , ignore_case=True
         ))
-    except KeyboardInterrupt:
+    except (KeyboardInterrupt, EOFError):
         leave_now = True
     else:
         if not text or text.lower()[0] != 'n':
@@ -133,4 +167,4 @@ while not leave_now:
     if leave_after:
         leave_now = True
 
-stop()
+cmds.stop()

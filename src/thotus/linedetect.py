@@ -30,9 +30,9 @@ def compute_line_image(points, image):
         u, v = points
         image = np.zeros_like(image)
         try:
-            image[v.astype(int), np.around(u).astype(int) - 1] = 128
+            image[v.astype(int), np.around(u).astype(int) - 1] = 255
             image[v.astype(int), np.around(u).astype(int)] = 255
-            image[v.astype(int), np.around(u).astype(int) + 1] = 128
+            image[v.astype(int), np.around(u).astype(int) + 1] = 255
         except IndexError:
             pass
         return image
@@ -123,27 +123,35 @@ class LineMaker:
             return compute_line_image(self.points, img)
         return img
 
-    def from_pureimage(self, img, laser_nr, threshold=40):
+    def from_straightpureimage(self, img, laser_nr):
+        return self.from_pureimage(img, laser_nr, 30, use_ransac=True, prune_top=int(img.shape[0]/2.8))
+
+    def from_pureimage(self, img, laser_nr, threshold=40, use_ransac=False, prune_top=0):
         x = []
         y = []
+        img = cv2.blur(img, (5, 5))
 
 #        vals = [np.max(img[n]) for n in samples]
 #        peak = np.max(vals)
 #        threshold = peak/5
 
+        bound = 0 if laser_nr == 0 else -1
         cur_chunk = []
-        for n in range(img.shape[0]):
+        for n in range(prune_top, img.shape[0]):
             max_val = np.max(img[n])
             if max_val < threshold:
                 continue
 #            scipy.signal.find_peaks_cwt(img[n], 
-            peaks = np.where(img[n] > 0.3*max_val)[0]
+            peaks = np.where(img[n] == max_val)[0]
+            y.append(n)
+            x.append(peaks[bound])
+            '''
             oldidx = -10
             if peaks.size:
                 for idx in peaks:
-                    if idx > 900: # skip some lines
-                        continue
-                    if oldidx + 1 == idx:
+#                    if idx > 900: # skip some lines
+#                        continue
+                    if oldidx + 5 >= idx:
                         cur_chunk.append(idx)
                     else:
                         if cur_chunk:
@@ -157,9 +165,13 @@ class LineMaker:
                     x.append(int(0.5 + np.average(cur_chunk)))
 #            y.extend(n for _ in range(len(peaks)))
 #            x.extend(peaks)
+            '''
 
         y = np.array(y)
         x = np.array(x)
+
+        if use_ransac:
+            x = ransac( x, y )
 
 #        if METHOD == 'ransac':
 #            x = ransac( x, y )
@@ -366,46 +378,4 @@ class LinearLeastSquares2D(object):
 
     def is_degenerate(self, sample):
         return False
-
-class PlaneDetection(object):
-
-    def fit(self, X):
-        M, Xm = self._compute_m(X)
-        # U = linalg.svds(M, k=2)[0]
-        # normal = np.cross(U.T[0], U.T[1])
-        normal = np.linalg.svd(M)[0][:, 2]
-        if normal[2] < 0:
-            normal *= -1
-        dist = np.dot(normal, Xm)
-        return dist, normal, M
-
-    def residuals(self, model, X):
-        _, normal, _ = model
-        M, Xm = self._compute_m(X)
-        return np.abs(np.dot(M.T, normal))
-
-    def is_degenerate(self, sample):
-        return False
-
-    def _compute_m(self, X):
-        n = X.shape[0]
-        Xm = X.sum(axis=0) / n
-        M = np.array(X - Xm).T
-        return M, Xm
-
-def compute_plane(X):
-    if X is not None and X.shape[0] > 3:
-        model, inliers = _ransac(X, PlaneDetection(), 3, 0.1, max_trials=10)
-
-        distance, normal, M = model
-        std = np.dot(M.T, normal).std()
-
-        logger.info(" Distance: " + str(distance))
-        logger.info(" Normal: " + str(normal))
-        logger.info(" Standard deviation: " + str(std))
-        logger.info(" Point cloud size: " + str(len(inliers)))
-
-        return distance, normal, std
-    else:
-        return None, None, None
 

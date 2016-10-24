@@ -17,6 +17,7 @@ import numpy as np
 from scipy import optimize
 
 from thotus.model import Model
+from thotus.settings import LaserPlane
 
 def clean_model(obj, delta=0.5, threshold=10):
     # delta is max distance
@@ -119,10 +120,6 @@ class PointCloudGeneration(object):
         # Compute laser intersection
         return d / np.dot(n, x) * x
 
-class LaserPlane(object):
-    def __init__(self):
-        self.normal = None
-        self.distance = None
 
 class CalibrationData(object):
 

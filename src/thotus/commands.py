@@ -19,7 +19,7 @@ from thotus.projection import CalibrationData
 from thotus.calibration import calibrate
 from thotus.cloudify import cloudify, meshify
 from thotus.ply import save_scene
-from thotus.settings import load_data
+from thotus import settings
 
 SLOWDOWN = 0
 
@@ -78,12 +78,6 @@ class Viewer(Thread):
         while self.running:
             s.wait_capture(1)
             gui.display(np.rot90(s.cap.buff, 3), "live", resize=(640,480))
-
-def remesh():
-    cd = _load_calibration_data()
-#    cd.laser_planes[0].distance += 0.5
-    obj = meshify(cd)
-    save_scene("model.ply", obj)
 
 def view():
     get_scanner() # sync scanner startup
@@ -163,32 +157,18 @@ def _scan(b, kind=ALL, definition=1, angle=360):
     gui.clear()
 
 def recognize_pure():
-    return recognize(pure_images=True, method='simpleline')
+    return recognize(pure_images=True, method='pureimage')
 
-def _load_calibration_data():
-    path = os.path.expanduser('~/.horus/calibration.json')
-    settings = json.load(open(path))['calibration_settings']
-    calibration_data = CalibrationData()
 
-    calibration_data.distortion_vector = np.array(settings['distortion_vector']['value'])
-    calibration_data.camera_matrix = np.array( settings['camera_matrix']['value'] )
+def recognize(pure_images=False, rotated=False, method='pureimage'):
+    calibration_data = settings.load_data(CalibrationData())
 
-    calibration_data.laser_planes[0].distance = settings['distance_left']['value']
-    calibration_data.laser_planes[0].normal = settings['normal_left']['value']
-    calibration_data.laser_planes[1].distance = settings['distance_right']['value']
-    calibration_data.laser_planes[1].normal = settings['normal_right']['value']
+    if settings.single_laser is None:
+        r = range(2)
+    else:
+        r = [settings.single_laser]
 
-    calibration_data.platform_rotation = settings['rotation_matrix']['value']
-    calibration_data.platform_translation = settings['translation_vector']['value']
-    return calibration_data
-
-def recognize(pure_images=False, rotated=False, method='simpleline'):
-    calibration_data = _load_calibration_data()
-
-#    calibration_data._roi = (9, 8, 1262, 942) # hardcoded ROI
-#    load_data(calibration_data) # overwrite with custom settings
-
-    obj = cloudify(calibration_data, WORKDIR, range(2), range(360), pure_images, rotated, method=method)
+    obj = cloudify(calibration_data, WORKDIR, r, range(360), pure_images, rotated, method=method)
     save_scene("model.ply", obj)
     gui.clear()
 
