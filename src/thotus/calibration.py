@@ -240,7 +240,7 @@ def webcam_calibration(calibration_data, images):
     camera_matrix, roi = cv2.getOptimalNewCameraMatrix(camera_matrix, dist_coefs, (w, h), 1, (w,h))
 
     calibration_data.camera_matrix = camera_matrix
-    calibration_data.distortion_vector = dist_coefs
+    calibration_data.distortion_vector = dist_coefs.ravel()
 
     print("camera matrix:\n%s"% _view_matrix(camera_matrix))
     print("distortion coefficients: %s"% _view_matrix(dist_coefs))
