@@ -20,7 +20,7 @@ try:
     from scipy.sparse import linalg
 except ImportError:
     def svd(M):
-        return numpy.linalg.svd(M)[0][:,2]
+        return np.linalg.svd(M)[0][:,2]
 else:
     def svd(M):
         return linalg.svds(M, k=2)[0]
