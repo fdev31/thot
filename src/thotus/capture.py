@@ -21,7 +21,6 @@ definition = 1 # 1= highest quality
 
 class Camcorder(Thread):
     def __init__(self, width=MAX_WIDTH, height=MAX_HEIGHT):
-        print("Ask %sx%s"%(width, height))
         if not v4l2capture:
             raise RuntimeError("Can't find v4l2capture")
         Thread.__init__(self)
@@ -38,7 +37,6 @@ class Camcorder(Thread):
         self.size = (size_x, size_y)
         self.ppf = np.multiply(*self.size) # pixels per frame
         self.fps = video.set_fps(30)
-        print("Got %sx%s @ %s"%(size_x, size_y, self.fps))
 
         video.create_buffers(1)
 
