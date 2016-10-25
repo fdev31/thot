@@ -100,10 +100,11 @@ commands = dict(
     laserSingle    = set_single_laser,
     laserDual      = set_dual_laser,
     )
+
 adv_commands = dict(
     debug_settings = settings.compare,
 
-    recalibrate      = cmds.calibrate,
+    recalibrate    = cmds.calibrate,
     calibrate_cam  = cmds.toggle_cam_calibration,
 
     # acquire pictures
@@ -147,6 +148,7 @@ if len(sys.argv) > 1:
     text = ' '.join(sys.argv[1:])
     sys.argv[:] = [sys.argv[0]]
     leave_after = True
+    toggle_advanced_mode()
 
 while not leave_now:
     if not leave_after:
