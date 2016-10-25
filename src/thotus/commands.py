@@ -35,6 +35,9 @@ ALL = COLOR | LASER1 | LASER2
 
 calibrate = calibration.calibrate
 
+def calibrate_pure():
+    return calibrate(pure_laser=True)
+
 def toggle_cam_calibration(force_skip=None):
     if force_skip is not None:
         calibration.SKIP_CAM_CALIBRATION = force_skip
@@ -102,8 +105,8 @@ def view():
         Viewer.instance.start()
 
 def view_stop():
-    get_scanner() # sync scanner startup
     if Viewer.instance:
+        get_scanner() # sync scanner startup
         Viewer.instance.stop()
         return True
 

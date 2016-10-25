@@ -26,6 +26,7 @@ else:
         return linalg.svds(M, k=2)[0]
 
 SKIP_CAM_CALIBRATION = 1
+FAST_CALIBRATE = 1 # 1 for full calibration, > 1 for grosser calibration
 
 PATTERN_MATRIX_SIZE = (11, 6)
 PATTERN_SQUARE_SIZE = 13.0
@@ -62,7 +63,7 @@ def drawChessBoard(img, found, corners):
         cv2.drawChessboardCorners(img, PATTERN_MATRIX_SIZE, corners, found)
     return img
 
-def lasers_calibration(calibration_data, images):
+def lasers_calibration(calibration_data, images, pure_laser=False):
 
     def compute_pc(X):
         # Load point cloud
@@ -79,20 +80,25 @@ def lasers_calibration(calibration_data, images):
         std = np.dot(M.T, normal).std()
         return (dist, normal, std)
 
-    margin = int(len(images)/3)
-
     for laser in range(2):
-        if laser == 1:
-            myimages = images[5: -int(len(images)/2)]
-        else:
-            myimages = images[int(len(images)/2):-5]
+        selected_planes = []
+        ranges = []
+        for fn in images:
+            num = int(fn.rsplit('/')[-1].split('_')[1].split('.')[0])
+            if laser == 0:
+                if num > 36:
+                    continue
+            else:
+                if num < 60:
+                    continue
+            ranges.append(num)
+            selected_planes.append(fn)
 
-        ranges = [ int(fn.rsplit('/')[-1].split('_')[1].split('.')[0]) for fn in  myimages]
-        im = [METADATA[x] for x in myimages]
+        im = [METADATA[x] for x in selected_planes]
 
         assert len(ranges) == len(im)
 
-        obj = cloudify(calibration_data, './capture', [laser], ranges, pure_images=False, method='straightpureimage', camera=im, cylinder=(1000, 1000)) # cylinder in mm
+        obj = cloudify(calibration_data, './capture', [laser], ranges, pure_images=pure_laser, method='straightpureimage', camera=im, cylinder=(1000, 1000)) # cylinder in mm
 
         tris = []
         v = [_ for _ in obj._mesh.vertexes if np.nonzero(_)[0].size]
@@ -224,12 +230,7 @@ def webcam_calibration(calibration_data, images):
         gui.display(vis[int(vis.shape[0]/3):-100,], 'chess')
 
     if SKIP_CAM_CALIBRATION:
-        try:
-            load_data(calibration_data)
-        except Exception as e:
-            print(e)
-            calibration_data.camera_matrix = np.array([[1436.58142, 0.0, 488.061101], [0.0, 1425.6333, 646.008996], [0.0, 0.0, 1.0]])
-            calibration_data.distortion_vector = np.array( [[-0.00563895863, -0.0672979095, -0.000632710648, -0.00155601109, 1.21223343]] )
+        load_data(calibration_data)
         return
 
     if not obj_points:
@@ -246,12 +247,12 @@ def webcam_calibration(calibration_data, images):
     print("distortion coefficients: %s"% _view_matrix(dist_coefs))
     print("ROI: %s"%(repr(roi)))
 
-def calibrate():
+def calibrate(pure_laser=False):
 
     calibration_data = CalibrationData()
 
     img_mask = './capture/color_*.png'
-    img_names = sorted(glob(img_mask))
+    img_names = sorted(glob(img_mask))[::FAST_CALIBRATE]
 
     webcam_calibration(calibration_data, img_names)
     buggy_captures = platform_calibration(calibration_data)
@@ -266,7 +267,7 @@ def calibrate():
             )
             , open('images.js', 'wb'))
 
-    lasers_calibration(calibration_data, good_images)
+    lasers_calibration(calibration_data, good_images, pure_laser)
     save_data(calibration_data)
     METADATA.clear()
     gui.clear()

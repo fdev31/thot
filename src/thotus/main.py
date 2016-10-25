@@ -104,24 +104,25 @@ commands = dict(
 adv_commands = dict(
     debug_settings = settings.compare,
 
-    recalibrate    = cmds.calibrate,
-    calibrate_cam  = cmds.toggle_cam_calibration,
+    recalibrate      = cmds.calibrate,
+    recalibrate_pure = cmds.calibrate_pure,
+    calibrate_cam    = cmds.toggle_cam_calibration,
 
     # acquire pictures
-    capture        = cmds.capture,
-    capture_color  = cmds.capture_color,
-    capture_lasers = cmds.capture_lasers,
+    capture          = cmds.capture,
+    capture_color    = cmds.capture_color,
+    capture_lasers   = cmds.capture_lasers,
 
-    pattern        = cmds.capture_pattern,
-    pattern_colors = cmds.capture_pattern_colors,
-    pattern_lasers = cmds.capture_pattern_lasers,
+    pattern          = cmds.capture_pattern,
+    pattern_colors   = cmds.capture_pattern_colors,
+    pattern_lasers   = cmds.capture_pattern_lasers,
 
     # scan
-    analyse        = cmds.recognize,
-    analyse_pure   = cmds.recognize_pure,
+    analyse          = cmds.recognize,
+    analyse_pure     = cmds.recognize_pure,
 
-    use_horus_cfg  = set_horus_cfg,
-    use_thot_cfg   = set_thot_cfg,
+    use_horus_cfg    = set_horus_cfg,
+    use_thot_cfg     = set_thot_cfg,
 )
 
 try:
