@@ -154,9 +154,8 @@ def capture(kind=ALL):
 
 def _scan(b, kind=ALL, definition=1, angle=360):
     view_stop()
-    print("scan %d / %d"%(kind, ALL))
-    def disp(img, text):
-        gui.display(np.rot90(img, 3), text=text, resize=(640,480))
+    def disp(img, text, disp_number):
+        gui.display(np.rot90(img, 3), text=text, resize=(640,480), disp_number=disp_number)
 
     b.lasers_off()
 
@@ -168,17 +167,17 @@ def _scan(b, kind=ALL, definition=1, angle=360):
         sleep(0.1) # wait for motor
         b.wait_capture(2+SLOWDOWN, min_val=0.2)
         if kind & COLOR:
-            disp( b.save('color_%03d.png'%n) , '')
+            disp( b.save('color_%03d.png'%n) , '', disp_number=0)
         if kind & LASER1:
             b.laser_on(0)
             b.wait_capture(2+SLOWDOWN)
-            disp( b.save('laser0_%03d.png'%n), 'LEFT')
+            disp( b.save('laser0_%03d.png'%n), 'LEFT', disp_number=1)
             b.laser_off(0)
             sleep(0.05)
         if kind & LASER2:
             b.laser_on(1)
             b.wait_capture(2+SLOWDOWN) # sometimes a bit slow to react, so adding one frame
-            disp( b.save('laser1_%03d.png'%n) , 'RIGHT')
+            disp( b.save('laser1_%03d.png'%n) , 'RIGHT', disp_number=2)
             b.laser_off(1)
             sleep(0.05)
     gui.clear()
