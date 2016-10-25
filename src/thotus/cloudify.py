@@ -95,11 +95,7 @@ def cloudify(calibration_data, folder, lasers, sequence, pure_images, rotated=Fa
                 diff = np.clip(diff, 0, 50)
                 diff[:,:,2] = processed
 
-                to_display.append(diff)
-        if len(to_display) > 1:
-            gui.display(to_display[0] + to_display[1],"lines", resize=(640, 480), disp_number=laser)
-        else:
-            gui.display(to_display[0], "lines", resize=(640, 480), disp_number=laser)
+                gui.display(diff,"laser %d"%(laser+1), resize=(640, 480))
 
 
     pickle.dump(dict(sliced_lines), open('lines2d.pyk', 'wb+'))
