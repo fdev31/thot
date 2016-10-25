@@ -69,7 +69,7 @@ def lasers_calibration(calibration_data, images):
         assert len(ranges) == len(im)
         # TODO: use ROI for the pattern here
 
-        obj = cloudify(calibration_data, './capture', [laser], ranges, pure_images=True, method='straightpureimage', camera=im, cylinder=(PATTERN_MATRIX_SIZE[1]*PATTERN_SQUARE_SIZE, 700)) # cylinder in mm
+        obj = cloudify(calibration_data, './capture', [laser], ranges, pure_images=True, method='straightpureimage', camera=im, cylinder=(1000, 1000)) # cylinder in mm
 
         tris = []
         v = [_ for _ in obj._mesh.vertexes if np.nonzero(_)[0].size]
@@ -184,12 +184,15 @@ def webcam_calibration(calibration_data, images):
         cv2.cornerSubPix(img, corners, (11, 11), (-1, -1), term)
 
         METADATA[fn]['chess_corners'] = corners
-        img_points.append(corners.reshape(-1, 2))
-        obj_points.append(pattern_points.copy())
+        # compute mask
+        p1 = corners[0][0]
+        p2 = corners[PATTERN_MATRIX_SIZE[0] - 1][0]
+        p3 = corners[PATTERN_MATRIX_SIZE[0] * (PATTERN_MATRIX_SIZE[1] - 1)][0]
+        p4 = corners[PATTERN_MATRIX_SIZE[0] * PATTERN_MATRIX_SIZE[1] - 1][0]
+        points = np.array([p1, p2, p4, p3], dtype='int32')
+        METADATA[fn]['chess_contour'] = points
 
-        # display
         vis = cv2.cvtColor(img, cv2.COLOR_GRAY2BGR)
-
         cv2.drawChessboardCorners(vis, PATTERN_MATRIX_SIZE, corners, found)
         gui.display(vis[int(vis.shape[0]/3):-100,], 'chess')
 

@@ -53,7 +53,6 @@ Pointcloud is saved as **capture.ply**
 ## Future / TODO
 
 
-- Use computed plane ROI for laser segmentation
 - Blender integration
 - Color support
 - replace uvcdynctl by a custom v4l2capture fork / ask the maintainer of py3k branch

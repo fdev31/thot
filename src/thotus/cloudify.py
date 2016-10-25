@@ -66,8 +66,16 @@ def cloudify(calibration_data, folder, lasers, sequence, pure_images, rotated=Fa
                 diff = diff - ((diff_mean/i2_mean)*i2)
             if not rotated:
                 diff = np.rot90(diff, 3)
-            processed = lineprocessor(diff[:,:,0], laser)
             gui.progress("analyse", i, len(sequence))
+            grey = diff[:,:,0]
+            if camera:
+                points = camera[i]['chess_contour']
+                mask = np.zeros(grey.shape, np.uint8)
+
+                cv2.fillConvexPoly(mask, points, 255)
+                grey = cv2.bitwise_and(grey, grey, mask=mask)
+
+            processed = lineprocessor(grey, laser)
             if lm.points:
                 if camera:
                     sliced_lines[n][laser] = [ lm.points ] + camera[i]['plane']
