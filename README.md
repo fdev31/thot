@@ -1,4 +1,4 @@
-# A Ciclop 3D Scanner client
+# A Ciclop 3D Scanner CLI
 
 ## Introduction
 
@@ -58,9 +58,11 @@ Pointcloud is saved as **capture.ply**
 
 ## Future / TODO
 
-
-- Blender integration
+- Improve platform calibration (very fragile algorithm :/)
 - Color support
+- Optimize scanning (streamlining)
+- Allow setting pattern height and cylinder boundaries from CLI
+- Blender integration
 - replace uvcdynctl by a custom v4l2capture fork / ask the maintainer of py3k branch
 - compute normals or mesh directly
 

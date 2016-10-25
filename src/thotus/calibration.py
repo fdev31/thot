@@ -29,7 +29,7 @@ SKIP_CAM_CALIBRATION = 1
 
 PATTERN_MATRIX_SIZE = (11, 6)
 PATTERN_SQUARE_SIZE = 13.0
-PATTERN_ORIGIN = 38.88 # distance plateau to second row of pattern
+PATTERN_ORIGIN = 38.8 # distance plateau to second row of pattern
 ESTIMATED_PLATFORM_TRANSLAT = [-5, 90, 320] # reference 
 
 pattern_points = np.zeros((np.prod(PATTERN_MATRIX_SIZE), 3), np.float32)
