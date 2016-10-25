@@ -61,42 +61,67 @@ def set_dual_laser():
     settings.single_laser = None
 
 def scan():
-    cmds.capture_color()
-    cmds.capture_lasers()
+    cmds.capture()
     return cmds.recognize()
 
+def fullcalibrate():
+    cmds.capture_pattern()
+    cmds.toggle_cam_calibration(False)
+    return cmds.calibrate()
+
+def stdcalibrate():
+    cmds.capture_pattern()
+    cmds.toggle_cam_calibration(True)
+    return cmds.calibrate()
+
+def toggle_advanced_mode():
+    if 'debug_settings' in commands:
+        for cmd in adv_commands:
+            del commands[cmd]
+    else:
+        commands.update(adv_commands)
+
 commands = dict(
-        debug_settings = settings.compare,
-        # calibrate
-        calibrate      = cmds.calibrate,
-        calibrate_cam  = cmds.toggle_cam_calibration,
+    # calibrate
+    calibrateCam   = fullcalibrate,
+    calibrate      = stdcalibrate,
+    advanced       = toggle_advanced_mode,
 
-        # all in one scan
-        scan           = scan,
-        # acquire pictures
-        capture        = cmds.capture,
-        capture_color  = cmds.capture_color,
-        capture_lasers = cmds.capture_lasers,
-        pattern_colors = cmds.capture_pattern_colors,
-        pattern_lasers = cmds.capture_pattern_lasers,
+    # all in one scan
+    scan           = scan,
 
-
-        # scan
-        analyse        = cmds.recognize,
-        analyse_pure   = cmds.recognize_pure,
-
-        # misc
-        view           = cmds.view,
-        rotate         = cmds.rotate,
-        lasers         = cmds.switch_lasers,
-        exit           = exit,
-        quit           = exit,
-        help           = help,
-        use_horus_cfg  = set_horus_cfg,
-        use_thot_cfg   = set_thot_cfg,
-        set_single_laser = set_single_laser,
-        set_dual_laser = set_dual_laser,
+    # misc
+    view           = cmds.view,
+    rotate         = cmds.rotate,
+    lasers         = cmds.switch_lasers,
+    exit           = exit,
+    quit           = exit,
+    help           = help,
+    laserSingle    = set_single_laser,
+    laserDual      = set_dual_laser,
     )
+adv_commands = dict(
+    debug_settings = settings.compare,
+
+    recalibrate      = cmds.calibrate,
+    calibrate_cam  = cmds.toggle_cam_calibration,
+
+    # acquire pictures
+    capture        = cmds.capture,
+    capture_color  = cmds.capture_color,
+    capture_lasers = cmds.capture_lasers,
+
+    pattern        = cmds.capture_pattern,
+    pattern_colors = cmds.capture_pattern_colors,
+    pattern_lasers = cmds.capture_pattern_lasers,
+
+    # scan
+    analyse        = cmds.recognize,
+    analyse_pure   = cmds.recognize_pure,
+
+    use_horus_cfg  = set_horus_cfg,
+    use_thot_cfg   = set_thot_cfg,
+)
 
 try:
     commands.update(cmds.get_controllers())

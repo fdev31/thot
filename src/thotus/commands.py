@@ -35,20 +35,23 @@ ALL = COLOR | LASER1 | LASER2
 
 calibrate = calibration.calibrate
 
-def toggle_cam_calibration():
-    if calibration.SKIP_CAM_CALIBRATION:
-        calibration.SKIP_CAM_CALIBRATION = 0
+def toggle_cam_calibration(force_skip=None):
+    if force_skip is not None:
+        calibration.SKIP_CAM_CALIBRATION = force_skip
     else:
-        calibration.SKIP_CAM_CALIBRATION = 1
+        if calibration.SKIP_CAM_CALIBRATION:
+            calibration.SKIP_CAM_CALIBRATION = 0
+        else:
+            calibration.SKIP_CAM_CALIBRATION = 1
     print("Camera calibration %s"%("disabled" if calibration.SKIP_CAM_CALIBRATION else "enabled"))
 
 
 def stop():
     global scanner
-    if scanner:
-        scanner.close()
     if Viewer.instance:
         Viewer.instance.stop()
+    if scanner:
+        scanner.close()
 
 scanner = None
 def get_scanner():
@@ -87,15 +90,22 @@ class Viewer(Thread):
         self.running = True
         while self.running:
             s.wait_capture(1)
-            gui.display(np.rot90(s.cap.buff, 3), "live", resize=(640,480))
+            img = np.rot90(s.cap.buff, 3)
+            found, corners = calibration.detectChessBoard(img)
+            if found:
+                img = calibration.drawChessBoard(img, found, corners)
+            gui.display(img, "live", resize=(640,480))
 
 def view():
+    if not view_stop():
+        Viewer.instance = Viewer()
+        Viewer.instance.start()
+
+def view_stop():
     get_scanner() # sync scanner startup
     if Viewer.instance:
         Viewer.instance.stop()
-    else:
-        Viewer.instance = Viewer()
-        Viewer.instance.start()
+        return True
 
 def capture_color():
     return capture(COLOR)
@@ -121,6 +131,10 @@ def _capture_pattern(t):
         print("\naborting...")
     s.motor_move(-50)
 
+
+def capture_pattern():
+    _capture_pattern(ALL)
+
 def capture_pattern_lasers():
     _capture_pattern(LASER1|LASER2)
 
@@ -128,7 +142,7 @@ def capture_pattern_colors():
     _capture_pattern(COLOR)
 
 def capture(kind=ALL):
-    print("Capture %d"%kind)
+
     s = get_scanner()
     if not s:
         return
@@ -139,6 +153,7 @@ def capture(kind=ALL):
         print("\naborting...")
 
 def _scan(b, kind=ALL, definition=1, angle=360):
+    view_stop()
     print("scan %d / %d"%(kind, ALL))
     def disp(img, text):
         gui.display(np.rot90(img, 3), text=text, resize=(640,480))
@@ -159,11 +174,13 @@ def _scan(b, kind=ALL, definition=1, angle=360):
             b.wait_capture(2+SLOWDOWN)
             disp( b.save('laser0_%03d.png'%n), 'LEFT')
             b.laser_off(0)
+            sleep(0.05)
         if kind & LASER2:
             b.laser_on(1)
             b.wait_capture(2+SLOWDOWN) # sometimes a bit slow to react, so adding one frame
             disp( b.save('laser1_%03d.png'%n) , 'RIGHT')
             b.laser_off(1)
+            sleep(0.05)
     gui.clear()
 
 def recognize_pure():
@@ -171,6 +188,7 @@ def recognize_pure():
 
 
 def recognize(pure_images=False, rotated=False, method='pureimage'):
+    view_stop()
     calibration_data = settings.load_data(CalibrationData())
 
     if settings.single_laser is None:
