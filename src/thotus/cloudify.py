@@ -55,7 +55,10 @@ def cloudify(calibration_data, folder, lasers, sequence, pure_images, rotated=Fa
     S_SZ = 10
     for laser in lasers:
         for i, n in enumerate(sequence):
-            diff = calibration_data.undistort_image(cv2.imread(WORKDIR+'/laser%d_%03d.png'%(laser, n)))
+            diff = cv2.imread(WORKDIR+'/laser%d_%03d.png'%(laser, n))
+            if diff is None:
+                continue
+            diff = calibration_data.undistort_image(diff)
             if diff is None:
                 print("Unable to load %s"%(WORKDIR+'/laser%d_%03d.png'%(laser, n)))
 
