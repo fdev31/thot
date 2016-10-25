@@ -10,9 +10,7 @@ This software only targets Linux users.
 
 ## Status
 
-Not useful on its own yet since it requires you to first have performed the calibration using [Horus](https://github.com/bqlabs/horus).
-
-In case someone is interested on my patches on Horus, making it work on unmodified opencv but slow as hell, just ask.
+Not giving very good calibration results yet, in heavy development.
 
 Useable for some people already, probably developers:
 
@@ -54,15 +52,12 @@ Pointcloud is saved as **capture.ply**
 
 ## Future / TODO
 
-If enough time...
 
-- Allow display of cam + add commands to change settings
-- Automated calibration
+- Use computed plane ROI for laser segmentation
 - Blender integration
 - Color support
 - replace uvcdynctl by a custom v4l2capture fork / ask the maintainer of py3k branch
-- find or write some blender extension to clean the pointcloud
-- re-use older project to compute mesh from pointcloud automatically
+- compute normals or mesh directly
 
 ## Dependencies
 
@@ -80,9 +75,5 @@ For a few extra features (will be optional in the future):
 
 ## Bugs
 
-- no easily accessible settings yet, need to edit code...
 - no release yet: may not work out of the box, consider unstable
-- No good way to set camera settings yet
-- Not able to compute calibration data on itself
-- Exit of app not handled correctly (using ^C is quite mandatory after exit...)
 

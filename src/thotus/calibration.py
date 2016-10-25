@@ -17,7 +17,7 @@ import cv2
 import numpy as np
 from scipy.sparse import linalg
 
-SKIP_CAM_CALIBRATION = 0
+SKIP_CAM_CALIBRATION = 1
 
 PATTERN_MATRIX_SIZE = (11, 6)
 PATTERN_SQUARE_SIZE = 13.0
@@ -181,6 +181,7 @@ def webcam_calibration(calibration_data, images):
 
     failed_serie = 0
     term = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_COUNT, 30, 0.001)
+    flags = cv2.CALIB_CB_FAST_CHECK
 
     for idx, fn in enumerate(images):
         gui.progress('Webcam calibration %s (%d found)... ' % (fn, found_nr), idx, len(images))
@@ -194,13 +195,15 @@ def webcam_calibration(calibration_data, images):
 
         w, h = img.shape[:2]
 
-        found, corners = cv2.findChessboardCorners(img, PATTERN_MATRIX_SIZE, flags=cv2.CALIB_CB_NORMALIZE_IMAGE+cv2.CALIB_CB_FAST_CHECK)
+        found, corners = cv2.findChessboardCorners(img, PATTERN_MATRIX_SIZE, flags=flags)
 
         if not found:
-            if found_nr > 20 and failed_serie > 10:
+            if found_nr > 20 and failed_serie > 15:
                 break
             failed_serie += 1
             continue
+
+        flags = 0 # disable fast check now
 
         failed_serie = 0
         found_nr += 1
@@ -218,8 +221,12 @@ def webcam_calibration(calibration_data, images):
 
     print("\nComputing calibration...")
     if SKIP_CAM_CALIBRATION:
-        calibration_data.camera_matrix = np.array([[1436.58142, 0.0, 488.061101], [0.0, 1425.6333, 646.008996], [0.0, 0.0, 1.0]])
-        calibration_data.distortion_vector = np.array( [[-0.00563895863, -0.0672979095, -0.000632710648, -0.00155601109, 1.21223343]] )
+        try:
+            load_data(calibration_data)
+        except Exception as e:
+            print(e)
+            calibration_data.camera_matrix = np.array([[1436.58142, 0.0, 488.061101], [0.0, 1425.6333, 646.008996], [0.0, 0.0, 1.0]])
+            calibration_data.distortion_vector = np.array( [[-0.00563895863, -0.0672979095, -0.000632710648, -0.00155601109, 1.21223343]] )
         return
 
     rms, camera_matrix, dist_coefs, rvecs, tvecs = cv2.calibrateCamera(obj_points, img_points, (w, h), None, None)
