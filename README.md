@@ -17,6 +17,7 @@ Useable for some people already, probably developers:
 - No patched OpenCV needed
 - Simple and friendly CLI
 - Python 2 & 3 compatible
+- platform + laser calibration done in less than two minutes, fully automated
 
 ## Installation
 
@@ -37,14 +38,19 @@ After installing all dependencies, unpack sources and open a terminal emulator:
     % cd thot-master
     % ./run.sh
 
-Capture images:
+Calibrate software:
 
-    Scan Bot> capture
+    Scan Bot> view
+    # You can change the camera settings with set* commands to get a stable pattern displayed
+    Scan Bot> setGain 5
+    Scan Bot> setExposureAbsolute 3000
+    Scan Bot> calibrate
 
 
-Convert images to .ply file:
 
-    Scan Bot> analyse
+Scan 3D object
+
+    Scan Bot> scan
 
 
 Images are saved into **capture/** folder
