@@ -15,7 +15,15 @@ from thotus.settings import save_data, load_data
 
 import cv2
 import numpy as np
-from scipy.sparse import linalg
+
+try:
+    from scipy.sparse import linalg
+except ImportError:
+    def svd(M):
+        return numpy.linalg.svd(M)[0][:,2]
+else:
+    def svd(M):
+        return linalg.svds(M, k=2)[0]
 
 SKIP_CAM_CALIBRATION = 1
 
@@ -46,11 +54,7 @@ def lasers_calibration(calibration_data, images):
         n = X.shape[0]
         Xm = X.sum(axis=0) / n
         M = np.array(X - Xm).T
-
-        # Equivalent to:
-#        U = numpy.linalg.svd(M)[0][:,2]
-        # But 1200x times faster for large point clouds
-        U = linalg.svds(M, k=2)[0]
+        U = svd(M)
         normal = np.cross(U.T[0], U.T[1])
         if normal[2] < 0:
             normal *= -1
