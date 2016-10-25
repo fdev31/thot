@@ -45,8 +45,24 @@ def _view_matrix(m):
     return str(eval(m))
 
 
+def detectChessBoard(img):
+    flags = cv2.CALIB_CB_FAST_CHECK + cv2.CALIB_CB_NORMALIZE_IMAGE
+    term = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 200, 0.001)
+
+    found, corners = cv2.findChessboardCorners(img, PATTERN_MATRIX_SIZE, flags=flags)
+    if found:
+        cv2.cornerSubPix(img, corners, (11, 11), (-1, -1), term)
+    return found, corners
+
+def drawChessBoard(img, found, corners):
+    try:
+        cv2.drawChessboardCorners(img, PATTERN_MATRIX_SIZE, corners, found)
+    except TypeError:
+        img = cv2.cvtColor(img, cv2.COLOR_GRAY2BGR)
+        cv2.drawChessboardCorners(img, PATTERN_MATRIX_SIZE, corners, found)
+    return img
+
 def lasers_calibration(calibration_data, images):
-    margin = int(len(images)/3)
 
     def compute_pc(X):
         # Load point cloud
@@ -63,17 +79,19 @@ def lasers_calibration(calibration_data, images):
         std = np.dot(M.T, normal).std()
         return (dist, normal, std)
 
-    images = images[margin:-margin]
-    import random
+    margin = int(len(images)/3)
 
     for laser in range(2):
-        ranges = [ int(fn.rsplit('/')[-1].split('_')[1].split('.')[0]) for fn in  images]
-        im = [METADATA[x] for x in images]
+        if laser == 0:
+            myimages = images[10: -int(len(images)/3)]
+        else:
+            myimages = images[int(len(images)/2):]
+        ranges = [ int(fn.rsplit('/')[-1].split('_')[1].split('.')[0]) for fn in  myimages]
+        im = [METADATA[x] for x in myimages]
 
         assert len(ranges) == len(im)
-        # TODO: use ROI for the pattern here
 
-        obj = cloudify(calibration_data, './capture', [laser], ranges, pure_images=True, method='straightpureimage', camera=im, cylinder=(1000, 1000)) # cylinder in mm
+        obj = cloudify(calibration_data, './capture', [laser], ranges, pure_images=False, method='straightpureimage', camera=im, cylinder=(1000, 1000)) # cylinder in mm
 
         tris = []
         v = [_ for _ in obj._mesh.vertexes if np.nonzero(_)[0].size]
@@ -159,7 +177,7 @@ def webcam_calibration(calibration_data, images):
 
     failed_serie = 0
     term = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_COUNT, 30, 0.001)
-    flags = cv2.CALIB_CB_FAST_CHECK
+    flags = cv2.CALIB_CB_FAST_CHECK + cv2.CALIB_CB_NORMALIZE_IMAGE
 
     for idx, fn in enumerate(images):
         gui.progress('Webcam calibration %s (%d found)... ' % (fn, found_nr), idx, len(images))
@@ -181,7 +199,8 @@ def webcam_calibration(calibration_data, images):
             failed_serie += 1
             continue
 
-        flags = 0 # disable fast check now
+        if flags & cv2.CALIB_CB_FAST_CHECK:
+            flags -= cv2.CALIB_CB_FAST_CHECK
 
         failed_serie = 0
         found_nr += 1
@@ -212,8 +231,10 @@ def webcam_calibration(calibration_data, images):
             calibration_data.distortion_vector = np.array( [[-0.00563895863, -0.0672979095, -0.000632710648, -0.00155601109, 1.21223343]] )
         return
 
+    if not obj_points:
+        raise ValueError("Unable to detect pattern on screen :(")
     print("\nComputing calibration...")
-    rms, camera_matrix, dist_coefs, rvecs, tvecs = cv2.calibrateCamera(obj_points, img_points, (w, h), None, None)
+    rms, camera_matrix, dist_coefs, rvecs, tvecs = cv2.calibrateCamera(np.array(obj_points), np.array(img_points), (w, h), None, None)
 
     camera_matrix, roi = cv2.getOptimalNewCameraMatrix(camera_matrix, dist_coefs, (w, h), 1, (w,h))
 
