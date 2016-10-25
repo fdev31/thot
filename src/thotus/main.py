@@ -69,6 +69,7 @@ commands = dict(
         debug_settings = settings.compare,
         # calibrate
         calibrate      = cmds.calibrate,
+        calibrate_cam  = cmds.toggle_cam_calibration,
 
         # all in one scan
         scan           = scan,

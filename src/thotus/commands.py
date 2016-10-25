@@ -16,9 +16,9 @@ from time import sleep
 from thotus.ui import gui
 from thotus.scanner import Scanner, get_board, get_controllers
 from thotus.projection import CalibrationData
-from thotus.calibration import calibrate
 from thotus.cloudify import cloudify, meshify
 from thotus.ply import save_scene
+from thotus import calibration
 from thotus import settings
 
 SLOWDOWN = 0
@@ -32,6 +32,16 @@ except:
 
 COLOR, LASER1, LASER2 = 1, 2, 4 # bit mask
 ALL = COLOR | LASER1 | LASER2
+
+calibrate = calibration.calibrate
+
+def toggle_cam_calibration():
+    if calibration.SKIP_CAM_CALIBRATION:
+        calibration.SKIP_CAM_CALIBRATION = 0
+    else:
+        calibration.SKIP_CAM_CALIBRATION = 1
+    print("Camera calibration %s"%("disabled" if calibration.SKIP_CAM_CALIBRATION else "enabled"))
+
 
 def stop():
     global scanner

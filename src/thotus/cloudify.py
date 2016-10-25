@@ -37,7 +37,7 @@ class Mesh:
             if zmax > obj._size[2]:
                 obj._size[2] = zmax
 
-def cloudify(calibration_data, folder, lasers, sequence, pure_images, rotated=False, method=None, camera=False, cylinder=(100, 100)):
+def cloudify(calibration_data, folder, lasers, sequence, pure_images, rotated=False, method=None, camera=False, cylinder=(100, 200)):
     lm = LineMaker()
     if method is None:
         print("Error, chose a method from:")

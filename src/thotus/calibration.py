@@ -184,6 +184,9 @@ def webcam_calibration(calibration_data, images):
         cv2.cornerSubPix(img, corners, (11, 11), (-1, -1), term)
 
         METADATA[fn]['chess_corners'] = corners
+        img_points.append(corners.reshape(-1, 2))
+        obj_points.append(pattern_points.copy())
+
         # compute mask
         p1 = corners[0][0]
         p2 = corners[PATTERN_MATRIX_SIZE[0] - 1][0]
@@ -196,7 +199,6 @@ def webcam_calibration(calibration_data, images):
         cv2.drawChessboardCorners(vis, PATTERN_MATRIX_SIZE, corners, found)
         gui.display(vis[int(vis.shape[0]/3):-100,], 'chess')
 
-    print("\nComputing calibration...")
     if SKIP_CAM_CALIBRATION:
         try:
             load_data(calibration_data)
@@ -206,7 +208,9 @@ def webcam_calibration(calibration_data, images):
             calibration_data.distortion_vector = np.array( [[-0.00563895863, -0.0672979095, -0.000632710648, -0.00155601109, 1.21223343]] )
         return
 
+    print("\nComputing calibration...")
     rms, camera_matrix, dist_coefs, rvecs, tvecs = cv2.calibrateCamera(obj_points, img_points, (w, h), None, None)
+
     camera_matrix, roi = cv2.getOptimalNewCameraMatrix(camera_matrix, dist_coefs, (w, h), 1, (w,h))
 
     calibration_data.camera_matrix = camera_matrix
