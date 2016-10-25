@@ -76,7 +76,10 @@ def cloudify(calibration_data, folder, lasers, sequence, pure_images, rotated=Fa
                     if not pure_images:
                         color_slices[n][laser] = i2[lm.points]
 
-            gui.display(processed,"laser %d"%(laser+1), resize=(640, 480))
+                diff = np.clip(diff, 0, 50)
+                diff[:,:,2] = processed
+
+                gui.display(diff,"laser %d"%(laser+1), resize=(640, 480))
 
 
     pickle.dump(dict(sliced_lines), open('lines2d.pyk', 'wb+'))
