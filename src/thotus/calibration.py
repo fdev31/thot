@@ -74,32 +74,6 @@ def lasers_calibration(calibration_data, images):
         tris = []
         v = [_ for _ in obj._mesh.vertexes if np.nonzero(_)[0].size]
         dist, normal, std = compute_pc(np.array(v))
-        '''
-        # Custom algo, RANSAC inspired
-        for n in range(20): # take 20 random triangles
-            tris.append( (
-                random.choice(v),
-                random.choice(v),
-                random.choice(v)
-                ))
-        tris = np.array(tris)
-#        tris = obj._mesh.vertexes
-        normals = np.cross( tris[::,1 ] - tris[::,0]  , tris[::,2 ] - tris[::,0] ) # normals
-        scores = []
-        for n in normals:
-            ref1 = random.choice(normals)
-            ref2 = random.choice(normals)
-            score = (np.linalg.norm(n - ref1) + np.linalg.norm(n-ref2))/2
-            scores.append(score)
-
-        best_idx = scores.index(min(scores))
-
-        dist = np.mean(tris[best_idx][0]) # get average point of tri
-        normal = normals[best_idx]
-
-        dist = np.linalg.norm(dist)
-        '''
-
 
         if laser == 0:
             name = 'left'
