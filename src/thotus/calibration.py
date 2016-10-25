@@ -82,10 +82,11 @@ def lasers_calibration(calibration_data, images):
     margin = int(len(images)/3)
 
     for laser in range(2):
-        if laser == 0:
-            myimages = images[10: -int(len(images)/3)]
+        if laser == 1:
+            myimages = images[5: -int(len(images)/2)]
         else:
-            myimages = images[int(len(images)/2):]
+            myimages = images[int(len(images)/2):-5]
+
         ranges = [ int(fn.rsplit('/')[-1].split('_')[1].split('.')[0]) for fn in  myimages]
         im = [METADATA[x] for x in myimages]
 
