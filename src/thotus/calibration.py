@@ -185,7 +185,7 @@ def webcam_calibration(calibration_data, images):
 
         METADATA[fn]['chess_corners'] = corners
         img_points.append(corners.reshape(-1, 2))
-        obj_points.append(pattern_points.copy())
+        obj_points.append(pattern_points)
 
         # compute mask
         p1 = corners[0][0]
