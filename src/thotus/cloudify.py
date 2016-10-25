@@ -53,8 +53,15 @@ def cloudify(calibration_data, folder, lasers, sequence, pure_images, rotated=Fa
     color_slices =  defaultdict(lambda: [None, None])
 
     S_SZ = 10
-    for laser in lasers:
-        for i, n in enumerate(sequence):
+    for i, n in enumerate(sequence):
+        to_display = []
+        if not pure_images:
+            i2 = cv2.imread(WORKDIR+'/color_%03d.png'%n)
+            if i2 is None:
+                continue
+            i2 = calibration_data.undistort_image(i2)
+            i2_mean = cv2.mean(i2[0:S_SZ,0:S_SZ])[0]
+        for laser in lasers:
             diff = cv2.imread(WORKDIR+'/laser%d_%03d.png'%(laser, n))
             if diff is None:
                 continue
@@ -64,8 +71,6 @@ def cloudify(calibration_data, folder, lasers, sequence, pure_images, rotated=Fa
 
             if not pure_images:
                 diff_mean = cv2.mean(diff[0:S_SZ,0:S_SZ])[0]
-                i2 = calibration_data.undistort_image(cv2.imread(WORKDIR+'/color_%03d.png'%n))
-                i2_mean = cv2.mean(i2[0:S_SZ,0:S_SZ])[0]
                 diff = diff - ((diff_mean/i2_mean)*i2)
             if not rotated:
                 diff = np.rot90(diff, 3)
