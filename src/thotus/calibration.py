@@ -201,7 +201,7 @@ def webcam_calibration(calibration_data, images):
         found, corners = cv2.findChessboardCorners(img, PATTERN_MATRIX_SIZE, flags=flags)
 
         if not found:
-            if found_nr > 20 and failed_serie > 15:
+            if found_nr > 20 and failed_serie > 6:
                 break
             failed_serie += 1
             continue
