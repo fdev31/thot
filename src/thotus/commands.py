@@ -23,6 +23,7 @@ except ImportError:
 
 # aliases
 get_scanner = control.get_scanner
+calibrate = calibration.calibrate
 
 def calibrate_pure():
     return calibration.calibrate(pure_laser=True)
