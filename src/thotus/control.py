@@ -34,7 +34,7 @@ def toggle_cam_calibration(force_skip=None):
         else:
             settings.skip_calibration = True
 
-    print("Camera calibration %s"%("disabled" if calibration.SKIP_CAM_CALIBRATION else "enabled"))
+    print("Camera calibration %s"%("disabled" if settings.skip_calibration else "enabled"))
 
 def switch_lasers():
     """ Toggle lasers """
