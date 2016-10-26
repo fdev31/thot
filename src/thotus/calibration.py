@@ -27,15 +27,7 @@ else:
 SKIP_CAM_CALIBRATION = 1
 FAST_CALIBRATE = 1 # 1 for full calibration, > 1 for grosser calibration
 
-PATTERN_MATRIX_SIZE = (11, 6)
-PATTERN_SQUARE_SIZE = 13.0
-PATTERN_ORIGIN = 38.8 # distance plateau to second row of pattern
 ESTIMATED_PLATFORM_TRANSLAT = [-5, 90, 320] # reference
-
-pattern_points = np.zeros((np.prod(PATTERN_MATRIX_SIZE), 3), np.float32)
-pattern_points[:, :2] = np.indices(PATTERN_MATRIX_SIZE).T.reshape(-1, 2)
-
-m_pattern_points = np.multiply(pattern_points, PATTERN_SQUARE_SIZE)
 
 METADATA = defaultdict(lambda: {})
 
@@ -44,22 +36,21 @@ def _view_matrix(m):
     m = m[1:1+m.rindex(']')]
     return str(eval(m))
 
-
 def detectChessBoard(img):
     flags = cv2.CALIB_CB_FAST_CHECK
     term = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 200, 0.001)
 
-    found, corners = cv2.findChessboardCorners(img, PATTERN_MATRIX_SIZE, flags=flags)
+    found, corners = cv2.findChessboardCorners(img, settings.PATTERN_MATRIX_SIZE, flags=flags)
     if found:
         cv2.cornerSubPix(img, corners, (11, 11), (-1, -1), term)
     return found, corners
 
 def drawChessBoard(img, found, corners):
     try:
-        cv2.drawChessboardCorners(img, PATTERN_MATRIX_SIZE, corners, found)
+        cv2.drawChessboardCorners(img, settings.PATTERN_MATRIX_SIZE, corners, found)
     except TypeError:
         img = cv2.cvtColor(img, cv2.COLOR_GRAY2BGR)
-        cv2.drawChessboardCorners(img, PATTERN_MATRIX_SIZE, corners, found)
+        cv2.drawChessboardCorners(img, settings.PATTERN_MATRIX_SIZE, corners, found)
     return img
 
 def lasers_calibration(calibration_data, images, pure_laser=False):
@@ -122,13 +113,14 @@ def platform_calibration(calibration_data):
     z = []
 
     buggy_captures = set()
+    pattern_points = settings.get_pattern_points()
 
     pcg = PointCloudGeneration(calibration_data)
     for i, fn in enumerate(METADATA):
         gui.progress('Platform calibration', i, len(METADATA))
         corners = METADATA[fn]['chess_corners']
         try:
-            ret, rvecs, tvecs = cv2.solvePnP(m_pattern_points, corners, calibration_data.camera_matrix, calibration_data.distortion_vector)
+            ret, rvecs, tvecs = cv2.solvePnP(pattern_points, corners, calibration_data.camera_matrix, calibration_data.distortion_vector)
         except Exception as e:
             buggy_captures.add(fn)
             print("Error solving %s : %s"%(fn, e))
@@ -142,7 +134,7 @@ def platform_calibration(calibration_data):
             distance = np.dot(normal, t)
             METADATA[fn]['plane'] = [distance, normal]
             if corners is not None:
-                origin = corners[PATTERN_MATRIX_SIZE[0] * (PATTERN_MATRIX_SIZE[1] - 1)][0]
+                origin = corners[settings.PATTERN_MATRIX_SIZE[0] * (settings.PATTERN_MATRIX_SIZE[1] - 1)][0]
                 origin = np.array([[origin[0]], [origin[1]]])
                 t = pcg.compute_camera_point_cloud(origin, distance, normal)
                 if t is not None:
@@ -161,14 +153,14 @@ def platform_calibration(calibration_data):
         # Fitting a circle inside the plane
         center, R, circle = fit_circle(point, normal, points)
         # Get real origin
-        t = center - PATTERN_ORIGIN * np.array(normal)
+        t = center - settings.PATTERN_ORIGIN * np.array(normal)
         if t is not None:
 
             print("Platform calibration ")
             print(" Translation: " , _view_matrix(t))
             print(" Rotation: " , _view_matrix(R))
             if np.linalg.norm(t - ESTIMATED_PLATFORM_TRANSLAT) > 100:
-                print("\n\n!!!!!!!! ISNOGOOD !! %s !~= %s"%(t, ESTIMATED_PLATFORM_TRANSLAT))
+                print("\n\n!!!!!!!! ISNOGOOD !! %s !~= %s\n\n!!!"%(t, ESTIMATED_PLATFORM_TRANSLAT))
 
             calibration_data.platform_rotation = R
             calibration_data.platform_translation = t
@@ -184,6 +176,7 @@ def webcam_calibration(calibration_data, images):
     failed_serie = 0
     term = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_COUNT, 30, 0.001)
     flags = cv2.CALIB_CB_FAST_CHECK
+    pattern_points = settings.get_pattern_points()
 
     for idx, fn in enumerate(images):
         gui.progress('Webcam calibration %s (%d found)... ' % (fn, found_nr), idx, len(images))
@@ -197,7 +190,7 @@ def webcam_calibration(calibration_data, images):
 
         w, h = img.shape[:2]
 
-        found, corners = cv2.findChessboardCorners(img, PATTERN_MATRIX_SIZE, flags=flags)
+        found, corners = cv2.findChessboardCorners(img, settings.PATTERN_MATRIX_SIZE, flags=flags)
 
         if not found:
             if found_nr > 20 and failed_serie > 6:
@@ -214,21 +207,21 @@ def webcam_calibration(calibration_data, images):
 
         METADATA[fn]['chess_corners'] = corners
         img_points.append(corners.reshape(-1, 2))
-        obj_points.append(m_pattern_points)
+        obj_points.append(pattern_points)
 
         # compute mask
         p1 = corners[0][0]
-        p2 = corners[PATTERN_MATRIX_SIZE[0] - 1][0]
-        p3 = corners[PATTERN_MATRIX_SIZE[0] * (PATTERN_MATRIX_SIZE[1] - 1)][0]
-        p4 = corners[PATTERN_MATRIX_SIZE[0] * PATTERN_MATRIX_SIZE[1] - 1][0]
+        p2 = corners[settings.PATTERN_MATRIX_SIZE[0] - 1][0]
+        p3 = corners[settings.PATTERN_MATRIX_SIZE[0] * (settings.PATTERN_MATRIX_SIZE[1] - 1)][0]
+        p4 = corners[settings.PATTERN_MATRIX_SIZE[0] * settings.PATTERN_MATRIX_SIZE[1] - 1][0]
         points = np.array([p1, p2, p4, p3], dtype='int32')
         METADATA[fn]['chess_contour'] = points
 
         vis = cv2.cvtColor(img, cv2.COLOR_GRAY2BGR)
-        cv2.drawChessboardCorners(vis, PATTERN_MATRIX_SIZE, corners, found)
+        cv2.drawChessboardCorners(vis, settings.PATTERN_MATRIX_SIZE, corners, found)
         gui.display(vis[int(vis.shape[0]/3):-100,], 'chess')
 
-    if SKIP_CAM_CALIBRATION:
+    if settings.skip_calibration:
         settings.load_data(calibration_data)
         return
 

@@ -12,7 +12,16 @@ import numpy as np
 
 configuration = 'thot'
 single_laser = None
+skip_calibration = True
 
+PATTERN_MATRIX_SIZE = (11, 6)
+PATTERN_SQUARE_SIZE = 13.0
+PATTERN_ORIGIN = 38.8 # distance plateau to second row of pattern
+
+def get_pattern_points():
+    pattern_points = np.zeros((np.prod(PATTERN_MATRIX_SIZE), 3), np.float32)
+    pattern_points[:, :2] = np.indices(PATTERN_MATRIX_SIZE).T.reshape(-1, 2)
+    return np.multiply(pattern_points, PATTERN_SQUARE_SIZE)
 
 WORKDIR="./capture"
 CALIBDIR="./calibration"

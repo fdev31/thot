@@ -27,12 +27,13 @@ def get_scanner():
 
 def toggle_cam_calibration(force_skip=None):
     if force_skip is not None:
-        calibration.SKIP_CAM_CALIBRATION = force_skip
+        settings.skip_calibration = force_skip
     else:
-        if calibration.SKIP_CAM_CALIBRATION:
-            calibration.SKIP_CAM_CALIBRATION = 0
+        if settings.skip_calibration:
+            settings.skip_calibration = False
         else:
-            calibration.SKIP_CAM_CALIBRATION = 1
+            settings.skip_calibration = True
+
     print("Camera calibration %s"%("disabled" if calibration.SKIP_CAM_CALIBRATION else "enabled"))
 
 def switch_lasers():
