@@ -7,7 +7,6 @@ from thotus import settings
 from thotus.mesh import meshify
 from thotus.ply import save_scene
 from thotus.linedetect import LineMaker
-from thotus.projection import PointCloudGeneration
 
 import cv2
 import numpy as np

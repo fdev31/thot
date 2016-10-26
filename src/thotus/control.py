@@ -36,6 +36,7 @@ def toggle_cam_calibration(force_skip=None):
     print("Camera calibration %s"%("disabled" if calibration.SKIP_CAM_CALIBRATION else "enabled"))
 
 def switch_lasers():
+    """ Toggle lasers """
     global lasers
     lasers = not lasers
     b = get_board()
@@ -76,6 +77,7 @@ def scan(b, kind=ALL, definition=1, angle=360, calibration=False):
     gui.clear()
 
 def rotate(val):
+    """ Rotates the platform by X degrees """
     s = get_scanner()
     if s:
         s.b.motor_move(int(val))

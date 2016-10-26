@@ -72,6 +72,7 @@ def _from_horus():
         }
 
 def compare():
+    " Display horus & thot configurations side by side "
     path = os.path.expanduser('~/.horus/calibration.json')
     settings = _from_horus()
     o =  pickle.load( open('cam_data.bin', 'rb'))

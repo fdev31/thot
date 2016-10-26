@@ -248,6 +248,7 @@ def webcam_calibration(calibration_data, images):
     print("ROI: %s"%(repr(roi)))
 
 def calibrate(pure_laser=False):
+    " Compute calibration data from images "
 
     calibration_data = CalibrationData()
 

@@ -26,6 +26,7 @@ get_scanner = control.get_scanner
 calibrate = calibration.calibrate
 
 def calibrate_pure():
+    " start platform & laser calibration (assume laser images are pure) "
     return calibration.calibrate(pure_laser=True)
 
 class Viewer(Thread):
@@ -50,6 +51,7 @@ class Viewer(Thread):
             gui.display(img, "live", resize=(640,480))
 
 def view():
+    " toggle webcam output (show chessboard if detected)"
     if not view_stop():
         Viewer.instance = Viewer()
         Viewer.instance.start()
@@ -64,22 +66,28 @@ def stop():
     if view_stop():
         get_scanner().close()
 
-def capture_color():
-    return capture(control.COLOR)
-
-def capture_lasers():
-    return capture(control.LASER1|control.LASER2)
-
 def capture_pattern():
+    " Capture chessboard pattern "
     control.capture_pattern(control.ALL)
 
 def capture_pattern_lasers():
+    " Capture chessboard pattern (lasers only) "
     control.capture_pattern(control.LASER1|control.LASER2)
 
 def capture_pattern_colors():
+    " Capture chessboard pattern (color only) "
     control.capture_pattern(control.COLOR)
 
+def capture_color():
+    " Capture images (color only) "
+    return capture(control.COLOR)
+
+def capture_lasers():
+    " Capture images (lasers only) "
+    return capture(control.LASER1|control.LASER2)
+
 def capture(kind=control.ALL):
+    " Capture images "
     view_stop()
     s = get_scanner()
     if not s:
@@ -92,9 +100,11 @@ def capture(kind=control.ALL):
 
 
 def recognize_pure():
+    " Compute mesh from images (assume laser images are pure) "
     return recognize(pure_images=True, method='pureimage')
 
 def recognize(pure_images=False, rotated=False, method='pureimage'):
+    " Compute mesh from images "
     view_stop()
     calibration_data = settings.load_data(CalibrationData())
 

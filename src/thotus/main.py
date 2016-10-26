@@ -44,14 +44,24 @@ def exit():
 
 def help():
     print("Commands:")
-    for c in commands:
-        print(" - %s"%c)
+    for c in sorted(commands):
+        if c.startswith('cam_'):
+            d = 'get or set camera %s'%c[4:].strip()
+        else:
+            d = commands[c].__doc__
+        if d:
+            d = d.strip().title()
+        else:
+            d = ""
+        print(" %-20s  %s"%(c, d.title()))
     return 3
 
 def set_horus_cfg():
+    " Load horus calibration configuration "
     settings.configuration = 'horus'
 
 def set_thot_cfg():
+    " Load thot calibration configuration "
     settings.configuration = 'thot'
 
 def set_single_laser(laser_number):
@@ -64,20 +74,24 @@ def set_dual_laser():
     settings.single_laser = None
 
 def scan():
+    """ Scan object """
     cmds.capture()
     return cmds.recognize()
 
 def fullcalibrate():
+    """ start a full calibration, including camera intrinsics """
     cmds.capture_pattern()
     cmds.toggle_cam_calibration(False)
     return cmds.calibrate()
 
 def stdcalibrate():
+    """ start platform & laser calibration """
     cmds.capture_pattern()
     cmds.toggle_cam_calibration(True)
     return cmds.calibrate()
 
 def toggle_advanced_mode():
+    """ toggle advanced command set """
     if 'debug_settings' in commands:
         for cmd in adv_commands:
             del commands[cmd]
@@ -112,7 +126,7 @@ adv_commands = dict(
     # compute calibration data
     recalibrate      = cmds.calibrate,
     recalibrate_pure = cmds.calibrate_pure,
-    recalibrate_cam  = control.toggle_cam_calibration,
+#    recalibrate_cam  = control.toggle_cam_calibration,
 
     # acquire pictures
     capture          = cmds.capture,
