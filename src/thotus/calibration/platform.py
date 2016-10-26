@@ -1,7 +1,6 @@
 from thotus.ui import gui
 from thotus import settings
 from thotus.ply import save_scene
-from thotus.cloudify import cloudify
 from thotus.algorithms.projection import PointCloudGeneration, fit_plane, fit_circle
 
 import cv2
