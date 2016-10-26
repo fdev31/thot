@@ -97,8 +97,8 @@ commands = dict(
     exit           = exit,
     quit           = exit,
     help           = help,
-    laserSingle    = set_single_laser,
-    laserDual      = set_dual_laser,
+#    laserSingle    = set_single_laser,
+#    laserDual      = set_dual_laser,
     )
 
 adv_commands = dict(
@@ -150,6 +150,9 @@ if len(sys.argv) > 1:
     sys.argv[:] = [sys.argv[0]]
     leave_after = True
     toggle_advanced_mode()
+
+if not leave_after:
+    cmds.view()
 
 while not leave_now:
     if not leave_after:
