@@ -53,6 +53,7 @@ def cloudify(calibration_data, folder, lasers, sequence, pure_images, rotated=Fa
     color_slices =  defaultdict(lambda: [None, None])
 
     S_SZ = 10
+    CHANNEL = 2
     for i, n in enumerate(sequence):
         to_display = []
         if not pure_images:
@@ -60,12 +61,20 @@ def cloudify(calibration_data, folder, lasers, sequence, pure_images, rotated=Fa
             if i2 is None:
                 continue
             i2 = calibration_data.undistort_image(i2)
-            i2_mean = cv2.mean(i2[0:S_SZ,0:S_SZ])[0]
+            i2 = cv2.cvtColor(i2, cv2.COLOR_RGB2HSV)
+#            i2 = i2[:,:,CHANNEL]
+#            i2_mean = cv2.mean(i2[0:S_SZ,0:S_SZ])[0]
         for laser in lasers:
             diff = cv2.imread(WORKDIR+'/laser%d_%03d.png'%(laser, n))
             if diff is None:
                 continue
             diff = calibration_data.undistort_image(diff)
+            if w is None:
+                w, h  = diff.shape[:2]
+                calibration_data.width = w
+                calibration_data.height = h
+                calibration_data._compute_weight_matrix()
+
             if diff is None:
                 print("Unable to load %s"%(WORKDIR+'/laser%d_%03d.png'%(laser, n)))
 
@@ -75,15 +84,15 @@ def cloudify(calibration_data, folder, lasers, sequence, pure_images, rotated=Fa
             if not rotated:
                 diff = np.rot90(diff, 3)
             gui.progress("analyse", i, len(sequence))
-            grey = diff[:,:,0]
+
             if camera:
                 points = camera[i]['chess_contour']
-                mask = np.zeros(grey.shape, np.uint8)
+                mask = np.zeros(diff.shape, np.uint8)
 
                 cv2.fillConvexPoly(mask, points, 255)
-                grey = cv2.bitwise_and(grey, grey, mask=mask)
+                diff = cv2.bitwise_and(diff, diff, mask=mask)
 
-            processed = lineprocessor(grey, laser)
+            processed = lineprocessor(diff, laser)
             if lm.points:
                 if camera:
                     sliced_lines[n][laser] = [ lm.points ] + camera[i]['plane']
@@ -92,11 +101,11 @@ def cloudify(calibration_data, folder, lasers, sequence, pure_images, rotated=Fa
                     if not pure_images:
                         color_slices[n][laser] = i2[lm.points]
 
-                diff = np.clip(diff, 0, 50)
-                diff[:,:,2] = processed
+#                orig = np.clip(orig, 0, 90)
+#                orig = np.rot90(orig, 3)
+                processed = np.array(processed, dtype=np.uint8)
 
                 gui.display(diff,"laser %d"%(laser+1), resize=(640, 480))
-
 
     pickle.dump(dict(sliced_lines), open('lines2d.pyk', 'wb+'))
     return meshify(calibration_data, sliced_lines, camera, cylinder=cylinder)

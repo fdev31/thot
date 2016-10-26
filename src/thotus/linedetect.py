@@ -141,7 +141,7 @@ class LineMaker:
             max_val = np.max(img[n])
             if max_val < threshold:
                 continue
-#            scipy.signal.find_peaks_cwt(img[n], 
+#            scipy.signal.find_peaks_cwt(img[n],
             peaks = np.where(img[n] == max_val)[0]
             y.append(n)
             x.append(peaks[bound])

@@ -94,9 +94,10 @@ class Viewer(Thread):
         while self.running:
             s.wait_capture(1)
             img = np.rot90(s.cap.buff, 3)
-            found, corners = calibration.detectChessBoard(img)
+            grey = img[:,:,1]
+            found, corners = calibration.detectChessBoard(grey)
             if found:
-                img = calibration.drawChessBoard(img, found, corners)
+                img = calibration.drawChessBoard(grey, found, corners)
             gui.display(img, "live", resize=(640,480))
 
 def view():
@@ -128,7 +129,7 @@ def _capture_pattern(t):
     if not s:
         return
     try:
-        _scan(s, t, angle=100)
+        _scan(s, t, angle=100, definition=3)
         print("")
     except KeyboardInterrupt:
         print("\naborting...")
@@ -175,20 +176,19 @@ def _scan(b, kind=ALL, definition=1, angle=360):
         if kind & LASER1:
             b.laser_on(0)
             b.wait_capture(2+SLOWDOWN)
-            disp( b.save('laser0_%03d.png'%n), 'LEFT')
+            disp( b.save('laser0_%03d.png'%n), 'laser 1')
             b.laser_off(0)
             sleep(0.05)
         if kind & LASER2:
             b.laser_on(1)
             b.wait_capture(2+SLOWDOWN) # sometimes a bit slow to react, so adding one frame
-            disp( b.save('laser1_%03d.png'%n) , 'RIGHT')
+            disp( b.save('laser1_%03d.png'%n) , 'laser 2')
             b.laser_off(1)
             sleep(0.05)
     gui.clear()
 
 def recognize_pure():
     return recognize(pure_images=True, method='pureimage')
-
 
 def recognize(pure_images=False, rotated=False, method='pureimage'):
     view_stop()
