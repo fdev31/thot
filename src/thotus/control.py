@@ -4,6 +4,7 @@ from thotus.scanner import Scanner, get_board
 from thotus import calibration
 from thotus import settings
 from thotus.ui import gui
+
 import numpy as np
 
 COLOR, LASER1, LASER2 = 1, 2, 4 # bit mask

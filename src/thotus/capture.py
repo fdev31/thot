@@ -1,11 +1,11 @@
 from __future__ import print_function
 
+import glob
 import select
-from threading import Thread
 from time import sleep
+from threading import Thread
 
 import numpy as np
-import glob
 import cv2
 
 try:

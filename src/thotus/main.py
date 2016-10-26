@@ -1,19 +1,19 @@
 #!/usr/bin/python2
-import traceback
 import sys
+import traceback
 from time import time
-
-from prompt_toolkit import prompt
-from prompt_toolkit.contrib.completers import WordCompleter
-from prompt_toolkit.history import InMemoryHistory
-from prompt_toolkit.token import Token
-from prompt_toolkit.styles import style_from_dict
 
 from thotus import commands as cmds
 from thotus import control
 from thotus import settings
 from thotus.ui import gui
 from thotus.scanner import get_controllers
+
+from prompt_toolkit import prompt
+from prompt_toolkit.contrib.completers import WordCompleter
+from prompt_toolkit.history import InMemoryHistory
+from prompt_toolkit.token import Token
+from prompt_toolkit.styles import style_from_dict
 
 history = InMemoryHistory()
 
@@ -88,7 +88,7 @@ def toggle_advanced_mode():
 
 commands = dict(
     # calibrate
-    calibrateCam   = fullcalibrate,
+    calibrate_full = fullcalibrate,
     calibrate      = stdcalibrate,
     advanced       = toggle_advanced_mode,
 
@@ -109,9 +109,10 @@ commands = dict(
 adv_commands = dict(
     debug_settings = settings.compare,
 
+    # compute calibration data
     recalibrate      = cmds.calibrate,
     recalibrate_pure = cmds.calibrate_pure,
-    calibrate_cam    = control.toggle_cam_calibration,
+    recalibrate_cam  = control.toggle_cam_calibration,
 
     # acquire pictures
     capture          = cmds.capture,
@@ -122,9 +123,9 @@ adv_commands = dict(
     pattern_colors   = cmds.capture_pattern_colors,
     pattern_lasers   = cmds.capture_pattern_lasers,
 
-    # scan
-    analyse          = cmds.recognize,
-    analyse_pure     = cmds.recognize_pure,
+    # build 3D mesh
+    make          = cmds.recognize,
+    make_pure     = cmds.recognize_pure,
 
     use_horus_cfg    = set_horus_cfg,
     use_thot_cfg     = set_thot_cfg,

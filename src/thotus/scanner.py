@@ -3,7 +3,6 @@ import os
 import subprocess
 from time import sleep
 
-
 from thotus.board import Board
 from thotus.capture import Camcorder
 from thotus.workers import ImageSaver
@@ -46,7 +45,7 @@ def get_controllers():
     for ctl_name in controls:
         if ctl_name[0] != '#':
             shortname = words.sub('', ctl_name)
-            functions["set"+shortname] = partial(ctl_param, dev, ctl_name, show=True)
+            functions["cam_"+shortname] = partial(ctl_param, dev, ctl_name, show=True)
     return functions
 
 def ctl_param(dev, param, val=None, show=False):

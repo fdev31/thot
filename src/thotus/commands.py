@@ -3,15 +3,8 @@ from __future__ import print_function
 import os
 import json
 import pickle
-from threading import Thread
-
-try:
-    import pudb
-except ImportError:
-    pass
-import cv2
-import numpy as np
 from time import sleep
+from threading import Thread
 
 from thotus.ui import gui
 from thotus.projection import CalibrationData
@@ -21,12 +14,18 @@ from thotus import calibration
 from thotus import settings
 from thotus import control
 
+import cv2
+import numpy as np
+try:
+    import pudb
+except ImportError:
+    pass
+
 # aliases
-calibrate = calibration.calibrate
 get_scanner = control.get_scanner
 
 def calibrate_pure():
-    return calibrate(pure_laser=True)
+    return calibration.calibrate(pure_laser=True)
 
 class Viewer(Thread):
     instance = None
