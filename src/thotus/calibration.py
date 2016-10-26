@@ -8,7 +8,6 @@ from collections import defaultdict
 
 from thotus.ui import gui
 from thotus.projection import CalibrationData, PointCloudGeneration, clean_model, fit_plane, fit_circle
-from thotus.linedetect import LineMaker
 from thotus.cloudify import cloudify
 from thotus.ply import save_scene
 from thotus.settings import save_data, load_data

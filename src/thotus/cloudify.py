@@ -71,16 +71,16 @@ def cloudify(calibration_data, folder, lasers, sequence, pure_images, rotated=Fa
                 cv2.fillConvexPoly(mask, points, 255)
                 diff = cv2.bitwise_and(diff, diff, mask=mask)
 
-            processed = lineprocessor(diff, laser)
+            points, processed = lineprocessor(diff, laser)
             disp = cv2.merge( np.array((diff, processed, processed)) )
             gui.display(disp, "laser %d"%(laser+1), resize=(640, 480))
-            if lm.points and lm.points[0].size:
+            if points and points[0].size:
                 if camera:
-                    sliced_lines[n][laser] = [ lm.points ] + camera[i]['plane']
+                    sliced_lines[n][laser] = [ points ] + camera[i]['plane']
                 else:
-                    sliced_lines[n][laser] = [ np.deg2rad(n), lm.points, laser ]
+                    sliced_lines[n][laser] = [ np.deg2rad(n), points, laser ]
                     if not pure_images:
-                        color_slices[n][laser] = i2[lm.points]
+                        color_slices[n][laser] = i2[points]
 
     pickle.dump(dict(sliced_lines), open('lines2d.pyk', 'wb+'))
     return meshify(calibration_data, sliced_lines, camera, cylinder=cylinder)
