@@ -10,8 +10,11 @@ from prompt_toolkit.token import Token
 from prompt_toolkit.styles import style_from_dict
 
 from thotus import commands as cmds
+from thotus import control
 from thotus import settings
 from thotus.ui import gui
+from thotus.scanner import get_controllers
+
 history = InMemoryHistory()
 
 def s2h(t):
@@ -92,8 +95,8 @@ commands = dict(
 
     # misc
     view           = cmds.view,
-    rotate         = cmds.rotate,
-    lasers         = cmds.switch_lasers,
+    rotate         = control.rotate,
+    lasers         = control.switch_lasers,
     exit           = exit,
     quit           = exit,
     help           = help,
@@ -106,7 +109,7 @@ adv_commands = dict(
 
     recalibrate      = cmds.calibrate,
     recalibrate_pure = cmds.calibrate_pure,
-    calibrate_cam    = cmds.toggle_cam_calibration,
+    calibrate_cam    = control.toggle_cam_calibration,
 
     # acquire pictures
     capture          = cmds.capture,
@@ -126,7 +129,7 @@ adv_commands = dict(
 )
 
 try:
-    commands.update(cmds.get_controllers())
+    commands.update(get_controllers())
 except IndexError:
     print("Unable to find camera, is it plugged ?")
 

@@ -7,6 +7,7 @@ from thotus.linedetect import LineMaker
 from thotus.ply import save_scene
 from collections import defaultdict
 from thotus.ui import gui
+from thotus import settings
 
 class Mesh:
     def __init__(self):
@@ -47,7 +48,7 @@ def cloudify(calibration_data, folder, lasers, sequence, pure_images, rotated=Fa
                 print(" - %s"%n[5:])
         raise ValueError()
     lineprocessor = getattr(lm, 'from_'+method)
-    WORKDIR = folder
+    settings.WORKDIR = folder
     # Pointcloudize !!
 
     sliced_lines = defaultdict(lambda: [None, None])
@@ -59,14 +60,14 @@ def cloudify(calibration_data, folder, lasers, sequence, pure_images, rotated=Fa
     for i, n in enumerate(sequence):
         to_display = []
         if not pure_images:
-            i2 = cv2.imread(WORKDIR+'/color_%03d.png'%n)
+            i2 = cv2.imread(settings.WORKDIR+'/color_%03d.png'%n)
             if i2 is None:
                 continue
             i2 = calibration_data.undistort_image(i2)
             i2 = cv2.cvtColor(i2, cv2.COLOR_RGB2HSV)
             i2 = i2[:,:,CHANNEL]
         for laser in lasers:
-            diff = cv2.imread(WORKDIR+'/laser%d_%03d.png'%(laser, n))
+            diff = cv2.imread(settings.WORKDIR+'/laser%d_%03d.png'%(laser, n))
             hsv = cv2.cvtColor(diff, cv2.COLOR_RGB2HSV)[:,:,CHANNEL]
             if diff is None:
                 continue

@@ -13,6 +13,15 @@ import numpy as np
 configuration = 'thot'
 single_laser = None
 
+
+WORKDIR="./capture"
+
+try:
+    os.mkdir(WORKDIR)
+except:
+    pass
+
+
 def _cast(val):
     if isinstance(val, (list, tuple)):
         val = np.array(val)
