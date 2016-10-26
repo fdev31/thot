@@ -1,7 +1,6 @@
 from time import sleep
 
 from thotus.scanner import Scanner, get_board
-from thotus import calibration
 from thotus import settings
 from thotus.ui import gui
 
@@ -47,33 +46,34 @@ def switch_lasers():
         else:
             b.lasers_off()
 
-def scan(b, kind=ALL, definition=1, angle=360, calibration=False):
-    print("scan %d / %d"%(kind, ALL))
+def scan(kind=ALL, definition=1, angle=360, calibration=False):
+    s = get_scanner()
     def disp(img, text):
         gui.display(np.rot90(img, 3), text=text, resize=(640,480))
 
-    b.lasers_off()
+    s.lasers_off()
+    s.current_rotation = 0
 
     for n in range(angle):
         if definition > 1 and n%definition != 0:
             continue
         gui.progress("scan", n, angle)
-        b.motor_move(1*definition)
+        s.motor_move(1*definition)
         sleep(0.1) # wait for motor
-        b.wait_capture(2+SLOWDOWN, min_val=0.2)
+        s.wait_capture(2+SLOWDOWN, min_val=0.2)
         if kind & COLOR:
-            disp( b.save('color_%03d.%s'%(n, settings.FILEFORMAT)) , '')
+            disp( s.save('color_%03d.%s'%(n, settings.FILEFORMAT)) , '')
         if kind & LASER1:
-            b.laser_on(0)
-            b.wait_capture(2+SLOWDOWN)
-            disp( b.save('laser0_%03d.%s'%(n, settings.FILEFORMAT)), 'laser 1')
-            b.laser_off(0)
+            s.laser_on(0)
+            s.wait_capture(2+SLOWDOWN)
+            disp( s.save('laser0_%03d.%s'%(n, settings.FILEFORMAT)), 'laser 1')
+            s.laser_off(0)
             sleep(0.05)
         if kind & LASER2:
-            b.laser_on(1)
-            b.wait_capture(2+SLOWDOWN) # sometimes a bit slow to react, so adding one frame
-            disp( b.save('laser1_%03d.%s'%(n, settings.FILEFORMAT)) , 'laser 2')
-            b.laser_off(1)
+            s.laser_on(1)
+            s.wait_capture(2+SLOWDOWN) # sometimes a bit slow to react, so adding one frame
+            disp( s.save('laser1_%03d.%s'%(n, settings.FILEFORMAT)) , 'laser 2')
+            s.laser_off(1)
             sleep(0.05)
     gui.clear()
 
@@ -81,14 +81,15 @@ def rotate(val):
     """ Rotates the platform by X degrees """
     s = get_scanner()
     if s:
-        s.b.motor_move(int(val))
+        s.motor_move(int(val))
 
 def capture_pattern(t):
     s = get_scanner()
+    s.current_rotation = 0
     old_out = s.out
     s.out = settings.CALIBDIR
     s.motor_move(-50)
-    sleep(1)
+    sleep(0.7)
     if not s:
         return
     try:
@@ -97,5 +98,5 @@ def capture_pattern(t):
     except KeyboardInterrupt:
         print("\naborting...")
     s.out = old_out
-    s.motor_move(-50)
+    s.reset_motor_rotation()
 

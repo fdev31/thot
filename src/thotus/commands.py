@@ -95,15 +95,15 @@ def capture_lasers():
 def capture(kind=control.ALL):
     " Capture images "
     view_stop()
-    s = get_scanner()
     if not s:
         return
     try:
-        control.scan(s, kind)
+        control.scan(kind)
         print("")
     except KeyboardInterrupt:
         print("\naborting...")
 
+    s.reset_motor_rotation()
 
 def recognize_pure():
     " Compute mesh from images (assume laser images are pure) "

@@ -264,3 +264,4 @@ def calibrate(pure_laser=False):
     settings.save_data(calibration_data)
     METADATA.clear()
     gui.clear()
+

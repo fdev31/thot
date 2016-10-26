@@ -67,7 +67,6 @@ def ctl_param(dev, param, val=None, show=False):
 
 
 class Scanner:
-
     def __init__(self, speed=2000, out=os.path.curdir):
         self.writer_t = ImageSaver(out)
         self.b = get_board()
@@ -77,8 +76,6 @@ class Scanner:
         self.cap = Camcorder()
         self.writer_t.start()
 
-        print(self.cap.set_exposure_auto(1))
-        print(self.cap.set_auto_white_balance(0))
         self.exposure = self.cap.set_exposure_absolute(333)
         ctl_param(self.cap.dev, 'Gain', 255)
         ctl_param(self.cap.dev, 'Brightness', 0)
@@ -88,9 +85,26 @@ class Scanner:
         ctl_param(self.cap.dev, 'Exposure, Auto Pirority', 1)
         print("Exposure: %s"%self.exposure)
         self.cap.start()
+        self.current_rotation = 0
 
     def __getattr__(self, name):
         return getattr(self.b, name)
+
+    def motor_move(self, value):
+        try:
+            self.b.motor_move(value)
+        except Exception as e:
+            print(e)
+        else:
+            self.current_rotation += value
+
+    def reset_motor_rotation(self):
+        v = self.current_rotation % 360
+        if v > 180:
+            self.motor_move(360-v)
+        else:
+            self.motor_move(-v)
+        self.current_rotation = 0
 
     def refresh_params(self):
         self.exposure = self.cap.get_exposure_absolute()
