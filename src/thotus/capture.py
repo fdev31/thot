@@ -4,9 +4,9 @@ import select
 from threading import Thread
 from time import sleep
 
-import cv2
 import numpy as np
 import glob
+import cv2
 
 try:
     import v4l2capture
@@ -20,6 +20,7 @@ definition = 1 # 1= highest quality
 
 
 class Camcorder(Thread):
+    YUV = 0
     def __init__(self, width=MAX_WIDTH, height=MAX_HEIGHT):
         if not v4l2capture:
             raise RuntimeError("Can't find v4l2capture")
@@ -33,7 +34,7 @@ class Camcorder(Thread):
         video = v4l2capture.Video_device(self.dev)
         # Suggest an image size to the device. The device may choose and
         # return another size if it doesn't support the suggested one.
-        size_x, size_y = video.set_format(width, height, 1, fourcc='I')
+        size_x, size_y = video.set_format(width, height, self.YUV, fourcc='I')
         self.size = (size_x, size_y)
         self.ppf = np.multiply(*self.size) # pixels per frame
         self.fps = video.set_fps(30)
@@ -69,7 +70,12 @@ class Camcorder(Thread):
     def _cap(self):
         image_data = self.video.read_and_queue()
         buff = np.fromstring(image_data, dtype=np.uint8)
-        self.buff = buff[:self.ppf].reshape(*reversed(self.size))
+        if self.YUV:
+            self.buff = buff[:self.ppf].reshape(*reversed(self.size))
+        else:
+            s = list(reversed(self.size))
+            s.append(-1)
+            self.buff = cv2.cvtColor(buff.reshape(*s), cv2.COLOR_RGB2BGR)
 
     def run(self):
         # Start the device. This lights the LED if it's a camera that has one.
@@ -81,6 +87,5 @@ class Camcorder(Thread):
             self._cap()
 
         self.video.close()
-        cv2.destroyAllWindows()
 
 
