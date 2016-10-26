@@ -88,4 +88,3 @@ class Camcorder(Thread):
 
         self.video.close()
 
-

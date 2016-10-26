@@ -170,7 +170,9 @@ class LineMaker:
         y = np.array(y)
         x = np.array(x)
 
-        if use_ransac:
+        if use_ransac:  # line calibration
+#            s = img.sum(axis=1)
+#            x = (self.calibration_data.weight_matrix * img).sum(axis=1)[y]/s[y]
             x = ransac( x, y )
 
 #        if METHOD == 'ransac':
@@ -378,4 +380,3 @@ class LinearLeastSquares2D(object):
 
     def is_degenerate(self, sample):
         return False
-

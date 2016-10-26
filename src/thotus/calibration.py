@@ -86,10 +86,10 @@ def lasers_calibration(calibration_data, images, pure_laser=False):
         for fn in images:
             num = int(fn.rsplit('/')[-1].split('_')[1].split('.')[0])
             if laser == 0:
-                if num > 65:
+                if num > 70:
                     continue
             else:
-                if num < 35:
+                if num < 21:
                     continue
             ranges.append(num)
             selected_planes.append(fn)
