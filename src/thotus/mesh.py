@@ -1,7 +1,7 @@
 import pickle
 
 from thotus import model
-from thotus.projection import PointCloudGeneration
+from thotus.algorithms.projection import PointCloudGeneration
 
 import numpy as np
 
@@ -48,4 +48,3 @@ class Mesh:
             zmax = max(point[2])
             if zmax > obj._size[2]:
                 obj._size[2] = zmax
-

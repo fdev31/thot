@@ -14,6 +14,8 @@ configuration = 'thot'
 single_laser = None
 skip_calibration = True
 
+LASER_COUNT = 2
+
 PATTERN_MATRIX_SIZE = (11, 6)
 PATTERN_SQUARE_SIZE = 13.0
 PATTERN_ORIGIN = 38.8 # distance plateau to second row of pattern
@@ -26,6 +28,20 @@ def get_pattern_points():
 WORKDIR="./capture"
 CALIBDIR="./calibration"
 FILEFORMAT='jpg' # or png
+
+class Attribute(dict):
+
+    def __getattr__(self, name):
+        try:
+            return self[name]
+        except KeyError:
+            raise AttributeError("name")
+
+    def __repr__(self):
+        s = []
+        for v in self.__dict__.items():
+            s.append("%s=%s"%v)
+        return "<%s>"%(', '.join(s))
 
 try:
     os.mkdir(WORKDIR)
@@ -76,10 +92,15 @@ def _from_horus():
         'platform_rotation': _cast(s['rotation_matrix']['value']),
 
         'laser_planes': [
-            LaserPlane(_cast(s['normal_left']['value']), s['distance_left']['value']),
-            LaserPlane(_cast(s['normal_right']['value']), s['distance_right']['value']),
+            Attribute(normal=_cast(s['normal_left']['value']), distance=s['distance_left']['value']),
+            Attribute(normal=_cast(s['normal_right']['value']),distance=s['distance_right']['value']),
             ]
         }
+
+def _view_matrix(m):
+    m = repr(m)[5:]
+    m = m[1:1+m.rindex(']')]
+    return str(eval(m))
 
 def compare():
     " Display horus & thot configurations side by side "
@@ -90,12 +111,9 @@ def compare():
     print("HORUS"+SEP+"THOT")
     for n in ('platform_rotation', 'platform_translation', 'camera_matrix', 'distortion_vector', 'laser_planes'):
         print(("\n   %s   "%(n).capitalize()).center(80, '#' ))
-        print("%s%s%s"%(settings[n] , SEP , o[n]))
-
-class LaserPlane(object):
-    def __init__(self, n=None, d=None):
-        self.normal = n
-        self.distance = d
-
-    def __repr__(self):
-        return ("<Plane %s @ %s>"%(self.normal, self.distance))
+        v1 = settings[n]
+        v2 = o[n]
+        if n != 'laser_planes':
+            v1 = _view_matrix(v1)
+            v2 = _view_matrix(v2)
+        print("%s%s%s"%(v1 , SEP, v2))

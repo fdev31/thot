@@ -12,8 +12,8 @@ from thotus import settings
 from thotus import control
 from thotus.ply import save_scene
 from thotus.cloudify import cloudify
-from thotus.projection import CalibrationData
-from thotus.chessboard import chess_detect, chess_draw
+from thotus.calibration.data import CalibrationData
+from thotus.calibration.chessboard import chess_detect, chess_draw
 
 import cv2
 import numpy as np

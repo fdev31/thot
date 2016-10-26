@@ -47,7 +47,6 @@ def cloudify(calibration_data, folder, lasers, sequence, pure_images, rotated=Fa
                 w, h  = hsv.shape
                 calibration_data.width = w
                 calibration_data.height = h
-                calibration_data._compute_weight_matrix()
 
             hsv = calibration_data.undistort_image(hsv)
 
@@ -83,4 +82,3 @@ def cloudify(calibration_data, folder, lasers, sequence, pure_images, rotated=Fa
 
     pickle.dump(dict(sliced_lines), open('lines2d.pyk', 'wb+'))
     return meshify(calibration_data, sliced_lines, camera, cylinder=cylinder)
-
