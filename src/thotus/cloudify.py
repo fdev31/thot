@@ -1,4 +1,3 @@
-import pickle
 from collections import defaultdict
 
 from thotus import model
@@ -11,7 +10,7 @@ from thotus.linedetect import LineMaker
 import cv2
 import numpy as np
 
-def cloudify(calibration_data, folder, lasers, sequence, pure_images, rotated=False, method=None, camera=False, cylinder=(100, 200)):
+def cloudify(calibration_data, folder, lasers, sequence, pure_images, rotated=False, method=None, camera=False):
     lm = LineMaker()
     lm.calibration_data = calibration_data
     if method is None:
@@ -80,5 +79,4 @@ def cloudify(calibration_data, folder, lasers, sequence, pure_images, rotated=Fa
                     if not pure_images:
                         color_slices[n][laser] = i2[points]
 
-    pickle.dump(dict(sliced_lines), open('lines2d.pyk', 'wb+'))
-    return meshify(calibration_data, sliced_lines, camera, cylinder=cylinder)
+    return sliced_lines
