@@ -217,9 +217,8 @@ def webcam_calibration(calibration_data, images):
         points = np.array([p1, p2, p4, p3], dtype='int32')
         METADATA[fn]['chess_contour'] = points
 
-        vis = cv2.cvtColor(img, cv2.COLOR_GRAY2BGR)
-        cv2.drawChessboardCorners(vis, settings.PATTERN_MATRIX_SIZE, corners, found)
-        gui.display(vis[int(vis.shape[0]/3):-100,], 'chess')
+        drawChessBoard(img, found, corners)
+        gui.display(img[int(img.shape[0]/3):-100,], 'chess')
 
     if settings.skip_calibration:
         settings.load_data(calibration_data)
@@ -238,6 +237,7 @@ def webcam_calibration(calibration_data, images):
     print("camera matrix:\n%s"% _view_matrix(camera_matrix))
     print("distortion coefficients: %s"% _view_matrix(dist_coefs))
     print("ROI: %s"%(repr(roi)))
+    settings.save_data(calibration_data)
 
 def calibrate(pure_laser=False):
     " Compute calibration data from images "
