@@ -1,8 +1,6 @@
 import os
 import sys
-import json
 import math
-import pickle
 from glob import glob
 from collections import defaultdict
 
@@ -33,11 +31,6 @@ def calibrate(pure_laser=False):
     good_images.difference_update(buggy_captures)
     good_images = list(good_images)
     good_images.sort()
-    pickle.dump(dict(
-            images = good_images,
-            metadata = dict(METADATA),
-            )
-            , open('images.js', 'wb'))
 
     lasers.calibration(calibration_data, good_images, pure_laser)
     settings.save_data(calibration_data)

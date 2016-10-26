@@ -15,23 +15,20 @@ else:
     def svd(M):
         return linalg.svds(M, k=2)[0]
 
+def find_laser_plane(X):
+    n = X.shape[0]
+    Xm = X.sum(axis=0) / n
+    M = np.array(X - Xm).T
+    U = svd(M)
+    normal = np.cross(U.T[0], U.T[1])
+    if normal[2] < 0:
+        normal *= -1
+
+    dist = np.dot(normal, Xm)
+    std = np.dot(M.T, normal).std()
+    return (dist, normal, std)
+
 def calibration(calibration_data, images, pure_laser=False):
-
-    def compute_pc(X):
-        # Load point cloud
-
-        n = X.shape[0]
-        Xm = X.sum(axis=0) / n
-        M = np.array(X - Xm).T
-        U = svd(M)
-        normal = np.cross(U.T[0], U.T[1])
-        if normal[2] < 0:
-            normal *= -1
-
-        dist = np.dot(normal, Xm)
-        std = np.dot(M.T, normal).std()
-        return (dist, normal, std)
-
     for laser in range(2):
         selected_planes = []
         ranges = []
@@ -52,14 +49,8 @@ def calibration(calibration_data, images, pure_laser=False):
 
         obj = cloudify(calibration_data, settings.CALIBDIR, [laser], ranges, pure_images=pure_laser, method='straightpureimage', camera=im, cylinder=(1000, 1000)) # cylinder in mm
 
-        tris = []
         v = [_ for _ in obj._mesh.vertexes if np.nonzero(_)[0].size]
-        dist, normal, std = compute_pc(np.array(v))
-
-        if laser == 0:
-            name = 'left'
-        else:
-            name = 'right'
+        dist, normal, std = find_laser_plane(np.array(v))
 
         calibration_data.laser_planes[laser].normal = normal
         calibration_data.laser_planes[laser].distance = dist
