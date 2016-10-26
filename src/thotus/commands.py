@@ -7,12 +7,13 @@ from time import sleep
 from threading import Thread
 
 from thotus.ui import gui
-from thotus.projection import CalibrationData
-from thotus.cloudify import cloudify
-from thotus.ply import save_scene
 from thotus import calibration
 from thotus import settings
 from thotus import control
+from thotus.ply import save_scene
+from thotus.cloudify import cloudify
+from thotus.projection import CalibrationData
+from thotus.chessboard import chess_detect, chess_draw
 
 import cv2
 import numpy as np
@@ -51,9 +52,9 @@ class Viewer(Thread):
             s.wait_capture(1)
             img = np.rot90(s.cap.buff, 3)
             grey = img[:,:,1]
-            found, corners = calibration.detectChessBoard(grey)
+            found, corners = chess_detect(grey)
             if found:
-                img = calibration.drawChessBoard(grey, found, corners)
+                img = chess_draw(grey, found, corners)
             gui.display(img, "live", resize=(640,480))
 
 def view():

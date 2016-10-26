@@ -11,6 +11,7 @@ from thotus.projection import CalibrationData, PointCloudGeneration, clean_model
 from thotus.cloudify import cloudify
 from thotus.ply import save_scene
 from thotus import settings
+from thotus.chessboard import chess_detect, chess_draw
 
 import cv2
 import numpy as np
@@ -35,23 +36,6 @@ def _view_matrix(m):
     m = repr(m)[5:]
     m = m[1:1+m.rindex(']')]
     return str(eval(m))
-
-def detectChessBoard(img):
-    flags = cv2.CALIB_CB_FAST_CHECK
-    term = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 200, 0.001)
-
-    found, corners = cv2.findChessboardCorners(img, settings.PATTERN_MATRIX_SIZE, flags=flags)
-    if found:
-        cv2.cornerSubPix(img, corners, (11, 11), (-1, -1), term)
-    return found, corners
-
-def drawChessBoard(img, found, corners):
-    try:
-        cv2.drawChessboardCorners(img, settings.PATTERN_MATRIX_SIZE, corners, found)
-    except TypeError:
-        img = cv2.cvtColor(img, cv2.COLOR_GRAY2BGR)
-        cv2.drawChessboardCorners(img, settings.PATTERN_MATRIX_SIZE, corners, found)
-    return img
 
 def lasers_calibration(calibration_data, images, pure_laser=False):
 
@@ -190,7 +174,7 @@ def webcam_calibration(calibration_data, images):
 
         w, h = img.shape[:2]
 
-        found, corners = cv2.findChessboardCorners(img, settings.PATTERN_MATRIX_SIZE, flags=flags)
+        found, corners = chess_detect(img, flags)
 
         if not found:
             if found_nr > 20 and failed_serie > 6:
@@ -217,7 +201,7 @@ def webcam_calibration(calibration_data, images):
         points = np.array([p1, p2, p4, p3], dtype='int32')
         METADATA[fn]['chess_contour'] = points
 
-        drawChessBoard(img, found, corners)
+        chess_draw(img, found, corners)
         gui.display(img[int(img.shape[0]/3):-100,], 'chess')
 
     if settings.skip_calibration:
@@ -226,6 +210,7 @@ def webcam_calibration(calibration_data, images):
 
     if not obj_points:
         raise ValueError("Unable to detect pattern on screen :(")
+
     print("\nComputing calibration...")
     rms, camera_matrix, dist_coefs, rvecs, tvecs = cv2.calibrateCamera(np.array(obj_points), np.array(img_points), (w, h), None, None)
 
