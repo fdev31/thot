@@ -10,7 +10,7 @@ from thotus.ui import gui
 from thotus.projection import CalibrationData, PointCloudGeneration, clean_model, fit_plane, fit_circle
 from thotus.cloudify import cloudify
 from thotus.ply import save_scene
-from thotus.settings import save_data, load_data
+from thotus import settings
 
 import cv2
 import numpy as np
@@ -97,7 +97,7 @@ def lasers_calibration(calibration_data, images, pure_laser=False):
 
         assert len(ranges) == len(im)
 
-        obj = cloudify(calibration_data, './capture', [laser], ranges, pure_images=pure_laser, method='straightpureimage', camera=im, cylinder=(1000, 1000)) # cylinder in mm
+        obj = cloudify(calibration_data, settings.CALIBDIR, [laser], ranges, pure_images=pure_laser, method='straightpureimage', camera=im, cylinder=(1000, 1000)) # cylinder in mm
 
         tris = []
         v = [_ for _ in obj._mesh.vertexes if np.nonzero(_)[0].size]
@@ -229,7 +229,7 @@ def webcam_calibration(calibration_data, images):
         gui.display(vis[int(vis.shape[0]/3):-100,], 'chess')
 
     if SKIP_CAM_CALIBRATION:
-        load_data(calibration_data)
+        settings.load_data(calibration_data)
         return
 
     if not obj_points:
@@ -251,7 +251,7 @@ def calibrate(pure_laser=False):
 
     calibration_data = CalibrationData()
 
-    img_mask = './capture/color_*.png'
+    img_mask = settings.CALIBDIR + '/color_*.' + settings.FILEFORMAT
     img_names = sorted(glob(img_mask))[::FAST_CALIBRATE]
 
     webcam_calibration(calibration_data, img_names)
@@ -268,6 +268,6 @@ def calibrate(pure_laser=False):
             , open('images.js', 'wb'))
 
     lasers_calibration(calibration_data, good_images, pure_laser)
-    save_data(calibration_data)
+    settings.save_data(calibration_data)
     METADATA.clear()
     gui.clear()

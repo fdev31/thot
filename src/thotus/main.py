@@ -172,7 +172,10 @@ if len(sys.argv) > 1:
     toggle_advanced_mode()
 
 if not leave_after:
-    cmds.view()
+    try:
+        cmds.view()
+    except Exception as e:
+        pass
 
 while not leave_now:
     if not leave_after:

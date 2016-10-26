@@ -16,6 +16,7 @@ single_laser = None
 
 WORKDIR="./capture"
 CALIBDIR="./calibration"
+FILEFORMAT='jpg' # or png
 
 try:
     os.mkdir(WORKDIR)

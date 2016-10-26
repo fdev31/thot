@@ -31,6 +31,7 @@ def calibrate_pure():
 
 class Viewer(Thread):
     instance = None
+    running = None
 
     def stop(self):
         self.running = False
@@ -39,7 +40,12 @@ class Viewer(Thread):
         gui.clear()
 
     def run(self):
-        s = get_scanner()
+        try:
+            s = get_scanner()
+        except Exception as e:
+            print("Unable to init scanner, not starting viewer.")
+            return
+
         self.running = True
         while self.running:
             s.wait_capture(1)
@@ -57,7 +63,7 @@ def view():
         Viewer.instance.start()
 
 def view_stop():
-    if Viewer.instance:
+    if Viewer.instance and Viewer.instance.running:
         get_scanner() # sync scanner startup
         Viewer.instance.stop()
         return True

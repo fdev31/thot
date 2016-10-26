@@ -1,4 +1,5 @@
 from thotus.algorithms.utils import compute_line_image
+from thotus.algorithms.ransac import ransac
 import numpy as np
 import cv2
 

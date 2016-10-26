@@ -1,4 +1,4 @@
-from thotus.ransac import ransac, sgf
+from thotus.algorithms.ransac import ransac, sgf
 
 import numpy as np
 import cv2

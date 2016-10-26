@@ -3,6 +3,7 @@ import os
 import subprocess
 from time import sleep
 
+from thotus import settings
 from thotus.board import Board
 from thotus.capture import Camcorder
 from thotus.workers import ImageSaver
@@ -109,7 +110,7 @@ class Scanner:
 
     def save(self, filename, processing=None):
         if not '.' in filename:
-            filename += '.png'
+            filename += '.' + settings.FILEFORMAT
 
         img = self.cap.get()
         self.writer_t.q.put( (img, filename) )

@@ -61,17 +61,17 @@ def scan(b, kind=ALL, definition=1, angle=360, calibration=False):
         sleep(0.1) # wait for motor
         b.wait_capture(2+SLOWDOWN, min_val=0.2)
         if kind & COLOR:
-            disp( b.save('color_%03d.png'%n) , '')
+            disp( b.save('color_%03d.%s'%(n, settings.FILEFORMAT)) , '')
         if kind & LASER1:
             b.laser_on(0)
             b.wait_capture(2+SLOWDOWN)
-            disp( b.save('laser0_%03d.png'%n), 'laser 1')
+            disp( b.save('laser0_%03d.%s'%(n, settings.FILEFORMAT)), 'laser 1')
             b.laser_off(0)
             sleep(0.05)
         if kind & LASER2:
             b.laser_on(1)
             b.wait_capture(2+SLOWDOWN) # sometimes a bit slow to react, so adding one frame
-            disp( b.save('laser1_%03d.png'%n) , 'laser 2')
+            disp( b.save('laser1_%03d.%s'%(n, settings.FILEFORMAT)) , 'laser 2')
             b.laser_off(1)
             sleep(0.05)
     gui.clear()
