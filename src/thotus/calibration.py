@@ -47,7 +47,7 @@ def _view_matrix(m):
 
 
 def detectChessBoard(img):
-    flags = cv2.CALIB_CB_FAST_CHECK + cv2.CALIB_CB_NORMALIZE_IMAGE
+    flags = cv2.CALIB_CB_FAST_CHECK
     term = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 200, 0.001)
 
     found, corners = cv2.findChessboardCorners(img, PATTERN_MATRIX_SIZE, flags=flags)
@@ -184,7 +184,7 @@ def webcam_calibration(calibration_data, images):
 
     failed_serie = 0
     term = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_COUNT, 30, 0.001)
-    flags = cv2.CALIB_CB_FAST_CHECK + cv2.CALIB_CB_NORMALIZE_IMAGE
+    flags = cv2.CALIB_CB_FAST_CHECK
 
     for idx, fn in enumerate(images):
         gui.progress('Webcam calibration %s (%d found)... ' % (fn, found_nr), idx, len(images))
