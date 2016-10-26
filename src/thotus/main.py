@@ -81,8 +81,10 @@ def toggle_advanced_mode():
     if 'debug_settings' in commands:
         for cmd in adv_commands:
             del commands[cmd]
+        print("Using simple commands")
     else:
         commands.update(adv_commands)
+        print("Using advanced commands")
 
 commands = dict(
     # calibrate

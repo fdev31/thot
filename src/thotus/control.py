@@ -3,9 +3,12 @@ from time import sleep
 from thotus.scanner import Scanner, get_board
 from thotus import calibration
 from thotus import settings
+from thotus.ui import gui
+import numpy as np
 
 COLOR, LASER1, LASER2 = 1, 2, 4 # bit mask
 ALL = COLOR | LASER1 | LASER2
+SLOWDOWN = 0
 
 scanner = None
 lasers = False
@@ -41,7 +44,7 @@ def switch_lasers():
         else:
             b.lasers_off()
 
-def scan(b, kind=ALL, definition=1, angle=360):
+def scan(b, kind=ALL, definition=1, angle=360, calibration=False):
     print("scan %d / %d"%(kind, ALL))
     def disp(img, text):
         gui.display(np.rot90(img, 3), text=text, resize=(640,480))
@@ -76,8 +79,10 @@ def rotate(val):
     if s:
         s.b.motor_move(int(val))
 
-def _capture_pattern(t):
+def capture_pattern(t):
     s = get_scanner()
+    old_out = s.out
+    s.out = settings.CALIBDIR
     s.motor_move(-50)
     sleep(1)
     if not s:
@@ -87,5 +92,6 @@ def _capture_pattern(t):
         print("")
     except KeyboardInterrupt:
         print("\naborting...")
+    s.out = old_out
     s.motor_move(-50)
 

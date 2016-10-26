@@ -15,12 +15,17 @@ single_laser = None
 
 
 WORKDIR="./capture"
+CALIBDIR="./calibration"
 
 try:
     os.mkdir(WORKDIR)
 except:
     pass
 
+try:
+    os.mkdir(CALIBDIR)
+except:
+    pass
 
 def _cast(val):
     if isinstance(val, (list, tuple)):

@@ -21,10 +21,6 @@ from thotus import calibration
 from thotus import settings
 from thotus import control
 
-SLOWDOWN = 0
-
-
-
 # aliases
 calibrate = calibration.calibrate
 get_scanner = control.get_scanner
@@ -69,20 +65,19 @@ def stop():
         get_scanner().close()
 
 def capture_color():
-    return capture(COLOR)
+    return capture(control.COLOR)
 
 def capture_lasers():
-    return capture(LASER1|LASER2)
-
+    return capture(control.LASER1|control.LASER2)
 
 def capture_pattern():
-    _capture_pattern(control.ALL)
+    control.capture_pattern(control.ALL)
 
 def capture_pattern_lasers():
-    _capture_pattern(LASER1|LASER2)
+    control.capture_pattern(control.LASER1|control.LASER2)
 
 def capture_pattern_colors():
-    _capture_pattern(COLOR)
+    control.capture_pattern(control.COLOR)
 
 def capture(kind=control.ALL):
     view_stop()
