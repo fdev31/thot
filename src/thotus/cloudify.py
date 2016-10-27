@@ -65,12 +65,12 @@ def iter_cloudify(calibration_data, folder, lasers, sequence, pure_images, rotat
 
             if points is not None and points[0].size:
                 nosave = False
-                disp = cv2.merge( np.array((diff, diff, processed)) )
+                disp = cv2.merge( np.array((hsv, hsv, processed)) )
                 if interactive:
                     txt = "Esc=NOT OK, Enter=OK"
                 else:
                     txt = "laser %d"%(laser+1)
-                gui.display(disp, txt,  resize=(640, 640))
+                gui.display(disp, txt,  resize=0.7)
                 if interactive:
                     for n in range(20):
                         x = cv2.waitKey(100)
