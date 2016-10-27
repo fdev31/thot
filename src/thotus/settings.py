@@ -39,7 +39,9 @@ class Attribute(dict):
 
     def __repr__(self):
         s = []
-        for v in self.__dict__.items():
+        it = list(self.items()) + list(self.__dict__.items())
+        it.sort()
+        for v in it:
             s.append("%s=%s"%v)
         return "<%s>"%(', '.join(s))
 
@@ -91,10 +93,10 @@ def _from_horus():
         'platform_translation': _cast(s['translation_vector']['value']),
         'platform_rotation': _cast(s['rotation_matrix']['value']),
 
-        'laser_planes': [
+        'laser_planes': np.array([
             Attribute(normal=_cast(s['normal_left']['value']), distance=s['distance_left']['value']),
             Attribute(normal=_cast(s['normal_right']['value']),distance=s['distance_right']['value']),
-            ]
+            ])
         }
 
 def _view_matrix(m):
