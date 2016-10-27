@@ -1,6 +1,7 @@
 import pickle
 
 from thotus import model
+from thotus.ply import save_scene
 from thotus.algorithms.projection import PointCloudGeneration
 
 import numpy as np
@@ -19,13 +20,20 @@ def meshify(calibration_data, lines=None, camera=False, lasers=range(2), cylinde
                 pc = computer(*x)
                 if pc is not None:
                     obj.append_point(pc, radius=cylinder[0], height=cylinder[1])
-    return obj.get()
+    return obj
 
 class Mesh:
     def __init__(self):
         self.obj = model.Model(None, is_point_cloud=True)
         self.obj._add_mesh()
         self.obj._mesh._prepare_vertex_count(4000000)
+
+    def save(self, filename):
+        return save_scene(filename, self.obj)
+
+    @property
+    def vertices(self):
+        return self.obj._mesh.vertexes
 
     def get(self):
         return self.obj

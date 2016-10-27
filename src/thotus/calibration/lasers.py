@@ -1,6 +1,5 @@
 from thotus.ui import gui
 from thotus import settings
-from thotus.ply import save_scene
 from thotus.cloudify import meshify, cloudify
 
 import cv2
@@ -50,9 +49,11 @@ def calibration(calibration_data, calibration_settings, images, pure_laser=False
         slices = cloudify(calibration_data, settings.CALIBDIR, [laser], ranges, pure_images=pure_laser, method='straightpureimage', camera=im) # cylinder in mm
         obj = meshify(calibration_data, slices, im, cylinder=(1000, 1000))
 
-        v = [_ for _ in obj._mesh.vertexes if np.nonzero(_)[0].size]
+        v = [_ for _ in obj.vertices if np.nonzero(_)[0].size]
+        print(len(obj.vertices))
+        print(len(v))
         dist, normal, std = find_laser_plane(np.array(v))
 
         calibration_data.laser_planes[laser].normal = normal
         calibration_data.laser_planes[laser].distance = dist
-        save_scene("calibration_laser_%d.ply"%laser, obj)
+        obj.save("calibration_laser_%d.ply"%laser)

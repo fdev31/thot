@@ -4,7 +4,6 @@ from thotus import model
 from thotus.ui import gui
 from thotus import settings
 from thotus.mesh import meshify
-from thotus.ply import save_scene
 from thotus.linedetect import LineMaker
 
 import cv2

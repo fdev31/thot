@@ -10,7 +10,6 @@ from thotus.ui import gui
 from thotus import settings
 from thotus import control
 from thotus import calibration
-from thotus.ply import save_scene
 from thotus.cloudify import meshify, cloudify
 from thotus.calibration.data import CalibrationData
 from thotus.calibration.chessboard import chess_detect, chess_draw
@@ -113,8 +112,7 @@ def recognize(pure_images=False, rotated=False, method='pureimage'):
     r = settings.get_laser_range()
 
     slices = cloudify(calibration_data, settings.WORKDIR, r, range(360), pure_images, rotated, method=method)
-    obj = meshify(calibration_data, slices)
-    save_scene("model.ply", obj)
+    meshify(calibration_data, slices).save("model.ply")
     gui.clear()
 
 #####
@@ -146,9 +144,7 @@ def scan():
 
     capture(step=cloudifier.next)
     slices = next(cloudifier)
-
-    obj = meshify(calibration_data, slices)
-    save_scene("model.ply", obj)
+    meshify(calibration_data, slices).save("model.ply")
     gui.clear()
 
     return recognize()

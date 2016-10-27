@@ -55,7 +55,7 @@ def calibration(calibration_data, calibration_settings):
         # Fitting a circle inside the plane
         center, R, circle = fit_circle(point, normal, points)
         # Get real origin
-        t = center - settings.PATTERN_ORIGIN * np.array(normal)
+        t = center - settings.PATTERN_ORIGIN * np.array(normal) # set ground level
         if t is not None:
             if np.linalg.norm(t - ESTIMATED_PLATFORM_TRANSLAT) > 100:
                 print("\n\n!!!!!!!! ISNOGOOD !! %s !~= %s\n\n!!!"%(t, ESTIMATED_PLATFORM_TRANSLAT))
@@ -64,4 +64,5 @@ def calibration(calibration_data, calibration_settings):
             calibration_data.platform_translation = t
     else:
         print(":((")
+    print("")
     return buggy_captures
