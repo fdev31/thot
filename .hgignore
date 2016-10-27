@@ -1,0 +1,9 @@
+syntax: glob
+*.pyc
+*.png
+*.jpg
+*.swp
+*.ply
+*.orig
+cam_data.bin
+*.pyk
