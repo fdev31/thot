@@ -60,9 +60,18 @@ You can also call the application from the command line:
 
     $ ./thot recalibrate
 
+Reconstruct previously scanned mesh (to test new calibration):
+
+    $ ./thot make
+
 A special "exec" command allows command chaining from the command line:
 
     $ ./thot exec setGain 5, calibrate, keep_laser 1 , make
+
+Recalibrate manually (while calibrating laser some lines are not matching the picture)
+
+    $ ./thot exec recalibrate_manual, recalibrate
+
 
 Images are saved into **capture/** folder
 Pointcloud is saved as **capture.ply**
