@@ -10,7 +10,12 @@ from thotus.linedetect import LineMaker
 import cv2
 import numpy as np
 
-def cloudify(calibration_data, folder, lasers, sequence, pure_images, rotated=False, method=None, camera=False):
+def cloudify(*a, **k):
+    for _ in iter_cloudify(*a, **k):
+        pass
+    return _
+
+def iter_cloudify(calibration_data, folder, lasers, sequence, pure_images, rotated=False, method=None, camera=False):
     lm = LineMaker()
     lm.calibration_data = calibration_data
     if method is None:
@@ -29,6 +34,7 @@ def cloudify(calibration_data, folder, lasers, sequence, pure_images, rotated=Fa
     S_SZ = 10
     CHANNEL = 2
     for i, n in enumerate(sequence):
+        yield
         to_display = []
         if not pure_images:
             i2 = cv2.imread(folder+'/color_%03d.%s'%(n, settings.FILEFORMAT))
@@ -79,4 +85,4 @@ def cloudify(calibration_data, folder, lasers, sequence, pure_images, rotated=Fa
                     if not pure_images:
                         color_slices[n][laser] = i2[points]
 
-    return sliced_lines
+    yield sliced_lines

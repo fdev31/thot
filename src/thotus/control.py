@@ -46,7 +46,7 @@ def switch_lasers():
         else:
             b.lasers_off()
 
-def scan(kind=ALL, definition=1, angle=360, calibration=False):
+def scan(kind=ALL, definition=1, angle=360, calibration=False, on_step=None):
     s = get_scanner()
     def disp(img, text):
         gui.display(np.rot90(img, 3), text=text, resize=(640,480))
@@ -75,6 +75,8 @@ def scan(kind=ALL, definition=1, angle=360, calibration=False):
             disp( s.save('laser1_%03d.%s'%(n, settings.FILEFORMAT)) , 'laser 2')
             s.laser_off(1)
             sleep(0.05)
+        if on_step:
+            on_step()
     gui.clear()
 
 def rotate(val):
@@ -99,4 +101,3 @@ def capture_pattern(t):
         print("\naborting...")
     s.out = old_out
     s.reset_motor_rotation()
-

@@ -93,13 +93,13 @@ def capture_lasers():
     " Capture images (lasers only) "
     return capture(control.LASER1|control.LASER2)
 
-def capture(kind=control.ALL):
+def capture(kind=control.ALL, step=None):
     " Capture images "
     view_stop()
     if not s:
         return
     try:
-        control.scan(kind)
+        control.scan(kind, step=step)
         print("")
     except KeyboardInterrupt:
         print("\naborting...")

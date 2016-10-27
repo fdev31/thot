@@ -75,7 +75,22 @@ def set_dual_laser():
 
 def scan():
     """ Scan object """
-    cmds.capture()
+    calibration_data = settings.load_data(CalibrationData())
+
+    if settings.single_laser is None:
+        r = range(2)
+    else:
+        r = [settings.single_laser]
+
+    cloudifier = cloudify(calibration_data, settings.WORKDIR, r, range(360), False, False, method='pureimage')
+
+    cmds.capture(step=cloudifier.next)
+    slices = next(cloudifier)
+
+    obj = meshify(calibration_data, slices)
+    save_scene("model.ply", obj)
+    gui.clear()
+
     return cmds.recognize()
 
 def fullcalibrate():
