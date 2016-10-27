@@ -98,9 +98,13 @@ def _from_horus():
         }
 
 def _view_matrix(m):
-    m = repr(m)[5:]
-    m = m[1:1+m.rindex(']')]
-    return str(eval(m))
+    try:
+        m = repr(m)[5:]
+        m = m[1:1+m.rindex(']')]
+    except Exception:
+        return str(m)
+    else:
+        return str(eval(m))
 
 def compare():
     " Display horus & thot configurations side by side "
