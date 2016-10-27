@@ -115,10 +115,7 @@ def recognize(pure_images=False, rotated=False, method='pureimage'):
     view_stop()
     calibration_data = settings.load_data(CalibrationData())
 
-    if settings.single_laser is None:
-        r = range(2)
-    else:
-        r = [settings.single_laser]
+    r = settings.get_laser_range()
 
     slices = cloudify(calibration_data, settings.WORKDIR, r, range(360), pure_images, rotated, method=method)
     obj = meshify(calibration_data, slices)

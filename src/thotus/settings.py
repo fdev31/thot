@@ -60,6 +60,12 @@ def _cast(val):
         val = np.array(val)
     return val
 
+def get_laser_range():
+    if single_laser is None:
+        return range(LASER_COUNT)
+    else:
+        return [single_laser]
+
 def load_data(calibration_data):
     if configuration[0] == 'h':
         h = _from_horus()

@@ -77,10 +77,7 @@ def scan():
     """ Scan object """
     calibration_data = settings.load_data(CalibrationData())
 
-    if settings.single_laser is None:
-        r = range(2)
-    else:
-        r = [settings.single_laser]
+    r = settings.get_laser_range()
 
     cloudifier = cloudify(calibration_data, settings.WORKDIR, r, range(360), False, False, method='pureimage')
 
