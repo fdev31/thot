@@ -5,7 +5,7 @@ from thotus.algorithms.projection import PointCloudGeneration
 
 import numpy as np
 
-def meshify(calibration_data, lines=None, camera=False, lasers=range(2), cylinder=(1000, 1000)):
+def meshify(calibration_data, lines=None, camera=False, lasers=range(2), cylinder=(100, 100)):
     pcg = PointCloudGeneration(calibration_data)
     if not lines:
         lines = pickle.load(open('lines2d.pyk', 'rb+'))
