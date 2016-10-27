@@ -47,7 +47,7 @@ def calibration(calibration_data, calibration_settings, images, pure_laser=False
         assert len(ranges) == len(im)
 
         slices = cloudify(calibration_data, settings.CALIBDIR, [laser], ranges, pure_images=pure_laser,
-                method='straightuncanny', camera=im, interactive=False)
+                method='straightuncanny', camera=im, interactive=settings.interactive_calibration)
 
         obj = meshify(calibration_data, slices, camera=im, cylinder=(1000, 1000))
 

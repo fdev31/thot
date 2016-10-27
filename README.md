@@ -17,7 +17,11 @@ Useable for some people already, probably developers:
 - No patched OpenCV needed
 - Simple and friendly CLI
 - Python 2 & 3 compatible
-- platform + laser calibration done in less than two minutes, fully automated
+- fully automated calibration done in a minute
+
+## Help wanted!
+
+To find why the two point clouds are slightly deformed, probably I'm missing some math in calibration...
 
 ## Installation
 

@@ -13,6 +13,7 @@ import numpy as np
 configuration = 'thot'
 single_laser = None
 skip_calibration = True
+interactive_calibration = False
 
 LASER_COUNT = 2
 ROI = (100, 150)

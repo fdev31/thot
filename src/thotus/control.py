@@ -24,16 +24,19 @@ def get_scanner():
     scanner.refresh_params()
     return scanner
 
+def toggle_interactive_calibration():
+    settings.interactive_calibration = not settings.interactive_calibration
+    print("Camera calibration set to %s"%("interactive" if settings.interactive_calibration else "automatic"))
+    return 3
+
 def toggle_cam_calibration(force_skip=None):
     if force_skip is not None:
         settings.skip_calibration = force_skip
     else:
-        if settings.skip_calibration:
-            settings.skip_calibration = False
-        else:
-            settings.skip_calibration = True
+        settings.skip_calibration = not settings.skip_calibration
 
     print("Camera calibration %s"%("disabled" if settings.skip_calibration else "enabled"))
+    return 3
 
 def switch_lasers():
     """ Toggle lasers """
@@ -45,6 +48,7 @@ def switch_lasers():
             b.lasers_on()
         else:
             b.lasers_off()
+    return 3
 
 def scan(kind=ALL, definition=1, angle=360, calibration=False, on_step=None):
     s = get_scanner()

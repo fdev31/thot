@@ -94,6 +94,7 @@ adv_commands = dict(
     recalibrate      = cmds.calibrate,
     recalibrate_pure = cmds.calibrate_pure,
     recalibrate_cam  = control.toggle_cam_calibration,
+    recalibrate_manual  = control.toggle_interactive_calibration,
 
     # acquire pictures
     capture          = cmds.capture,
