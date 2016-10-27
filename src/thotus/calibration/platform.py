@@ -8,7 +8,7 @@ import numpy as np
 
 ESTIMATED_PLATFORM_TRANSLAT = [-5, 90, 320] # reference
 
-def calibration(calibration_data):
+def calibration(calibration_data, calibration_settings):
     x = []
     y = []
     z = []
@@ -17,9 +17,9 @@ def calibration(calibration_data):
     pattern_points = settings.get_pattern_points()
 
     pcg = PointCloudGeneration(calibration_data)
-    for i, fn in enumerate(METADATA):
-        gui.progress('Platform calibration', i, len(METADATA))
-        corners = METADATA[fn]['chess_corners']
+    for i, fn in enumerate(calibration_settings):
+        gui.progress('Platform calibration', i, len(calibration_settings))
+        corners = calibration_settings[fn]['chess_corners']
         try:
             ret, rvecs, tvecs = cv2.solvePnP(pattern_points, corners, calibration_data.camera_matrix, calibration_data.distortion_vector)
         except Exception as e:
@@ -33,7 +33,7 @@ def calibration(calibration_data):
             corner = pose[2]
             normal = R.T[2]
             distance = np.dot(normal, t)
-            METADATA[fn]['plane'] = [distance, normal]
+            calibration_settings[fn]['plane'] = [distance, normal]
             if corners is not None:
                 origin = corners[settings.PATTERN_MATRIX_SIZE[0] * (settings.PATTERN_MATRIX_SIZE[1] - 1)][0]
                 origin = np.array([[origin[0]], [origin[1]]])

@@ -28,7 +28,7 @@ def find_laser_plane(X):
     std = np.dot(M.T, normal).std()
     return (dist, normal, std)
 
-def calibration(calibration_data, images, pure_laser=False):
+def calibration(calibration_data, calibration_settings, images, pure_laser=False):
     for laser in settings.get_laser_range():
         selected_planes = []
         ranges = []
@@ -43,7 +43,7 @@ def calibration(calibration_data, images, pure_laser=False):
             ranges.append(num)
             selected_planes.append(fn)
 
-        im = [METADATA[x] for x in selected_planes]
+        im = [calibration_settings[x] for x in selected_planes]
 
         assert len(ranges) == len(im)
 

@@ -6,7 +6,6 @@ from time import time
 from thotus.ui import gui
 from thotus import control
 from thotus import settings
-from thotus import calibration
 from thotus import commands as cmds
 from thotus.scanner import get_controllers
 
@@ -57,56 +56,6 @@ def help():
         print(" %-20s  %s"%(c, d.title()))
     return 3
 
-def set_horus_cfg():
-    " Load horus calibration configuration "
-    settings.configuration = 'horus'
-
-def set_thot_cfg():
-    " Load thot calibration configuration "
-    settings.configuration = 'thot'
-
-def set_single_laser(laser_number):
-    i = int(laser_number)
-    if i not in (1, 2):
-        print("Laser number must be 1 or 2")
-    settings.single_laser = i-1
-
-def set_dual_laser():
-    settings.single_laser = None
-
-def scan():
-    """ Scan object """
-    calibration_data = settings.load_data(CalibrationData())
-
-    r = settings.get_laser_range()
-
-    cloudifier = cloudify(calibration_data, settings.WORKDIR, r, range(360), False, False, method='pureimage')
-
-    cmds.capture(step=cloudifier.next)
-    slices = next(cloudifier)
-
-    obj = meshify(calibration_data, slices)
-    save_scene("model.ply", obj)
-    gui.clear()
-
-    return cmds.recognize()
-
-def calibrate_pure():
-    " start platform & laser calibration (assume laser images are pure) "
-    return calibration.calibrate(pure_laser=True)
-
-def fullcalibrate():
-    """ start a full calibration, including camera intrinsics """
-    cmds.capture_pattern()
-    cmds.toggle_cam_calibration(False)
-    return calibration.calibrate()
-
-def stdcalibrate():
-    """ start platform & laser calibration """
-    cmds.capture_pattern()
-    cmds.toggle_cam_calibration(True)
-    return calibration.calibrate()
-
 def toggle_advanced_mode():
     """ toggle advanced command set """
     if 'debug_settings' in commands:
@@ -119,12 +68,12 @@ def toggle_advanced_mode():
 
 commands = dict(
     # calibrate
-    calibrate_full = fullcalibrate,
-    calibrate      = stdcalibrate,
+    calibrate_full = cmds.fullcalibrate,
+    calibrate      = cmds.stdcalibrate,
     advanced       = toggle_advanced_mode,
 
     # all in one scan
-    scan           = scan,
+    scan           = cmds.scan,
 
     # misc
     view           = cmds.view,
@@ -141,8 +90,8 @@ adv_commands = dict(
     debug_settings = settings.compare,
 
     # compute calibration data
-    recalibrate      = calibration.calibrate,
-    recalibrate_pure = calibrate_pure,
+    recalibrate      = cmds.calibrate,
+    recalibrate_pure = cmds.calibrate_pure,
     recalibrate_cam  = control.toggle_cam_calibration,
 
     # acquire pictures
@@ -158,8 +107,8 @@ adv_commands = dict(
     make          = cmds.recognize,
     make_pure     = cmds.recognize_pure,
 
-    use_horus_cfg    = set_horus_cfg,
-    use_thot_cfg     = set_thot_cfg,
+    use_horus_cfg    = cmds.set_horus_cfg,
+    use_thot_cfg     = cmds.set_thot_cfg,
 )
 
 try:
