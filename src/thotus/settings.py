@@ -83,7 +83,6 @@ def save_data(s):
         'laser_planes': s.laser_planes,
         }, open('cam_data.bin', 'wb'))
 
-
 def _from_horus():
     path = os.path.expanduser('~/.horus/calibration.json')
     s = json.load(open(path))['calibration_settings']

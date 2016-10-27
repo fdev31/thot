@@ -3,10 +3,11 @@ import sys
 import traceback
 from time import time
 
-from thotus import commands as cmds
+from thotus.ui import gui
 from thotus import control
 from thotus import settings
-from thotus.ui import gui
+from thotus import calibration
+from thotus import commands as cmds
 from thotus.scanner import get_controllers
 
 from prompt_toolkit import prompt
@@ -90,17 +91,21 @@ def scan():
 
     return cmds.recognize()
 
+def calibrate_pure():
+    " start platform & laser calibration (assume laser images are pure) "
+    return calibration.calibrate(pure_laser=True)
+
 def fullcalibrate():
     """ start a full calibration, including camera intrinsics """
     cmds.capture_pattern()
     cmds.toggle_cam_calibration(False)
-    return cmds.calibrate()
+    return calibration.calibrate()
 
 def stdcalibrate():
     """ start platform & laser calibration """
     cmds.capture_pattern()
     cmds.toggle_cam_calibration(True)
-    return cmds.calibrate()
+    return calibration.calibrate()
 
 def toggle_advanced_mode():
     """ toggle advanced command set """
@@ -136,8 +141,8 @@ adv_commands = dict(
     debug_settings = settings.compare,
 
     # compute calibration data
-    recalibrate      = cmds.calibrate,
-    recalibrate_pure = cmds.calibrate_pure,
+    recalibrate      = calibration.calibrate,
+    recalibrate_pure = calibrate_pure,
     recalibrate_cam  = control.toggle_cam_calibration,
 
     # acquire pictures

@@ -7,7 +7,6 @@ from time import sleep
 from threading import Thread
 
 from thotus.ui import gui
-from thotus import calibration
 from thotus import settings
 from thotus import control
 from thotus.ply import save_scene
@@ -24,11 +23,6 @@ except ImportError:
 
 # aliases
 get_scanner = control.get_scanner
-calibrate = calibration.calibrate
-
-def calibrate_pure():
-    " start platform & laser calibration (assume laser images are pure) "
-    return calibration.calibrate(pure_laser=True)
 
 class Viewer(Thread):
     instance = None
