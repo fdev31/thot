@@ -28,9 +28,13 @@ class GUI:
         while cv2.waitKey(10) > 0:
             pass
 
-    def display(self, image, text, resize=None, disp_number=0):
+    def display(self, image, text, resize=None, crop=False, disp_number=0):
+        if crop:
+            image = image[crop[0] or slice(None, None), crop[1] or slice(None, None)]
+
         if resize:
             image = image.copy()
+
         if text:
             black = (0, 0, 0)
             white = (255, 255, 255)

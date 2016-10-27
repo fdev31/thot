@@ -34,14 +34,13 @@ def iter_cloudify(calibration_data, folder, lasers, sequence, pure_images, rotat
     CHANNEL = 2
     for i, n in enumerate(sequence):
         yield
-        to_display = []
         if not pure_images:
             i2 = cv2.imread(folder+'/color_%03d.%s'%(n, settings.FILEFORMAT))
             if i2 is None:
                 continue
             i2 = calibration_data.undistort_image(i2)
-            i2 = cv2.cvtColor(i2, cv2.COLOR_RGB2HSV)
-            i2 = i2[:,:,CHANNEL]
+            fullcolor = cv2.cvtColor(i2, cv2.COLOR_RGB2HSV)
+            i2 = fullcolor[:,:,CHANNEL]
         for laser in lasers:
             diff = cv2.imread(folder+'/laser%d_%03d.%s'%(laser, n, settings.FILEFORMAT))
             hsv = cv2.cvtColor(diff, cv2.COLOR_RGB2HSV)[:,:,CHANNEL]
@@ -57,34 +56,47 @@ def iter_cloudify(calibration_data, folder, lasers, sequence, pure_images, rotat
             if not pure_images:
                 diff = cv2.subtract(hsv, i2)
 
-            blur = cv2.GaussianBlur(diff,(5,5),0)
-            val = int(cv2.mean(blur)[0]+0.5)
-            diff = cv2.subtract(blur, val*10)
+            val = int(cv2.mean(diff)[0]+0.5)
+            diff = cv2.subtract(diff, val*10)
 
             if not rotated:
                 diff = np.rot90(diff, 3)
 
             gui.progress("analyse", i, len(sequence))
 
-            if camera:
-                points = camera[i]['chess_contour']
+            if camera: # mask pattern
                 mask = np.zeros(diff.shape, np.uint8)
-
-                cv2.fillConvexPoly(mask, points, 255)
+                cv2.fillConvexPoly(mask, camera[i]['chess_contour'], 255)
                 diff = cv2.bitwise_and(diff, diff, mask=mask)
 
             points, processed = lineprocessor(diff, laser)
 
-            if points and points[0].size:
+            if points is not None and points[0].size:
+                nosave = False
                 disp = cv2.merge( np.array((np.clip(diff*10, 0, 100), processed, processed)) )
-                gui.display(disp, "laser %d"%(laser+1), resize=(640, 480))
+                if interactive:
+                    txt = "Esc=NOT OK, Enter=OK"
+                else:
+                    txt = "laser %d"%(laser+1)
+                gui.display(disp, txt,  resize=(640, 640))
+                if interactive:
+                    for n in range(20):
+                        x = cv2.waitKey(100)
+                        if x == 27:
+                            nosave = True
+                            break
+                        elif x&0xFF in (10, 32):
+                            break
 
-                if not interactive or not input("Keep ?").strip():
+                if not interactive or not nosave:
                     if camera:
                         sliced_lines[n][laser] = [ points ] + camera[i]['plane']
                     else:
                         sliced_lines[n][laser] = [ np.deg2rad(n), points, laser ]
                         if not pure_images:
                             color_slices[n][laser] = i2[points]
+    if camera:
+        yield sliced_lines
+    else:
+        yield sliced_lines, color_slices
 
-    yield sliced_lines

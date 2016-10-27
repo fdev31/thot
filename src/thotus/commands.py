@@ -10,7 +10,7 @@ from thotus.ui import gui
 from thotus import settings
 from thotus import control
 from thotus import calibration
-from thotus.cloudify import meshify, cloudify
+from thotus.cloudify import meshify, cloudify, iter_cloudify
 from thotus.calibration.data import CalibrationData
 from thotus.calibration.chessboard import chess_detect, chess_draw
 
@@ -104,18 +104,16 @@ def recognize_pure():
     " Compute mesh from images (assume laser images are pure) "
     return recognize(pure_images=True, method='pureimage')
 
-def recognize(pure_images=False, rotated=False, method='pureimage'):
+def recognize(pure_images=False, rotated=False, method='uncanny'):
     " Compute mesh from images "
     view_stop()
     calibration_data = settings.load_data(CalibrationData())
 
     r = settings.get_laser_range()
 
-    slices = cloudify(calibration_data, settings.WORKDIR, r, range(360), pure_images, rotated, method=method)
+    slices, colors = cloudify(calibration_data, settings.WORKDIR, r, range(360), pure_images, rotated, method=method)
     meshify(calibration_data, slices).save("model.ply")
     gui.clear()
-
-#####
 
 def set_horus_cfg():
     " Load horus calibration configuration "
@@ -140,10 +138,10 @@ def scan():
 
     r = settings.get_laser_range()
 
-    cloudifier = cloudify(calibration_data, settings.WORKDIR, r, range(360), False, False, method='pureimage')
+    cloudifier = iter_cloudify(calibration_data, settings.WORKDIR, r, range(360), False, False, method='pureimage')
 
     capture(step=cloudifier.next)
-    slices = next(cloudifier)
+    slices, colors = next(cloudifier)
     meshify(calibration_data, slices).save("model.ply")
     gui.clear()
 

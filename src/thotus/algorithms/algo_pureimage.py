@@ -3,7 +3,7 @@ from thotus.algorithms.ransac import ransac
 import numpy as np
 import cv2
 
-def compute(img, laser_nr, threshold=40, use_ransac=False, prune_top=0):
+def compute(img, laser_nr, threshold=40, use_ransac=False):
 	x = []
 	y = []
 	img = cv2.blur(img, (5, 5))
@@ -27,4 +27,5 @@ def compute(img, laser_nr, threshold=40, use_ransac=False, prune_top=0):
 	points = (x, y)
 	if points:
 		return (points, compute_line_image(points, img))
+    return None, None
 
