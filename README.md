@@ -68,6 +68,10 @@ A special "exec" command allows command chaining from the command line:
 
     $ ./thot exec setGain 5, calibrate, keep_laser 1 , make
 
+Rebuild mesh from previous scan, keeping first laser information only:
+
+    $ ./thot exec keep_laser 1, make
+
 Recalibrate manually (while calibrating laser some lines are not matching the picture)
 
     $ ./thot exec recalibrate_manual, recalibrate
@@ -75,6 +79,10 @@ Recalibrate manually (while calibrating laser some lines are not matching the pi
 
 Images are saved into **capture/** folder
 Pointcloud is saved as **capture.ply**
+
+## Example
+
+![Scanned model](http://scan.crava.ch/shot.jpg)
 
 ## Future / TODO
 

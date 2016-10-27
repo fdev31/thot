@@ -92,14 +92,14 @@ def iter_cloudify(calibration_data, folder, lasers, sequence, pure_images, rotat
 
             if len(pictures_todisplay) > 1:
                 pictures_todisplay = np.array(pictures_todisplay)
-                nref = (np.sum(pictures_todisplay[:,0,:], axis=0)/len(pictures_todisplay)).astype(np.uint8)
-                gref = (np.sum(pictures_todisplay[:,1,:], axis=0)/len(pictures_todisplay)).astype(np.uint8)
+                nref = (np.sum(pictures_todisplay[:,0,:], axis=0)/1.0)
+                gref = (np.sum(pictures_todisplay[:,1,:], axis=0)/len(pictures_todisplay))
             else:
                 gref = pictures_todisplay[0][1]
                 nref = pictures_todisplay[0][0]
 
-            gref = (gref * 0.4).astype(np.uint8)
-            nref = cv2.dilate(nref, d_kern)
+            gref = (gref * 0.6).astype(np.uint8)
+            nref = cv2.dilate(nref, d_kern).astype(np.uint8)
 
             r = cv2.bitwise_or(gref, nref)
             disp = cv2.merge( np.array(( r, gref, r)) )
