@@ -22,7 +22,7 @@ class CalibrationData(object):
 
         self._md5_hash = None
 
-        self.laser_planes = [settings.Attribute() for _ in range(settings.LASER_COUNT)]
+        self.laser_planes = [settings.Attribute() for _ in settings.get_laser_range()]
         self.platform_rotation = None
         self.platform_translation = None
 

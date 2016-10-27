@@ -29,7 +29,7 @@ def find_laser_plane(X):
     return (dist, normal, std)
 
 def calibration(calibration_data, images, pure_laser=False):
-    for laser in range(settings.LASER_COUNT):
+    for laser in settings.get_laser_range():
         selected_planes = []
         ranges = []
         for fn in images:
