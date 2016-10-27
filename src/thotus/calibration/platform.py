@@ -1,11 +1,12 @@
 from thotus.ui import gui
 from thotus import settings
-from thotus.ply import save_scene
+from thotus.mesh import Mesh
 from thotus.algorithms.projection import PointCloudGeneration, fit_plane, fit_circle
 
 import cv2
 import numpy as np
 
+DEBUG = False
 ESTIMATED_PLATFORM_TRANSLAT = [-5, 90, 320] # reference
 
 def calibration(calibration_data, calibration_settings):
@@ -15,6 +16,8 @@ def calibration(calibration_data, calibration_settings):
 
     buggy_captures = set()
     pattern_points = settings.get_pattern_points()
+    if DEBUG:
+        out = Mesh()
 
     pcg = PointCloudGeneration(calibration_data)
     for i, fn in enumerate(calibration_settings):
@@ -39,9 +42,14 @@ def calibration(calibration_data, calibration_settings):
                 origin = np.array([[origin[0]], [origin[1]]])
                 t = pcg.compute_camera_point_cloud(origin, distance, normal)
                 if t is not None:
+                    if DEBUG:
+                        out.append_point(t, 10000, 10000)
                     x += [t[0][0]]
                     y += [t[1][0]]
                     z += [t[2][0]]
+
+    if DEBUG:
+        out.save('circle.ply')
 
     if buggy_captures:
         print("\n %d Buggy Captures!"%len(buggy_captures))
