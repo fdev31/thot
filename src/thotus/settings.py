@@ -107,10 +107,10 @@ def compare():
     path = os.path.expanduser('~/.horus/calibration.json')
     settings = _from_horus()
     o =  pickle.load( open('cam_data.bin', 'rb'))
-    SEP="\nvs\n"
+    SEP="\n"
     print("HORUS"+SEP+"THOT")
     for n in ('platform_rotation', 'platform_translation', 'camera_matrix', 'distortion_vector', 'laser_planes'):
-        print(("\n   %s   "%(n).capitalize()).center(80, '#' ))
+        print(("   %s   "%(n).upper().replace('_', ' ')).center(80, '-' ))
         v1 = settings[n]
         v2 = o[n]
         if n != 'laser_planes':
