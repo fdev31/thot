@@ -15,6 +15,7 @@ single_laser = None
 skip_calibration = True
 
 LASER_COUNT = 2
+ROI = (100, 100)
 
 PATTERN_MATRIX_SIZE = (11, 6)
 PATTERN_SQUARE_SIZE = 13.0

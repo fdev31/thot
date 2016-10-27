@@ -112,8 +112,21 @@ def recognize(pure_images=False, rotated=False, method='uncanny'):
     r = settings.get_laser_range()
 
     slices, colors = cloudify(calibration_data, settings.WORKDIR, r, range(360), pure_images, rotated, method=method)
-    meshify(calibration_data, slices, colors=colors).save("model.ply")
+    meshify(calibration_data, slices, colors=colors, cylinder=settings.ROI).save("model.ply")
     gui.clear()
+
+def set_roi(val=None):
+    if val is None:
+        print("Diameter: %dmm Height: %dmm"%settings.ROI)
+    else:
+        val = val.strip()
+        if ' ' in val:
+            width, height = (int(x) for x in val.split())
+        else:
+            height = int(val)
+            width = settings.ROI[0]
+        settings.ROI = (width, height)
+        set_roi()
 
 def set_horus_cfg():
     " Load horus calibration configuration "
@@ -123,14 +136,15 @@ def set_thot_cfg():
     " Load thot calibration configuration "
     settings.configuration = 'thot'
 
-def set_single_laser(laser_number):
-    i = int(laser_number)
-    if i not in (1, 2):
-        print("Laser number must be 1 or 2")
-    settings.single_laser = i-1
-
-def set_dual_laser():
-    settings.single_laser = None
+def set_single_laser(laser_number=None):
+    """ Set dual scanning (no param) or a single laser (1 or 2)  """
+    if laser_number is None:
+        settings.single_laser = None
+    else:
+        i = int(laser_number)
+        if i not in (1, 2):
+            print("Laser number must be 1 or 2")
+        settings.single_laser = i-1
 
 def scan():
     """ Scan object """

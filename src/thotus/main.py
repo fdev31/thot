@@ -82,8 +82,8 @@ commands = dict(
     exit           = exit,
     quit           = exit,
     help           = help,
-#    laserSingle    = set_single_laser,
-#    laserDual      = set_dual_laser,
+    keep_laser     = cmds.set_single_laser,
+    roi            = cmds.set_roi,
     )
 
 adv_commands = dict(

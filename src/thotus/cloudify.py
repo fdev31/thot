@@ -2,6 +2,7 @@ from collections import defaultdict
 
 from thotus import model
 from thotus.ui import gui
+from thotus import imtools
 from thotus import settings
 from thotus.mesh import meshify
 from thotus.linedetect import LineMaker
@@ -14,7 +15,7 @@ def cloudify(*a, **k):
         pass
     return _
 
-def iter_cloudify(calibration_data, folder, lasers, sequence, pure_images, rotated=False, method=None, camera=False, interactive=False):
+def iter_cloudify(calibration_data, folder, lasers, sequence, pure_images, rotated=False, method=None, camera=False, interactive=False, undistort=False):
     lm = LineMaker()
     lm.calibration_data = calibration_data
     if method is None:
@@ -35,31 +36,23 @@ def iter_cloudify(calibration_data, folder, lasers, sequence, pure_images, rotat
     for i, n in enumerate(sequence):
         yield
         if not pure_images:
-            i2 = cv2.imread(folder+'/color_%03d.%s'%(n, settings.FILEFORMAT))
+            fullcolor, i2 = imtools.imread(folder+'/color_%03d.%s'%(n, settings.FILEFORMAT), format="full", calibrated=calibration_data)
             if i2 is None:
                 continue
-            fullcolor = calibration_data.undistort_image(i2)
-            i2 = cv2.cvtColor(fullcolor, cv2.COLOR_RGB2HSV)[:,:,CHANNEL]
+            i2 = i2[:,:,2]
+
         for laser in lasers:
-            diff = cv2.imread(folder+'/laser%d_%03d.%s'%(laser, n, settings.FILEFORMAT))
-            hsv = cv2.cvtColor(diff, cv2.COLOR_RGB2HSV)[:,:,CHANNEL]
+            diff, hsv = imtools.imread(folder+'/laser%d_%03d.%s'%(laser, n, settings.FILEFORMAT), format="full", calibrated=calibration_data)
             if diff is None:
                 continue
-            if w is None:
-                w, h  = hsv.shape
-                calibration_data.width = w
-                calibration_data.height = h
+            hsv = hsv[:,:,2]
 
-            hsv = calibration_data.undistort_image(hsv)
+            w, h  = hsv.shape
+            calibration_data.width = w
+            calibration_data.height = h
 
             if not pure_images:
                 diff = cv2.subtract(hsv, i2)
-
-            val = int(cv2.mean(diff)[0]+0.5)
-            diff = cv2.subtract(diff, val*10)
-
-            if not rotated:
-                diff = np.rot90(diff, 3)
 
             gui.progress("analyse", i, len(sequence))
 
@@ -72,7 +65,7 @@ def iter_cloudify(calibration_data, folder, lasers, sequence, pure_images, rotat
 
             if points is not None and points[0].size:
                 nosave = False
-                disp = cv2.merge( np.array((np.clip(diff*10, 0, 100), processed, processed)) )
+                disp = cv2.merge( np.array((diff, processed, processed)) )
                 if interactive:
                     txt = "Esc=NOT OK, Enter=OK"
                 else:
@@ -93,7 +86,7 @@ def iter_cloudify(calibration_data, folder, lasers, sequence, pure_images, rotat
                     else:
                         sliced_lines[n][laser] = [ np.deg2rad(n), points, laser ]
                         if not pure_images:
-                            color_slices[n][laser] = fullcolor[points]
+                            color_slices[n][laser] = fullcolor[(points[1], points[0])]
     if camera:
         yield sliced_lines
     else:

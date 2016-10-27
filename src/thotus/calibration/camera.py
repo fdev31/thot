@@ -2,6 +2,7 @@ from collections import defaultdict
 
 from thotus.ui import gui
 from thotus import settings
+from thotus import imtools
 from thotus.calibration.chessboard import chess_detect, chess_draw
 
 import cv2
@@ -21,9 +22,8 @@ def calibration(calibration_data, images):
 
     for idx, fn in enumerate(images):
         gui.progress('Webcam calibration %s (%d found)... ' % (fn, found_nr), idx, len(images))
-        img = cv2.imread(fn, 0)
-        # rotation:
-        img = cv2.flip(cv2.transpose(img), 1)
+        img, hsv = imtools.imread(fn, format="full")
+        grey = hsv[:,:,2]
 
         if img is None:
             print("Failed to load", fn)
@@ -31,7 +31,7 @@ def calibration(calibration_data, images):
 
         w, h = img.shape[:2]
 
-        found, corners = chess_detect(img, flags)
+        found, corners = chess_detect(grey, flags)
 
         if not found:
             if found_nr > 20 and failed_serie > 6:
@@ -44,7 +44,7 @@ def calibration(calibration_data, images):
 
         failed_serie = 0
         found_nr += 1
-        cv2.cornerSubPix(img, corners, (11, 11), (-1, -1), term)
+        cv2.cornerSubPix(grey, corners, (11, 11), (-1, -1), term)
 
         temp_calibration_data[fn]['chess_corners'] = corners
         img_points.append(corners.reshape(-1, 2))
@@ -74,6 +74,7 @@ def calibration(calibration_data, images):
 
     rms, camera_matrix, dist_coefs, rvecs, tvecs = cv2.calibrateCamera(np.array(obj_points), np.array(img_points), (w, h), None, None)
 
+    w, h = 1280, 960
     camera_matrix, roi = cv2.getOptimalNewCameraMatrix(camera_matrix, dist_coefs, (w, h), 1, (w,h))
 
     calibration_data.camera_matrix = camera_matrix

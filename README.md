@@ -46,8 +46,6 @@ Calibrate software:
     Scan Bot> setExposureAbsolute 3000
     Scan Bot> calibrate
 
-
-
 Scan 3D object
 
     Scan Bot> scan
@@ -59,7 +57,6 @@ Pointcloud is saved as **capture.ply**
 ## Future / TODO
 
 - Improve platform calibration (very fragile algorithm :/)
-- Allow setting pattern height and cylinder boundaries from CLI
 - Blender integration
 - replace uvcdynctl by a custom v4l2capture fork / ask the maintainer of py3k branch
 - compute normals or mesh directly
