@@ -121,6 +121,6 @@ def recognize(pure_images=False, rotated=False, method='pureimage'):
         r = [settings.single_laser]
 
     slices = cloudify(calibration_data, settings.WORKDIR, r, range(360), pure_images, rotated, method=method)
-    meshify(calibration_data, slices)
+    obj = meshify(calibration_data, slices)
     save_scene("model.ply", obj)
     gui.clear()
