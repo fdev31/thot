@@ -88,6 +88,7 @@ commands = dict(
 
 adv_commands = dict(
     debug_settings = settings.compare,
+    import_val     = settings.import_val,
 
     # compute calibration data
     recalibrate      = cmds.calibrate,

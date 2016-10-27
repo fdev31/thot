@@ -15,7 +15,7 @@ single_laser = None
 skip_calibration = True
 
 LASER_COUNT = 2
-ROI = (100, 100)
+ROI = (100, 150)
 
 PATTERN_MATRIX_SIZE = (11, 6)
 PATTERN_SQUARE_SIZE = 13.0
@@ -73,8 +73,9 @@ def load_data(calibration_data):
         setattr(calibration_data, n, _cast(src[n]))
     return calibration_data
 
-def save_data(s):
-    pickle.dump({
+def save_data(s, clean=True):
+    if not clean:
+        s = {
         'distortion_vector': s._distortion_vector,
         'camera_matrix': s._camera_matrix,
 
@@ -82,7 +83,8 @@ def save_data(s):
         'platform_rotation': s.platform_rotation,
 
         'laser_planes': s.laser_planes,
-        }, open('cam_data.bin', 'wb'))
+        }
+    pickle.dump(s, open('cam_data.bin', 'wb'))
 
 def _from_horus():
     path = os.path.expanduser('~/.horus/calibration.json')
@@ -108,6 +110,17 @@ def _view_matrix(m):
         return str(m)
     else:
         return str(eval(m))
+
+def import_val(what=None):
+    " Imports some configuration from horus "
+    h = _from_horus()
+    o =  pickle.load( open('cam_data.bin', 'rb'))
+    if what is None:
+        for k in o.keys():
+            print(" - %s"%k)
+        return
+    o[what] = h[what]
+    save_data(o, clean=True)
 
 def compare():
     " Display horus & thot configurations side by side "
