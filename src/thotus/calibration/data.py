@@ -26,6 +26,12 @@ class CalibrationData(object):
         self.platform_rotation = None
         self.platform_translation = None
 
+    def __getitem__(self, name):
+        try:
+            return getattr(self, name)
+        except AttributeError as e:
+            raise KeyError(*e.args)
+
     def set_resolution(self, width, height):
         if self.width != width or self.height != height:
             self.width = width
