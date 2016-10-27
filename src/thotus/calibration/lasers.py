@@ -34,10 +34,10 @@ def calibration(calibration_data, calibration_settings, images, pure_laser=False
         for fn in images:
             num = int(fn.rsplit('/')[-1].split('_')[1].split('.')[0])
             if laser == 0:
-                if num > 70:
+                if num > 80:
                     continue
             else:
-                if num < 21:
+                if num < 20:
                     continue
             ranges.append(num)
             selected_planes.append(fn)
@@ -46,12 +46,12 @@ def calibration(calibration_data, calibration_settings, images, pure_laser=False
 
         assert len(ranges) == len(im)
 
-        slices = cloudify(calibration_data, settings.CALIBDIR, [laser], ranges, pure_images=pure_laser, method='straightpureimage', camera=im) # cylinder in mm
+        slices = cloudify(calibration_data, settings.CALIBDIR, [laser], ranges, pure_images=pure_laser,
+                method='straightpureimage', camera=im, interactive=True)
         obj = meshify(calibration_data, slices, im, cylinder=(1000, 1000))
 
         v = [_ for _ in obj.vertices if np.nonzero(_)[0].size]
-        print(len(obj.vertices))
-        print(len(v))
+        print("Removed %d suspicious vertex"%( len(obj.vertices) - len(v) ))
         dist, normal, std = find_laser_plane(np.array(v))
 
         calibration_data.laser_planes[laser].normal = normal

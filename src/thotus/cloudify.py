@@ -14,7 +14,7 @@ def cloudify(*a, **k):
         pass
     return _
 
-def iter_cloudify(calibration_data, folder, lasers, sequence, pure_images, rotated=False, method=None, camera=False):
+def iter_cloudify(calibration_data, folder, lasers, sequence, pure_images, rotated=False, method=None, camera=False, interactive=False):
     lm = LineMaker()
     lm.calibration_data = calibration_data
     if method is None:
@@ -74,14 +74,17 @@ def iter_cloudify(calibration_data, folder, lasers, sequence, pure_images, rotat
                 diff = cv2.bitwise_and(diff, diff, mask=mask)
 
             points, processed = lineprocessor(diff, laser)
-            disp = cv2.merge( np.array((diff, processed, processed)) )
-            gui.display(disp, "laser %d"%(laser+1), resize=(640, 480))
+
             if points and points[0].size:
-                if camera:
-                    sliced_lines[n][laser] = [ points ] + camera[i]['plane']
-                else:
-                    sliced_lines[n][laser] = [ np.deg2rad(n), points, laser ]
-                    if not pure_images:
-                        color_slices[n][laser] = i2[points]
+                disp = cv2.merge( np.array((np.clip(diff*10, 0, 100), processed, processed)) )
+                gui.display(disp, "laser %d"%(laser+1), resize=(640, 480))
+
+                if not interactive or not input("Keep ?").strip():
+                    if camera:
+                        sliced_lines[n][laser] = [ points ] + camera[i]['plane']
+                    else:
+                        sliced_lines[n][laser] = [ np.deg2rad(n), points, laser ]
+                        if not pure_images:
+                            color_slices[n][laser] = i2[points]
 
     yield sliced_lines
