@@ -67,14 +67,9 @@ def get_laser_range():
         return [single_laser]
 
 def load_data(calibration_data):
-    if configuration[0] == 'h':
-        h = _from_horus()
-        for n in ('platform_rotation', 'platform_translation', 'camera_matrix', 'distortion_vector', 'laser_planes'):
-            setattr(calibration_data, n, _cast(h[n]))
-    else:
-        o =  pickle.load( open('cam_data.bin', 'rb'))
-        for n in ('platform_rotation', 'platform_translation', 'camera_matrix', 'distortion_vector', 'laser_planes'):
-            setattr(calibration_data, n, _cast(o[n]))
+    src = _from_horus() if configuration[0] == 'h' else  pickle.load( open('cam_data.bin', 'rb'))
+    for n in ('platform_rotation', 'platform_translation', 'camera_matrix', 'distortion_vector', 'laser_planes'):
+        setattr(calibration_data, n, _cast(src[n]))
     return calibration_data
 
 def save_data(s):
