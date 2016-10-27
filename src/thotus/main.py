@@ -144,32 +144,44 @@ if not leave_after:
     except Exception as e:
         pass
 
+from time import sleep
+script_commands = []
 while not leave_now:
     if not leave_after:
         try:
             text = prompt(u'Scan Bot> ',
-                    history=history,
-                    get_bottom_toolbar_tokens=get_bottom_toolbar_tokens,
-                    style=style,
-                    completer = WordCompleter(commands, ignore_case=True, match_middle=False,
-                        )
+                history=history,
+                get_bottom_toolbar_tokens=get_bottom_toolbar_tokens,
+                style=style,
+                completer = WordCompleter(commands, ignore_case=True, match_middle=False,
                     )
+                )
         except EOFError:
             break
         except KeyboardInterrupt:
             wanna_leave()
 
-    if leave_now:
+    else:
+        if script_commands:
+            text = script_commands.pop(0)
+
+    if leave_now and not script_commands:
         break
 
     timers['execution'] = time()
+
     if text.strip():
+        orig_text = text
         if ' ' in text:
             params = text.split()
             text = params[0]
-            params = params[1:]
+            params = [x.strip() for x in params[1:]]
         else:
             params = ()
+        text = text.strip()
+        if text == "exec":
+            script_commands[:] = [x.strip() for x in ' '.join(params).split(',') if x.strip()]
+            continue
         try:
             if commands[text](*params) != 3:
                 print("")
@@ -186,7 +198,8 @@ while not leave_now:
             else:
                 print("Error occured")
     timers['end_execution'] = time()
-    if leave_after:
+
+    if leave_after and not script_commands:
         leave_now = True
 
 cmds.stop()

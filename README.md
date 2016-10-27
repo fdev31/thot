@@ -50,6 +50,15 @@ Scan 3D object
 
     Scan Bot> scan
 
+## Advanced usages
+
+You can also call the application from the command line:
+
+    $ ./thot recalibrate
+
+A special "exec" command allows command chaining from the command line:
+
+    $ ./thot exec setGain 5, calibrate, keep_laser 1 , make
 
 Images are saved into **capture/** folder
 Pointcloud is saved as **capture.ply**
