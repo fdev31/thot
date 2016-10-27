@@ -38,9 +38,8 @@ def iter_cloudify(calibration_data, folder, lasers, sequence, pure_images, rotat
             i2 = cv2.imread(folder+'/color_%03d.%s'%(n, settings.FILEFORMAT))
             if i2 is None:
                 continue
-            i2 = calibration_data.undistort_image(i2)
-            fullcolor = cv2.cvtColor(i2, cv2.COLOR_RGB2HSV)
-            i2 = fullcolor[:,:,CHANNEL]
+            fullcolor = calibration_data.undistort_image(i2)
+            i2 = cv2.cvtColor(fullcolor, cv2.COLOR_RGB2HSV)[:,:,CHANNEL]
         for laser in lasers:
             diff = cv2.imread(folder+'/laser%d_%03d.%s'%(laser, n, settings.FILEFORMAT))
             hsv = cv2.cvtColor(diff, cv2.COLOR_RGB2HSV)[:,:,CHANNEL]
@@ -94,7 +93,7 @@ def iter_cloudify(calibration_data, folder, lasers, sequence, pure_images, rotat
                     else:
                         sliced_lines[n][laser] = [ np.deg2rad(n), points, laser ]
                         if not pure_images:
-                            color_slices[n][laser] = i2[points]
+                            color_slices[n][laser] = fullcolor[points]
     if camera:
         yield sliced_lines
     else:

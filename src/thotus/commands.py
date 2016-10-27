@@ -112,7 +112,7 @@ def recognize(pure_images=False, rotated=False, method='uncanny'):
     r = settings.get_laser_range()
 
     slices, colors = cloudify(calibration_data, settings.WORKDIR, r, range(360), pure_images, rotated, method=method)
-    meshify(calibration_data, slices).save("model.ply")
+    meshify(calibration_data, slices, colors=colors).save("model.ply")
     gui.clear()
 
 def set_horus_cfg():

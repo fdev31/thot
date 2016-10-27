@@ -49,7 +49,7 @@ def calibration(calibration_data, calibration_settings, images, pure_laser=False
         slices = cloudify(calibration_data, settings.CALIBDIR, [laser], ranges, pure_images=pure_laser,
                 method='straightuncanny', camera=im, interactive=True)
 
-        obj = meshify(calibration_data, slices, im, cylinder=(1000, 1000))
+        obj = meshify(calibration_data, slices, camera=im, cylinder=(1000, 1000))
 
         v = [_ for _ in obj.vertices if np.nonzero(_)[0].size]
         print("Removed %d suspicious vertex"%( len(obj.vertices) - len(v) ))
