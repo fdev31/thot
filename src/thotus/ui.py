@@ -34,6 +34,8 @@ class GUI:
 
         if resize:
             image = image.copy()
+            if isinstance(resize, float):
+                resize = tuple(int(x*resize) for x in image.shape[:2])
 
         if text:
             black = (0, 0, 0)
