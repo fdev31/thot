@@ -37,7 +37,7 @@ class Mesh:
 
     @property
     def vertices(self):
-        return self.obj._mesh.vertexes
+        return self.obj._mesh.vertexes[:self.obj._mesh.vertex_count]
 
     def get(self):
         return self.obj

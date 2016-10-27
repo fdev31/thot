@@ -51,9 +51,7 @@ def calibration(calibration_data, calibration_settings, images, pure_laser=False
 
         obj = meshify(calibration_data, slices, camera=im, cylinder=(1000, 1000))
 
-        v = [_ for _ in obj.vertices if np.nonzero(_)[0].size]
-        print("Removed %d suspicious vertex"%( len(obj.vertices) - len(v) ))
-        dist, normal, std = find_laser_plane(np.array(v))
+        dist, normal, std = find_laser_plane(np.array(obj.vertices))
 
         calibration_data.laser_planes[laser].normal = normal
         calibration_data.laser_planes[laser].distance = dist

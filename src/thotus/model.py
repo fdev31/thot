@@ -40,34 +40,6 @@ class Model(object):
         self._mesh = Mesh(self)
         return self._mesh
 
-    def _post_process_after_load(self):
-        if len(self._mesh.vertexes) > 0:
-            if not self._is_point_cloud:
-                self._mesh._calculate_normals()
-
-            self._min = np.array([np.inf, np.inf, np.inf], np.float64)
-            self._max = np.array([-np.inf, -np.inf, -np.inf], np.float64)
-            self._boundary_circle_size = 0
-
-            vertexes = self._mesh.vertexes
-            vmin = vertexes.min(0)
-            vmax = vertexes.max(0)
-            for n in range(0, 3):
-                self._min[n] = min(vmin[n], self._min[n])
-                self._max[n] = max(vmax[n], self._max[n])
-
-            # Calculate the boundary circle
-            center = vmin + (vmax - vmin) / 2.0
-            boundary_circle_size = round(np.max(np.linalg.norm(vertexes - center, axis=1)), 3)
-            self._boundary_circle_size = max(self._boundary_circle_size, boundary_circle_size)
-
-            self._size = self._max - self._min
-            if not self._is_point_cloud:
-                self._draw_offset = (self._max + self._min) / 2
-                self._draw_offset[2] = self._min[2]
-            self._max -= self._draw_offset
-            self._min -= self._draw_offset
-
     def get_position(self):
         return self._position
 
