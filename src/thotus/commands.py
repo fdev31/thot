@@ -115,17 +115,14 @@ def recognize(pure_images=False, rotated=False, method='uncanny'):
     meshify(calibration_data, slices, colors=colors, cylinder=settings.ROI).save("model.ply")
     gui.clear()
 
-def set_roi(val=None):
-    if val is None:
+def set_roi(val1=None, val2=None):
+    if val1 is None:
         print("Diameter: %dmm Height: %dmm"%settings.ROI)
     else:
-        val = val.strip()
-        if ' ' in val:
-            width, height = (int(x) for x in val.split())
-        else:
-            height = int(val)
-            width = settings.ROI[0]
-        settings.ROI = (width, height)
+        if not val2:
+            val2 = val1
+            val1 = settings.ROI[0]
+        settings.ROI = (int(val1), int(val2))
         set_roi()
 
 def set_horus_cfg():

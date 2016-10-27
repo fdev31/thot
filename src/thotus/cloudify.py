@@ -65,7 +65,7 @@ def iter_cloudify(calibration_data, folder, lasers, sequence, pure_images, rotat
 
             if points is not None and points[0].size:
                 nosave = False
-                disp = cv2.merge( np.array((diff, processed, processed)) )
+                disp = cv2.merge( np.array((diff, diff, processed)) )
                 if interactive:
                     txt = "Esc=NOT OK, Enter=OK"
                 else:
