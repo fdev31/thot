@@ -25,7 +25,7 @@ def iter_cloudify(calibration_data, folder, lasers, sequence, pure_images, rotat
     sliced_lines = defaultdict(lambda: [None, None])
     color_slices =  defaultdict(lambda: [None, None])
 
-    d_kern = np.ones((4,4),np.uint8)
+    d_kern = np.ones((3,3),np.uint8)
 
     calibration_data.width = 1280
     calibration_data.height = 960

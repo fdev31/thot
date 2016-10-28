@@ -19,6 +19,8 @@ Useable for some people already, probably developers:
 - Python 2 & 3 compatible
 - fully automated calibration done in a minute
 
+Watch [introduction video](https://youtu.be/qUJCSKR_FXM)
+
 ## Help wanted!
 
 To find why the two point clouds are slightly deformed, probably I'm missing some math in calibration...
