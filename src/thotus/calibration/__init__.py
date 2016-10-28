@@ -11,16 +11,28 @@ from thotus.ui import gui
 import cv2
 import numpy as np
 
-FAST_CALIBRATE = 1 # 1 for full calibration, > 1 for grosser calibration
+def calibrate_cam_from_shots():
+    " Compute camera calibration data from shots "
+    from . import camera, data
+    sk = settings.skip_calibration
+    settings.skip_calibration = False
 
-def calibrate(pure_laser=False):
+    calibration_data = data.CalibrationData()
+
+    img_mask = settings.SHOTSDIR + '/*.' + settings.FILEFORMAT
+    img_names = sorted(glob(img_mask))
+    camera.calibration(calibration_data, img_names)
+    settings.skip_calibration = sk
+    gui.clear()
+
+def calibrate():
     " Compute calibration data from images "
     from . import camera, platform, lasers, data
 
     calibration_data = data.CalibrationData()
 
     img_mask = settings.CALIBDIR + '/color_*.' + settings.FILEFORMAT
-    img_names = sorted(glob(img_mask))[::FAST_CALIBRATE]
+    img_names = sorted(glob(img_mask))
 
     calib_settings = camera.calibration(calibration_data, img_names)
     buggy_captures = platform.calibration(calibration_data, calib_settings)
@@ -30,6 +42,6 @@ def calibrate(pure_laser=False):
     good_images = list(good_images)
     good_images.sort()
 
-    lasers.calibration(calibration_data, calib_settings, good_images, pure_laser)
+    lasers.calibration(calibration_data, calib_settings, good_images)
     settings.save_data(calibration_data)
     gui.clear()
