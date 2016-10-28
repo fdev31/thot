@@ -26,6 +26,9 @@ class CalibrationData(object):
         self.platform_rotation = None
         self.platform_translation = None
 
+    def __setitem__(self, name, val):
+        return setattr(self, name, val)
+
     def __getitem__(self, name):
         try:
             return getattr(self, name)

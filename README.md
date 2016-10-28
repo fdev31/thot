@@ -14,7 +14,7 @@ Not giving very good calibration results yet, in heavy development.
 
 Useable for some people already, probably developers:
 
-- No patched OpenCV needed
+- No patched OpenCV needed / Linux compatible
 - Simple and friendly CLI
 - Python 2 & 3 compatible
 - fully automated calibration done in a minute
@@ -84,27 +84,26 @@ Pointcloud is saved as **capture.ply**
 
 ## Example
 
-![Scanned statue](http://scan.crava.ch/ganesh.jpg)
+Result of a 2 lasers scan:
+
+![Scanned statue](http://scan.crava.ch/ganesh_cloud.jpg)
+
+After poisson reconstruction and color transfer:
+
+![Scanned statue](http://scan.crava.ch/ganesh_mesh.jpg)
 
 ## Future / TODO
 
-- Improve platform calibration (very fragile algorithm :/)
 - Blender integration
-- replace uvcdynctl by a custom v4l2capture fork / ask the maintainer of py3k branch
 - compute normals or mesh directly
 
 ## Dependencies
 
-- Python (2 or 3)
 - opencv
 - numpy
 - pyserial
-- v4l2capture (check https://github.com/rmca/python-v4l2capture/tree/py3k for Python3 support)
-
-For a few extra features (will be optional in the future):
 - prompt_toolkit
 - scipy
-- libwebcam (*uvcdynctrl*)
 
 
 ## Bugs
