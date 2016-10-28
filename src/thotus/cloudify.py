@@ -68,13 +68,8 @@ def iter_cloudify(calibration_data, folder, lasers, sequence, pure_images, rotat
                     gui.display(disp, txt,  resize=0.7)
                 pictures_todisplay.append((processed, laser_grey))
                 if interactive:
-                    for n in range(20):
-                        x = cv2.waitKey(100)
-                        if x == 27:
-                            nosave = True
-                            break
-                        elif x&0xFF in (10, 32):
-                            break
+                    if not gui.ok_cancel(20):
+                        nosave = True
 
                 if not interactive or not nosave:
                     if camera:

@@ -29,6 +29,15 @@ class GUI:
             if cv2.waitKey(20) <= 0:
                 break
 
+    def ok_cancel(self, duration=10, default=True):
+        for n in range(duration):
+            x = cv2.waitKey(100)
+            if x == 27:
+                return False
+            elif x&0xFF in (10, 32):
+                return True
+        return default
+
     def display(self, image, text, resize=None, crop=False, disp_number=0):
         if crop:
             image = image[crop[0] or slice(None, None), crop[1] or slice(None, None)]
