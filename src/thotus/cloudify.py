@@ -19,61 +19,54 @@ def cloudify(*a, **k):
 
 def iter_cloudify(calibration_data, folder, lasers, sequence, pure_images, rotated=False, method=None, camera=False, interactive=False, undistort=False):
     lm = LineMaker()
-    lm.calibration_data = calibration_data
-    if method is None:
-        print("Error, chose a method from:")
-        for n in dir(lm):
-            if n.startswith('from_'):
-                print(" - %s"%n[5:])
-        raise ValueError()
     lineprocessor = getattr(lm, 'from_'+method)
-    # Pointcloudize !!
+    lm.calibration_data = calibration_data
 
     sliced_lines = defaultdict(lambda: [None, None])
     color_slices =  defaultdict(lambda: [None, None])
-    w, h = None, None
 
     d_kern = np.ones((4,4),np.uint8)
+
+    calibration_data.width = 1280
+    calibration_data.height = 960
+
 
     for i, n in enumerate(sequence):
         yield
         if not pure_images:
-            fullcolor, i2 = imtools.imread(folder+'/color_%03d.%s'%(n, settings.FILEFORMAT), format="full", calibrated=calibration_data)
-            if i2 is None:
+            fullcolor, ref_grey = imtools.imread(folder+'/color_%03d.%s'%(n, settings.FILEFORMAT), format="full", calibrated=undistort and calibration_data)
+            if ref_grey is None:
                 continue
-            i2 = i2[:,:,2]
+            ref_grey = ref_grey[:,:,2]
 
         pictures_todisplay = []
 
         for laser in lasers:
-            diff, hsv = imtools.imread(folder+'/laser%d_%03d.%s'%(laser, n, settings.FILEFORMAT), format="full", calibrated=calibration_data)
-            if diff is None:
+            laser_color, laser_grey = imtools.imread(folder+'/laser%d_%03d.%s'%(laser, n, settings.FILEFORMAT), format="full", calibrated=undistort and calibration_data)
+            if laser_color is None:
                 continue
-            hsv = hsv[:,:,2]
-
-            w, h  = hsv.shape
-            calibration_data.width = w
-            calibration_data.height = h
+            laser_grey = laser_grey[:,:,2]
 
             if not pure_images:
-                diff = cv2.subtract(hsv, i2)
+                laser_color = cv2.subtract(laser_grey, ref_grey)
 
             gui.progress("analyse", i, len(sequence))
 
             if camera: # mask pattern
-                mask = np.zeros(diff.shape, np.uint8)
+                mask = np.zeros(laser_color.shape, np.uint8)
                 cv2.fillConvexPoly(mask, camera[i]['chess_contour'], 255)
-                diff = cv2.bitwise_and(diff, diff, mask=mask)
+                laser_color = cv2.bitwise_and(laser_color, laser_color, mask=mask)
 
-            points, processed = lineprocessor(diff, laser)
+            points, processed = lineprocessor(laser_color, laser)
 
+            # validate & store
             if points is not None and points[0].size:
                 nosave = False
                 if interactive:
-                    disp = cv2.merge( np.array(( hsv, processed, processed)) )
+                    disp = cv2.merge( np.array(( laser_grey, processed, processed)) )
                     txt = "Esc=NOT OK, Enter=OK"
                     gui.display(disp, txt,  resize=0.7)
-                pictures_todisplay.append((processed, hsv))
+                pictures_todisplay.append((processed, laser_grey))
                 if interactive:
                     for n in range(20):
                         x = cv2.waitKey(100)
@@ -90,6 +83,8 @@ def iter_cloudify(calibration_data, folder, lasers, sequence, pure_images, rotat
                         sliced_lines[n][laser] = [ np.deg2rad(n), points, laser ]
                         if not pure_images:
                             color_slices[n][laser] = fullcolor[(points[1], points[0])]
+
+        # display
         if i%int(settings.ui_base_i*2) == 0 and pictures_todisplay:
             if DEBUG:
                 if len(pictures_todisplay) > 1:
