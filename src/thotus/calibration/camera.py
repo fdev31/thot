@@ -45,9 +45,8 @@ def calibration(calibration_data, images):
         failed_serie = 0
         found_nr += 1
         cv2.cornerSubPix(grey, corners, (11, 11), (-1, -1), term)
-
         temp_calibration_data[fn]['chess_corners'] = corners
-        img_points.append(corners.reshape(-1, 2))
+        img_points.append(corners)
         obj_points.append(pattern_points)
 
         # compute mask coordinates
