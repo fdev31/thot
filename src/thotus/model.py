@@ -28,41 +28,11 @@ class Model(object):
         if '.' in self._name:
             self._name = os.path.splitext(self._name)[0]
         self._mesh = None
-        self._position = np.array([0.0, 0.0, 0.0])
-        self._matrix = np.matrix([[1, 0, 0], [0, 1, 0], [0, 0, 1]], np.float64)
-        self._min = None
-        self._max = None
         self._size = np.array([0.0, 0.0, 0.0])
-        self._boundary_circle_size = 75.0
-        self._draw_offset = np.array([0.0, 0.0, 0.0])
 
     def _add_mesh(self):
         self._mesh = Mesh(self)
         return self._mesh
-
-    def get_position(self):
-        return self._position
-
-    def get_matrix(self):
-        return self._matrix
-
-    def get_size(self):
-        return self._size
-
-    def get_draw_offset(self):
-        return self._draw_offset
-
-    def get_boundary_circle(self):
-        return self._boundary_circle_size
-
-    def is_point_cloud(self):
-        return self._is_point_cloud
-
-    def get_scale(self):
-        return np.array([
-            np.linalg.norm(self._matrix[::, 0].getA().flatten()),
-            np.linalg.norm(self._matrix[::, 1].getA().flatten()),
-            np.linalg.norm(self._matrix[::, 2].getA().flatten())], np.float64)
 
 
 class Mesh(object):
@@ -85,25 +55,12 @@ class Mesh(object):
         self.vertexes[n], self.colors[n] = (x, y, z), (r, g, b)
         self.vertex_count += 1
 
-    def _add_face(self, x0, y0, z0, x1, y1, z1, x2, y2, z2):
-        n = self.vertex_count
-        self.vertexes[n], self.vertexes[
-            n + 1], self.vertexes[n + 2] = (x0, y0, z0), (x1, y1, z1), (x2, y2, z2)
-        self.vertex_count += 3
-
     def _prepare_vertex_count(self, vertex_number):
         # Set the amount of vertex before loading data in them. This way we can
         # create the np arrays before we fill them.
         self.vertexes = np.zeros((vertex_number, 3), np.float32)
         self.colors = np.zeros((vertex_number, 3), np.int32)
         self.normal = np.zeros((vertex_number, 3), np.float32)
-        self.vertex_count = 0
-
-    def _prepare_face_count(self, face_number):
-        # Set the amount of faces before loading data in them. This way we can
-        # create the np arrays before we fill them.
-        self.vertexes = np.zeros((face_number * 3, 3), np.float32)
-        self.normal = np.zeros((face_number * 3, 3), np.float32)
         self.vertex_count = 0
 
     def _calculate_normals(self):

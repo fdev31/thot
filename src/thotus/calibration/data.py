@@ -35,12 +35,6 @@ class CalibrationData(object):
         except AttributeError as e:
             raise KeyError(*e.args)
 
-    def set_resolution(self, width, height):
-        if self.width != width or self.height != height:
-            self.width = width
-            self.height = height
-            self._compute_weight_matrix()
-
     def undistort_image(self, image):
         cam_matrix , roi = cv2.getOptimalNewCameraMatrix(self.camera_matrix, self.distortion_vector, image.shape[:2], 1, image.shape[:2])
         dst = cv2.undistort(image,
@@ -59,7 +53,6 @@ class CalibrationData(object):
     @camera_matrix.setter
     def camera_matrix(self, value):
         self._camera_matrix = value
-        self._compute_dist_camera_matrix()
 
     @property
     def distortion_vector(self):
@@ -68,25 +61,10 @@ class CalibrationData(object):
     @distortion_vector.setter
     def distortion_vector(self, value):
         self._distortion_vector = value
-        self._compute_dist_camera_matrix()
 
     @property
     def dist_camera_matrix(self):
         return self._dist_camera_matrix
-
-    @property
-    def weight_matrix(self):
-        return self._weight_matrix
-
-    def _compute_dist_camera_matrix(self):
-        if self._camera_matrix is not None and self._distortion_vector is not None:
-            self._dist_camera_matrix, self._roi = cv2.getOptimalNewCameraMatrix(
-                self._camera_matrix, self._distortion_vector,
-                (int(self.width), int(self.height)), alpha=1)
-            self._md5_hash = md5()
-            self._md5_hash.update(self._camera_matrix)
-            self._md5_hash.update(self._distortion_vector)
-            self._md5_hash = self._md5_hash.hexdigest()
 
     def md5_hash(self):
         return self._md5_hash
