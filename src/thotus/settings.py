@@ -8,6 +8,7 @@ import numpy as np
 ('platform_translation', 'translation_vector'),
 ('camera_matrix', 'camera_matrix'),
 ('distortion_vector', 'distortion_vector'),
+)
 
 configuration = 'thot'
 single_laser = None
