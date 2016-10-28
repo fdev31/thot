@@ -84,7 +84,7 @@ Pointcloud is saved as **capture.ply**
 
 ## Example
 
-![Scanned model](http://scan.crava.ch/shot.jpg)
+![Scanned statue](http://scan.crava.ch/ganesh.jpg)
 
 ## Future / TODO
 
