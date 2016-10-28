@@ -109,7 +109,7 @@ def _from_horus():
 
 def _view_matrix(m):
     try:
-        m = repr(m)[5:]
+        m = repr(m.round(3))[5:]
         m = m[1:1+m.rindex(']')]
     except Exception:
         return str(m)
