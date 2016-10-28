@@ -19,8 +19,6 @@ Useable for some people already, probably developers:
 - Python 2 & 3 compatible
 - fully automated calibration done in a minute
 
-Watch [introduction video](https://youtu.be/qUJCSKR_FXM)
-
 ## Help wanted!
 
 To find why the two point clouds are slightly deformed, probably I'm missing some math in calibration...
@@ -38,6 +36,8 @@ On archlinux system:
 > You may also want to install *guvcview* to setup the webcam before starting the app
 
 ## Usage
+
+[![Quickstart video](https://img.youtube.com/vi/qUJCSKR_FXM/0.jpg)](https://www.youtube.com/watch?v=qUJCSKR_FXM)
 
 After installing all dependencies, unpack sources and open a terminal emulator:
 
