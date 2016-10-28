@@ -37,9 +37,13 @@ CALIBDIR="./calibration"
 SHOTSDIR="./screenshots"
 FILEFORMAT='jpg' # or png
 
-for d in (WORKDIR, CALIBDIR, SHOTSDIR):
+CONF_DIR = os.path.expanduser('~/.config/thot')
+
+for d in (WORKDIR, CALIBDIR, SHOTSDIR, CONF_DIR):
     try: os.mkdir(d)
     except: pass
+
+CAMERA_SETTINGS_FILE = os.path.join(CONF_DIR, 'cam_data.bin')
 
 class Attribute(dict):
 
@@ -69,7 +73,7 @@ def get_laser_range():
         return [single_laser]
 
 def load_data(calibration_data):
-    src = _from_horus() if configuration[0] == 'h' else  pickle.load( open('cam_data.bin', 'rb'))
+    src = _from_horus() if configuration[0] == 'h' else  pickle.load( open(CAMERA_SETTINGS_FILE, 'rb'))
     for n in ('platform_rotation', 'platform_translation', 'camera_matrix', 'distortion_vector', 'laser_planes'):
         setattr(calibration_data, n, _cast(src[n]))
     return calibration_data
@@ -85,7 +89,7 @@ def save_data(s, clean=True):
 
         'laser_planes': s.laser_planes,
         }
-    pickle.dump(s, open('cam_data.bin', 'wb'))
+    pickle.dump(s, open(CAMERA_SETTINGS_FILE, 'wb'))
 
 def _from_horus():
     path = os.path.expanduser('~/.horus/calibration.json')
@@ -115,7 +119,7 @@ def _view_matrix(m):
 def import_val(what=None):
     " Imports some configuration from horus "
     h = _from_horus()
-    o =  pickle.load( open('cam_data.bin', 'rb'))
+    o =  pickle.load( open(CAMERA_SETTINGS_FILE, 'rb'))
     if what is None:
         for k in o.keys():
             print(" - %s"%k)
@@ -127,7 +131,7 @@ def compare():
     " Display horus & thot configurations side by side "
     path = os.path.expanduser('~/.horus/calibration.json')
     settings = _from_horus()
-    o =  pickle.load( open('cam_data.bin', 'rb'))
+    o =  pickle.load( open(CAMERA_SETTINGS_FILE, 'rb'))
     SEP="\n"
     print("HORUS"+SEP+"THOT")
     for n in ('platform_rotation', 'platform_translation', 'camera_matrix', 'distortion_vector', 'laser_planes'):
