@@ -96,8 +96,7 @@ adv_commands = dict(
 
     # compute calibration data
     recalibrate      = cmds.calibrate,
-    recalibrate_pure = cmds.calibrate_pure,
-    recalibrate_cam  = control.toggle_cam_calibration,
+    calibrate_cam    = control.toggle_cam_calibration,
 
     # acquire pictures
     capture          = cmds.capture,
@@ -108,9 +107,11 @@ adv_commands = dict(
     pattern_colors   = cmds.capture_pattern_colors,
     pattern_lasers   = cmds.capture_pattern_lasers,
 
+    # pure mode
+    toggle_pure_mode = cmds.toggle_pure_mode,
+
     # build 3D mesh
     make          = cmds.recognize,
-    make_pure     = cmds.recognize_pure,
 
     use_horus_cfg    = cmds.set_horus_cfg,
     use_thot_cfg     = cmds.set_thot_cfg,

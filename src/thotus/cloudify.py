@@ -17,7 +17,8 @@ def cloudify(*a, **k):
         pass
     return _
 
-def iter_cloudify(calibration_data, folder, lasers, sequence, pure_images, rotated=False, method=None, camera=False, interactive=False, undistort=False):
+def iter_cloudify(calibration_data, folder, lasers, sequence, rotated=False, method=None, camera=False, interactive=False, undistort=False):
+    pure_images = settings.pure_mode
     lm = LineMaker()
     lineprocessor = getattr(lm, 'from_'+method)
     lm.calibration_data = calibration_data

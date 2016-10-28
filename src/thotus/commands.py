@@ -100,18 +100,14 @@ def capture(kind=control.ALL, step=None):
 
     s.reset_motor_rotation()
 
-def recognize_pure():
-    " Compute mesh from images (assume laser images are pure) "
-    return recognize(pure_images=True)
-
-def recognize(pure_images=False, rotated=False):
+def recognize(rotated=False):
     " Compute mesh from images "
     view_stop()
     calibration_data = settings.load_data(CalibrationData())
 
     r = settings.get_laser_range()
 
-    slices, colors = cloudify(calibration_data, settings.WORKDIR, r, range(360), pure_images, rotated, method=settings.SEGMENTATION_METHOD)
+    slices, colors = cloudify(calibration_data, settings.WORKDIR, r, range(360), rotated, method=settings.SEGMENTATION_METHOD)
     meshify(calibration_data, slices, colors=colors, cylinder=settings.ROI).save("model.ply")
     gui.clear()
 
@@ -124,6 +120,11 @@ def shots_clear():
     for fn in os.listdir(settings.SHOTSDIR):
         if fn.endswith(settings.FILEFORMAT):
             os.unlink(os.path.join(settings.SHOTSDIR, fn))
+
+def toggle_pure_mode():
+    settings.pure_mode = not settings.pure_mode
+    print("Pure mode on, you must capture lasers in obscurity now"
+            if settings.pure_mode else "Pure mode off")
 
 def set_roi(val1=None, val2=None):
     """ Set with and height of the scanning cylinder, in mm (only one value = height) """
@@ -171,9 +172,7 @@ def scan():
 
 calibrate = calibration.calibrate
 
-def calibrate_pure():
-    " start platform & laser calibration (assume laser images are pure) "
-    return calibrate(pure_laser=True)
+calibrate_cam_from_shots = calibration.calibrate_cam_from_shots
 
 def fullcalibrate():
     """ start a full calibration, including camera intrinsics """

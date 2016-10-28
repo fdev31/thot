@@ -14,6 +14,7 @@ configuration = 'thot'
 single_laser = None
 skip_calibration = True
 interactive_calibration = False
+pure_mode = False
 
 ui_base_i = 2
 
