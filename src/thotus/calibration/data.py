@@ -61,10 +61,3 @@ class CalibrationData(object):
     @distortion_vector.setter
     def distortion_vector(self, value):
         self._distortion_vector = value
-
-    @property
-    def dist_camera_matrix(self):
-        return self._dist_camera_matrix
-
-    def md5_hash(self):
-        return self._md5_hash
