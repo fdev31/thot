@@ -94,6 +94,7 @@ After poisson reconstruction and color transfer:
 
 ## Future / TODO
 
+- Make all Ciclop dependent code in a special hardware module
 - Make "first start" commands:
     - make separate shots for camera
     - calibrate camera from the shots

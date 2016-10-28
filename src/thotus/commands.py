@@ -3,7 +3,7 @@ from __future__ import print_function
 import os
 import json
 import pickle
-from time import sleep
+from time import sleep, time
 from threading import Thread
 
 from thotus.ui import gui
@@ -115,7 +115,18 @@ def recognize(pure_images=False, rotated=False):
     meshify(calibration_data, slices, colors=colors, cylinder=settings.ROI).save("model.ply")
     gui.clear()
 
+def shot():
+    """ Save pattern image for later camera calibration """
+    get_scanner().save("%s/%s.%s"%(settings.SHOTSDIR, int(time()), settings.FILEFORMAT))
+
+def shots_clear():
+    """ Remove all shots """
+    for fn in os.listdir(settings.SHOTSDIR):
+        if fn.endswith(settings.FILEFORMAT):
+            os.unlink(os.path.join(settings.SHOTSDIR, fn))
+
 def set_roi(val1=None, val2=None):
+    """ Set with and height of the scanning cylinder, in mm (only one value = height) """
     if val1 is None:
         print("Diameter: %dmm Height: %dmm"%settings.ROI)
     else:

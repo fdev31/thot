@@ -71,7 +71,6 @@ commands = dict(
     calibrate      = cmds.stdcalibrate,
     advanced       = toggle_advanced_mode,
 
-
     # when it's not working...
     calibrate_manual  = control.toggle_interactive_calibration,
 
@@ -80,6 +79,8 @@ commands = dict(
 
     # misc
     view           = cmds.view,
+    shot           = cmds.shot,
+    shots_remove   = cmds.shots_clear,
     rotate         = control.rotate,
     lasers         = control.switch_lasers,
     exit           = exit,

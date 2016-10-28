@@ -33,7 +33,12 @@ def get_pattern_points():
 
 WORKDIR="./capture"
 CALIBDIR="./calibration"
+SHOTSDIR="./screenshots"
 FILEFORMAT='jpg' # or png
+
+for d in (WORKDIR, CALIBDIR, SHOTSDIR):
+    try: os.mkdir(d)
+    except: pass
 
 class Attribute(dict):
 
@@ -50,16 +55,6 @@ class Attribute(dict):
         for v in it:
             s.append("%s=%s"%v)
         return "<%s>"%(', '.join(s))
-
-try:
-    os.mkdir(WORKDIR)
-except:
-    pass
-
-try:
-    os.mkdir(CALIBDIR)
-except:
-    pass
 
 def _cast(val):
     if isinstance(val, (list, tuple)):
