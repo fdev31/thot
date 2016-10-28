@@ -8,12 +8,13 @@ import numpy as np
 ('platform_translation', 'translation_vector'),
 ('camera_matrix', 'camera_matrix'),
 ('distortion_vector', 'distortion_vector'),
-)
 
 configuration = 'thot'
 single_laser = None
 skip_calibration = True
 interactive_calibration = False
+
+ui_base_i = 2
 
 LASER_COUNT = 2
 ROI = (100, 150)

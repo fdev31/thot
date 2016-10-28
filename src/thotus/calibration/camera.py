@@ -50,18 +50,16 @@ def calibration(calibration_data, images):
         img_points.append(corners.reshape(-1, 2))
         obj_points.append(pattern_points)
 
-        # compute mask
+        # compute mask coordinates
         p1 = corners[0][0]
         p2 = corners[settings.PATTERN_MATRIX_SIZE[0] - 1][0]
         p3 = corners[settings.PATTERN_MATRIX_SIZE[0] * (settings.PATTERN_MATRIX_SIZE[1] - 1)][0]
         p4 = corners[settings.PATTERN_MATRIX_SIZE[0] * settings.PATTERN_MATRIX_SIZE[1] - 1][0]
-        points = np.array([p1, p2, p4, p3], dtype='int32')
-        temp_calibration_data[fn]['chess_contour'] = points
+        temp_calibration_data[fn]['chess_contour'] = np.array([p1, p2, p4, p3], dtype='int32')
 
-        chess_draw(img, found, corners)
-        if idx%5 == 1:
+        if idx%settings.ui_base_i == 0:
+            chess_draw(img, found, corners)
             gui.display(img[int(img.shape[0]/3):-100,], 'chess')
-
 
     if settings.skip_calibration:
         print("\nskipping camera calibration...")
