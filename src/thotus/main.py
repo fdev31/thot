@@ -81,6 +81,7 @@ commands = dict(
     view           = cmds.view,
     shot           = cmds.shot,
     shots_remove   = cmds.shots_clear,
+    calibrate_shots= cmds.calibrate_cam_from_shots,
     rotate         = control.rotate,
     lasers         = control.switch_lasers,
     exit           = exit,
