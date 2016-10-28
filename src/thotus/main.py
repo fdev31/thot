@@ -71,6 +71,10 @@ commands = dict(
     calibrate      = cmds.stdcalibrate,
     advanced       = toggle_advanced_mode,
 
+
+    # when it's not working...
+    calibrate_manual  = control.toggle_interactive_calibration,
+
     # all in one scan
     scan           = cmds.scan,
 
@@ -93,7 +97,6 @@ adv_commands = dict(
     recalibrate      = cmds.calibrate,
     recalibrate_pure = cmds.calibrate_pure,
     recalibrate_cam  = control.toggle_cam_calibration,
-    recalibrate_manual  = control.toggle_interactive_calibration,
 
     # acquire pictures
     capture          = cmds.capture,
