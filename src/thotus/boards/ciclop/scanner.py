@@ -4,9 +4,9 @@ import subprocess
 from time import sleep
 
 from thotus import settings
-from thotus.board import Board
-from thotus.capture import Camcorder
+from thotus.camera import Camcorder
 from thotus.workers import ImageSaver
+from .board import Board
 
 _board = None
 

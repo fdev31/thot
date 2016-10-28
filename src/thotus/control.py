@@ -1,6 +1,6 @@
 from time import sleep
 
-from thotus.scanner import Scanner, get_board
+from thotus.boards import Scanner, get_board
 from thotus import settings
 from thotus.ui import gui
 
