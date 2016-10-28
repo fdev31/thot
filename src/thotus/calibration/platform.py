@@ -53,7 +53,8 @@ def calibration(calibration_data, calibration_settings):
 
     if buggy_captures:
         print("\n %d Buggy Captures!"%len(buggy_captures))
-    points = np.array(list(zip(x, y, z)))
+
+    points = np.array((x, y, z)).transpose()
 
     if points.size > 4:
         # Fitting a plane
