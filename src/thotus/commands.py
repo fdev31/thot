@@ -72,19 +72,19 @@ def capture_pattern():
     control.capture_pattern(control.ALL)
 
 def capture_pattern_lasers():
-    " Capture chessboard pattern (lasers only) "
+    " Capture chessboard pattern (lasers only) [puremode friendly]"
     control.capture_pattern(control.LASER1|control.LASER2)
 
 def capture_pattern_colors():
-    " Capture chessboard pattern (color only) "
+    " Capture chessboard pattern (color only)"
     control.capture_pattern(control.COLOR)
 
 def capture_color():
-    " Capture images (color only) "
+    " Capture images (color only)"
     return capture(control.COLOR)
 
 def capture_lasers():
-    " Capture images (lasers only) "
+    " Capture images (lasers only) [puremode friendly]"
     return capture(control.LASER1|control.LASER2)
 
 def capture(kind=control.ALL, step=None):

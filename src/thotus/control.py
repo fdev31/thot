@@ -45,6 +45,7 @@ def toggle_interactive_calibration():
     return 3
 
 def toggle_cam_calibration(force_skip=None):
+    """ Recompute camera intrinsics (in case you changed the hardware and want a full calibration) """
     if force_skip is not None:
         settings.skip_calibration = force_skip
     else:
