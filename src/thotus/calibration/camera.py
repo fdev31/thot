@@ -72,6 +72,19 @@ def calibration(calibration_data, images):
         raise ValueError("Unable to detect pattern on screen :(")
 
     rms, camera_matrix, dist_coefs, rvecs, tvecs = cv2.calibrateCamera(np.array(obj_points), np.array(img_points), (w, h), None, None)
+    if rms:
+        error = 0
+        # Compute calibration error
+        for i in range(len(obj_points)):
+            imgpoints2, _ = cv2.projectPoints(obj_points[i], rvecs[i], tvecs[i], camera_matrix, dist_coefs)
+            error += abs(
+                    cv2.norm(img_points[i])
+                    - cv2.norm(imgpoints2)
+                    )
+        error /= len(obj_points)
+        print("Camera calibration error = %.4fmm"%error)
+
+
 
     w, h = 1280, 960
     camera_matrix, roi = cv2.getOptimalNewCameraMatrix(camera_matrix, dist_coefs, (w, h), 1, (w,h))
