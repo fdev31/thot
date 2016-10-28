@@ -10,6 +10,8 @@ from thotus.linedetect import LineMaker
 import cv2
 import numpy as np
 
+DEBUG = False
+
 def cloudify(*a, **k):
     for _ in iter_cloudify(*a, **k):
         pass
@@ -88,23 +90,26 @@ def iter_cloudify(calibration_data, folder, lasers, sequence, pure_images, rotat
                         sliced_lines[n][laser] = [ np.deg2rad(n), points, laser ]
                         if not pure_images:
                             color_slices[n][laser] = fullcolor[(points[1], points[0])]
-        if pictures_todisplay:
+        if i%20 == 0 and pictures_todisplay:
+            if DEBUG:
+                if len(pictures_todisplay) > 1:
+                    pictures_todisplay = np.array(pictures_todisplay)
+                    gref = cv2.addWeighted(pictures_todisplay[0,1], 0.3, pictures_todisplay[1,1], 0.3, 0)
+                    nref = cv2.addWeighted(pictures_todisplay[0,0], 0.5, pictures_todisplay[1,0], 0.5, 0)
+                else:
+                    gref = pictures_todisplay[0][1]
+                    nref = pictures_todisplay[0][0]
 
-            if len(pictures_todisplay) > 1:
-                pictures_todisplay = np.array(pictures_todisplay)
-                nref = (np.sum(pictures_todisplay[:,0,:], axis=0)/1.0)
-                gref = (np.sum(pictures_todisplay[:,1,:], axis=0)/len(pictures_todisplay))
+                nref = cv2.dilate(nref, d_kern).astype(np.uint8)
+                r = cv2.bitwise_or(gref, nref)
+                disp = cv2.merge( np.array(( r, gref, r)) )
+
+                gui.display(disp, "lasers" if len(lasers) > 1 else "laser %d"%lasers[0],  resize=0.7)
             else:
-                gref = pictures_todisplay[0][1]
-                nref = pictures_todisplay[0][0]
-
-            gref = (gref * 0.6).astype(np.uint8)
-            nref = cv2.dilate(nref, d_kern).astype(np.uint8)
-
-            r = cv2.bitwise_or(gref, nref)
-            disp = cv2.merge( np.array(( r, gref, r)) )
-
-            gui.display(disp, "lasers" if len(lasers) > 1 else "laser %d"%lasers[0],  resize=0.7)
+                if len(pictures_todisplay) > 1:
+                    gui.display(cv2.addWeighted(pictures_todisplay[1][1], 0.5, pictures_todisplay[0][1], 0.5, 0), "lasers" if len(lasers) > 1 else "laser %d"%lasers[0],  resize=0.7)
+                else:
+                    gui.display(pictures_todisplay[0][1], "lasers" if len(lasers) > 1 else "laser %d"%lasers[0],  resize=0.7)
     if camera:
         yield sliced_lines
     else:

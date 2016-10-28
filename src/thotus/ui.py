@@ -25,8 +25,9 @@ class GUI:
         self._wk()
 
     def _wk(self):
-        while cv2.waitKey(10) > 0:
-            pass
+        for n in range(5):
+            if cv2.waitKey(20) <= 0:
+                break
 
     def display(self, image, text, resize=None, crop=False, disp_number=0):
         if crop:
