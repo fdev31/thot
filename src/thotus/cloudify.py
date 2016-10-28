@@ -10,7 +10,7 @@ from thotus.linedetect import LineMaker
 import cv2
 import numpy as np
 
-DEBUG = False
+DEBUG = True
 
 def cloudify(*a, **k):
     for _ in iter_cloudify(*a, **k):
@@ -90,7 +90,7 @@ def iter_cloudify(calibration_data, folder, lasers, sequence, pure_images, rotat
                         sliced_lines[n][laser] = [ np.deg2rad(n), points, laser ]
                         if not pure_images:
                             color_slices[n][laser] = fullcolor[(points[1], points[0])]
-        if i%20 == 0 and pictures_todisplay:
+        if i%10 == 0 and pictures_todisplay:
             if DEBUG:
                 if len(pictures_todisplay) > 1:
                     pictures_todisplay = np.array(pictures_todisplay)
