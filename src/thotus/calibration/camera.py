@@ -59,7 +59,8 @@ def calibration(calibration_data, images):
         temp_calibration_data[fn]['chess_contour'] = points
 
         chess_draw(img, found, corners)
-        gui.display(img[int(img.shape[0]/3):-100,], 'chess')
+        if idx%5 == 1:
+            gui.display(img[int(img.shape[0]/3):-100,], 'chess')
 
 
     if settings.skip_calibration:
