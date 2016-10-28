@@ -94,6 +94,11 @@ After poisson reconstruction and color transfer:
 
 ## Future / TODO
 
+- Make "first start" commands:
+    - make separate shots for camera
+    - calibrate camera from the shots
+    - ask user to place the pattern on the surface
+    - start calibration
 - Blender integration
 - compute normals or mesh directly
 
