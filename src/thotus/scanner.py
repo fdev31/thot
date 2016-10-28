@@ -30,14 +30,11 @@ def get_board():
 
 class Scanner:
     def __init__(self, speed=2000, out=os.path.curdir):
-        self.writer_t = ImageSaver(out)
         self.b = get_board()
         self.b.lasers_off()
         self.b.motor_enable()
         self.set_speed(speed)
         self.cap = Camcorder()
-        self.writer_t.start()
-
         self.cap.set_exposure_auto(0)
         self.cap.set_auto_white_balance(0)
         self.cap.set_white_balance_temperature(0)
@@ -50,6 +47,8 @@ class Scanner:
         self.cap.set_saturation(20)
         self.cap.start()
         self.current_rotation = 0
+        self.writer_t = ImageSaver(out)
+        self.writer_t.start()
 
     def __getattr__(self, name):
         return getattr(self.b, name)
