@@ -74,9 +74,9 @@ Rebuild mesh from previous scan, keeping first laser information only:
 
     $ ./thot exec keep_laser 1, make
 
-Recalibrate manually (while calibrating laser some lines are not matching the picture)
+Recalibrate the laser manually (don't reshot the patter, just re-analyse asking for you to discard wrong lines)
 
-    $ ./thot exec recalibrate_manual, recalibrate
+    $ ./thot exec calibrate_manual, recalibrate
 
 
 Images are saved into **capture/** folder
