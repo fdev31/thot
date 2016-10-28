@@ -102,16 +102,16 @@ def capture(kind=control.ALL, step=None):
 
 def recognize_pure():
     " Compute mesh from images (assume laser images are pure) "
-    return recognize(pure_images=True, method='pureimage')
+    return recognize(pure_images=True)
 
-def recognize(pure_images=False, rotated=False, method='uncanny'):
+def recognize(pure_images=False, rotated=False):
     " Compute mesh from images "
     view_stop()
     calibration_data = settings.load_data(CalibrationData())
 
     r = settings.get_laser_range()
 
-    slices, colors = cloudify(calibration_data, settings.WORKDIR, r, range(360), pure_images, rotated, method=method)
+    slices, colors = cloudify(calibration_data, settings.WORKDIR, r, range(360), pure_images, rotated, method=settings.SEGMENTATION_METHOD)
     meshify(calibration_data, slices, colors=colors, cylinder=settings.ROI).save("model.ply")
     gui.clear()
 
@@ -149,7 +149,7 @@ def scan():
 
     r = settings.get_laser_range()
 
-    cloudifier = iter_cloudify(calibration_data, settings.WORKDIR, r, range(360), False, False, method='pureimage')
+    cloudifier = iter_cloudify(calibration_data, settings.WORKDIR, r, range(360), False, False, method=settings.SEGMENTATION_METHOD)
 
     capture(step=cloudifier.next)
     slices, colors = next(cloudifier)

@@ -71,7 +71,7 @@ def calibration(calibration_data, calibration_settings):
 
             calibration_data.platform_rotation = R
             calibration_data.platform_translation = t
+        print("\nPlatform normal: %s"%normal)
     else:
         print(":((")
-    print("")
     return buggy_captures
