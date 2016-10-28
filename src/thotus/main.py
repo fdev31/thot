@@ -7,7 +7,6 @@ from thotus.ui import gui
 from thotus import control
 from thotus import settings
 from thotus import commands as cmds
-from thotus.scanner import get_controllers
 
 from prompt_toolkit import prompt
 from prompt_toolkit.contrib.completers import WordCompleter
@@ -114,7 +113,7 @@ adv_commands = dict(
 )
 
 try:
-    commands.update(get_controllers())
+    commands.update(control.get_camera_controllers())
 except IndexError:
     print("Unable to find camera, is it plugged ?")
 

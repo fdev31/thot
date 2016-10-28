@@ -13,6 +13,21 @@ SLOWDOWN = 0
 scanner = None
 lasers = False
 
+def get_camera_controllers():
+    s = get_scanner()
+    o = {}
+    if not s:
+        return o
+    def _shellwrapper(fn):
+        def getsetter(*p):
+            v = fn(*p)
+            if v:
+                print(v)
+        return getsetter
+    for n in "exposure_absolute brightness gain saturation gain_auto contrast brightness".split():
+        o["cam_"+n] = getattr(s.cap, "set_"+n)
+    return o
+
 def get_scanner():
     global scanner
     if not scanner:
@@ -20,8 +35,8 @@ def get_scanner():
             scanner = Scanner(out=settings.WORKDIR)
         except RuntimeError as e:
             print("Can't init board: %s"%e.args[0])
-
-    scanner.refresh_params()
+        else:
+            scanner.refresh_params()
     return scanner
 
 def toggle_interactive_calibration():

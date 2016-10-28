@@ -11,18 +11,10 @@ from thotus.workers import ImageSaver
 _board = None
 
 controls = """
-Brightness
-Contrast
-Saturation
-#White Balance Temperature, Auto
-Gain
-#Power Line Frequency
-#White Balance Temperature
-Sharpness
-#Backlight Compensation
-#Exposure, Auto
-Exposure (Absolute)
-#Exposure, Auto Priority
+brightness
+contrast
+caturation
+gain
 """.strip().split('\n')
 
 def get_board():
@@ -35,36 +27,6 @@ def get_board():
             raise RuntimeError("Can't connect to board, is it plugged to USB & Powered on ?")
     return _board
 
-def get_controllers():
-    import re
-    import glob
-    from functools import partial
-    words = re.compile(r'\W+')
-    dev = glob.glob("/dev/video*")[-1]
-
-    functions = {}
-    for ctl_name in controls:
-        if ctl_name[0] != '#':
-            shortname = words.sub('', ctl_name)
-            functions["cam_"+shortname] = partial(ctl_param, dev, ctl_name, show=True)
-    return functions
-
-def ctl_param(dev, param, val=None, show=False):
-    try:
-        p = ['uvcdynctrl', '-d', dev]
-        if val:
-            p.extend(['-s', param, str(val)])
-        else:
-            p.extend(['-g', param])
-        ret = subprocess.check_output(p)
-        if not val:
-            if show:
-                print("%d"%int(ret))
-            else:
-                return int(ret)
-    except Exception as e:
-        print("Error calling %s: %s"%(' '.join(param), e))
-
 
 class Scanner:
     def __init__(self, speed=2000, out=os.path.curdir):
@@ -76,14 +38,16 @@ class Scanner:
         self.cap = Camcorder()
         self.writer_t.start()
 
+        self.cap.set_exposure_auto(0)
+        self.cap.set_auto_white_balance(0)
+        self.cap.set_white_balance_temperature(0)
         self.exposure = self.cap.set_exposure_absolute(333)
-        ctl_param(self.cap.dev, 'Gain', 255)
-        ctl_param(self.cap.dev, 'Brightness', 0)
-        ctl_param(self.cap.dev, 'Contrast', 32)
-        ctl_param(self.cap.dev, 'Saturation', 20)
-        ctl_param(self.cap.dev, 'Backlight Compensation', 0)
-        ctl_param(self.cap.dev, 'Exposure, Auto Pirority', 1)
-        print("Exposure: %s"%self.exposure)
+        self.cap.set_brightness(0)
+        self.cap.set_gain(255)
+        self.cap.set_hue_auto(0)
+        self.cap.set_hue(0)
+        self.cap.set_contrast(32)
+        self.cap.set_saturation(20)
         self.cap.start()
         self.current_rotation = 0
 
