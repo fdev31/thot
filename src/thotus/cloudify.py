@@ -42,22 +42,24 @@ def iter_cloudify(calibration_data, folder, lasers, sequence, rotated=False, met
         pictures_todisplay = []
 
         for laser in lasers:
-            laser_color, laser_grey = imtools.imread(folder+'/laser%d_%03d.%s'%(laser, n, settings.FILEFORMAT), format="full", calibrated=undistort and calibration_data)
-            if laser_color is None:
+            laser_image, laser_grey = imtools.imread(folder+'/laser%d_%03d.%s'%(laser, n, settings.FILEFORMAT), format="full", calibrated=undistort and calibration_data)
+            if laser_image is None:
                 continue
             laser_grey = laser_grey[:,:,2]
 
             if not pure_images:
-                laser_color = cv2.subtract(laser_grey, ref_grey)
+                laser_image = cv2.subtract(laser_grey, ref_grey)
+            else:
+                laser_image = laser_grey
 
             gui.progress("analyse", i, len(sequence))
 
             if camera: # mask pattern
-                mask = np.zeros(laser_color.shape, np.uint8)
+                mask = np.zeros(laser_image.shape, np.uint8)
                 cv2.fillConvexPoly(mask, camera[i]['chess_contour'], 255)
-                laser_color = cv2.bitwise_and(laser_color, laser_color, mask=mask)
+                laser_image = cv2.bitwise_and(laser_image, laser_image, mask=mask)
 
-            points, processed = lineprocessor(laser_color, laser)
+            points, processed = lineprocessor(laser_image, laser)
 
             # validate & store
             if points is not None and points[0].size:
