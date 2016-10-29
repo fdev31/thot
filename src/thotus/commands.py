@@ -27,7 +27,7 @@ get_scanner = control.get_scanner
 
 class Viewer(Thread):
     instance = None
-    running = None
+    running = True
 
     def stop(self):
         self.running = False
@@ -40,9 +40,8 @@ class Viewer(Thread):
             s = get_scanner()
         except Exception as e:
             print("Unable to init scanner, not starting viewer.")
-            return
+            self.running = False
 
-        self.running = True
         while self.running:
             s.wait_capture(1)
             img = np.rot90(s.cap.buff, 3)
