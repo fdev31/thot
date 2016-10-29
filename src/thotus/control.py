@@ -88,7 +88,7 @@ def scan(kind=ALL, definition=1, angle=360, calibration=False, on_step=None, dis
         if on_step:
             on_step()
         t = time() - t0
-        sleep(max(0, 0.15 - t)) # wait for motor
+        sleep(max(0, 0.07 - t)) # wait for motor
         s.wait_capture(2+SLOWDOWN)
         if kind & COLOR:
             disp( s.save('color_%03d.%s'%(n, settings.FILEFORMAT)) , '')
