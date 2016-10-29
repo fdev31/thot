@@ -111,6 +111,34 @@ After poisson reconstruction and color transfer:
 - prompt_toolkit
 - scipy
 
+# Troubleshooting
+
+## "Mesh in a mesh" issue
+
+If you have a mesh inside another mesh, this is probably a camera calibration issue:
+take many shots with the `shot` command (changing position of chessboard each time to cover maximum surface), then use `calibrate_shots` to compute camera calibration again.
+
+    Scan Bot> shot
+    Scan Bot> shot
+    Scan Bot> shot
+    Scan Bot> shot
+    Scan Bot> shot
+    Scan Bot> calibrate_shots
+
+After this you will need to do standard calibration again (platform and lasers), in case you didn't change the setup and you calibrated the scanner recently, you can avoid capturing pictures by typing:
+
+    $ thot recalibrate
+
+## Meshe is randomly distorted, but I can see two different shapes
+
+This is probably a laser calibration issue, some lines are probably badly detected.
+You can fix it by discarding the frames that are not well analysed:
+
+    $ thot exec recalibrate_manual, recalibrate
+
+In case you want to capture the pictures again, just type:
+
+    $ thot exec recalibrate_manual, calibrate
 
 ## Bugs
 
