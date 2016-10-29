@@ -18,6 +18,9 @@ pure_mode = False
 
 ui_base_i = 2
 
+# algo settings
+algo_threshold = 10
+
 LASER_COUNT = 2
 ROI = (100, 150)
 
@@ -25,7 +28,7 @@ PATTERN_MATRIX_SIZE = (11, 6)
 PATTERN_SQUARE_SIZE = 13.0
 PATTERN_ORIGIN = 38.8 # distance plateau to second row of pattern
 
-SEGMENTATION_METHOD = 'uncanny'
+SEGMENTATION_METHOD = 'pureimage'
 
 def get_pattern_points():
     pattern_points = np.zeros((np.prod(PATTERN_MATRIX_SIZE), 3), np.float32)

@@ -151,6 +151,16 @@ def set_thot_cfg():
     " Load thot calibration configuration "
     settings.configuration = 'thot'
 
+def set_algo_value(param, value):
+    try:
+        if '.' in value:
+            value = float(value)
+        else:
+            value = int(value)
+    except TypeError:
+        pass
+    setattr(settings, 'algo_' + what, value)
+
 def set_single_laser(laser_number=None):
     """ Set dual scanning (no param) or a single laser (1 or 2)  """
     if laser_number is None:

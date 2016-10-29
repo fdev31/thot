@@ -1,14 +1,16 @@
 from thotus.algorithms.utils import compute_line_image
 from thotus.algorithms.ransac import ransac
+from thotus import settings
 import numpy as np
 import cv2
 
-def compute(img, laser_nr, threshold=10, use_ransac=False):
+def compute(img, laser_nr, threshold=None, use_ransac=False):
     x = []
     y = []
-    img = cv2.blur(img, (5, 5))
+    threshold = threshold if threshold is not None else settings.algo_threshold
 
     bound = 0 if laser_nr == 0 else -1
+    img = cv2.blur(img, (3, 7))
 
     for n in range(img.shape[0]):
         max_val = np.max(img[n])
