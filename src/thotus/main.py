@@ -91,6 +91,7 @@ commands = dict(
     )
 
 adv_commands = dict(
+    algorithm      = cmds.set_algorithm,
     debug_settings = settings.compare,
     import_val     = settings.import_val,
 

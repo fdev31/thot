@@ -161,6 +161,13 @@ def set_single_laser(laser_number=None):
             print("Laser number must be 1 or 2")
         settings.single_laser = i-1
 
+def set_algorithm(name=None):
+    """ Change the algorithm for laser detection one of: uncanny, pureimages """
+    if name is None:
+        print(settings.SEGMENTATION_METHOD)
+    else:
+        settings.SEGMENTATION_METHOD = name.strip().lower()
+
 def scan():
     """ Scan object """
     calibration_data = settings.load_data(CalibrationData())
