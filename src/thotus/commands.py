@@ -116,7 +116,8 @@ def recognize(rotated=False):
 
 def shot():
     """ Save pattern image for later camera calibration """
-    get_scanner().save("%s/%s.%s"%(settings.SHOTSDIR, int(time()), settings.FILEFORMAT))
+    name = os.path.abspath( os.path.join(settings.SHOTSDIR, "%s.%s"%(int(time()), settings.FILEFORMAT)) )
+    get_scanner().save(name)
 
 def shots_clear():
     """ Remove all shots """
