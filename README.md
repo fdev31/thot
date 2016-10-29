@@ -31,6 +31,9 @@ On archlinux system:
     % yaourt -S opencv python-v4l2capture python-numpy libwebcam python-scipy
     % wget https://github.com/fdev31/thot/archive/master.zip
     % unzip master.zip
+    % cd thot-master
+    % python setup.py build
+    % sudo python setup.py install
 
 > If you prefer using python2, just replace "python" with "python2" on the lines above
 
@@ -61,37 +64,37 @@ Scan 3D object
 
 You can also call the application from the command line:
 
-    $ ./thot recalibrate
+    $ thot recalibrate
 
 Reconstruct previously scanned mesh (to test new calibration):
 
-    $ ./thot make
+    $ thot make
 
 A special "exec" command allows command chaining from the command line:
 
-    $ ./thot exec setGain 5, calibrate, keep_laser 1 , make
+    $ thot exec setGain 5, calibrate, keep_laser 1 , make
 
 Rebuild mesh from previous scan, keeping first laser information only:
 
-    $ ./thot exec keep_laser 1, make
+    $ thot exec keep_laser 1, make
 
 Recalibrate the laser manually (don't reshot the patter, just re-analyse asking for you to discard wrong lines)
 
-    $ ./thot exec calibrate_manual, recalibrate
+    $ thot exec calibrate_manual, recalibrate
 
+Rebuild mesh with different line detection algorithm
+
+    $ thot algorithm pureimage, make
 
 Images are saved into **capture/** folder
 Pointcloud is saved as **capture.ply**
 
 ## Example
 
-Result of a 2 lasers scan:
+Result of a 2 lasers scan (unprocessed point cloud):
 
-![Scanned statue](http://scan.crava.ch/ganesh_cloud.jpg)
-
-After poisson reconstruction and color transfer:
-
-![Scanned statue](http://scan.crava.ch/ganesh_mesh.jpg)
+![Tux](http://scan.crava.ch/tux.png)
+![Tux side](http://scan.crava.ch/tux_side.png)
 
 ## Future / TODO
 
