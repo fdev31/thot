@@ -190,7 +190,11 @@ def calibrate():
 
 def calibrate_cam_from_shots():
     view_stop()
-    return calibration.calibrate_cam_from_shots()
+    calibration.calibrate_cam_from_shots()
+    try:
+        return calibrate()
+    except Exception:
+        print("Don't forget to make the calibration again !")
 
 def stdcalibrate():
     """ start platform & laser calibration """
