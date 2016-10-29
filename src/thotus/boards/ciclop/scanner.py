@@ -35,14 +35,18 @@ class Scanner:
         self.b.motor_enable()
         self.set_speed(speed)
         self.cap = Camcorder()
-        self.cap.set_exposure_auto(0)
+        for n in range(1000):
+            try:
+                self.cap.set_exposure_auto(1)
+            except Exception:
+                sleep(0.1)
         self.cap.set_auto_white_balance(0)
         self.cap.set_white_balance_temperature(0)
         self.exposure = self.cap.set_exposure_absolute(333)
-        self.cap.set_brightness(0)
-        self.cap.set_gain(255)
-        self.cap.set_hue_auto(0)
-        self.cap.set_hue(0)
+        self.cap.set_brightness(128)
+        self.cap.set_gain(1)
+#        self.cap.set_hue_auto(0)
+#        self.cap.set_hue(0)
         self.cap.set_contrast(32)
         self.cap.set_saturation(20)
         self.cap.start()

@@ -87,13 +87,14 @@ def capture_lasers():
     " Capture images (lasers only) [puremode friendly]"
     return capture(control.LASER1|control.LASER2)
 
-def capture(kind=control.ALL, step=None):
+def capture(kind=control.ALL, on_step=None):
     " Capture images "
     view_stop()
+    s = get_scanner()
     if not s:
         return
     try:
-        control.scan(kind, step=step)
+        control.scan(kind, on_step=on_step)
         print("")
     except KeyboardInterrupt:
         print("\naborting...")
@@ -163,7 +164,7 @@ def scan():
 
     cloudifier = iter_cloudify(calibration_data, settings.WORKDIR, r, range(360), False, False, method=settings.SEGMENTATION_METHOD)
 
-    capture(step=cloudifier.next)
+    capture(on_step=cloudifier.next)
     slices, colors = next(cloudifier)
     meshify(calibration_data, slices).save("model.ply")
     gui.clear()

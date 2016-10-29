@@ -19,13 +19,13 @@ def get_camera_controllers():
     if not s:
         return o
     def _shellwrapper(fn):
-        def getsetter(*p):
-            v = fn(*p)
+        def getsetter(p):
+            v = fn(int(p))
             if v:
                 print(v)
         return getsetter
     for n in "exposure_absolute brightness gain saturation gain_auto contrast brightness".split():
-        o["cam_"+n] = getattr(s.cap, "set_"+n)
+        o["cam_"+n] = _shellwrapper(getattr(s.cap, "set_"+n))
     return o
 
 def get_scanner():
