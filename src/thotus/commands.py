@@ -159,7 +159,7 @@ def set_algo_value(param, value):
             value = int(value)
     except TypeError:
         pass
-    setattr(settings, 'algo_' + what, value)
+    setattr(settings, 'algo_' + param, value)
 
 def set_single_laser(laser_number=None):
     """ Set dual scanning (no param) or a single laser (1 or 2)  """

@@ -14,6 +14,7 @@ This software only targets Linux users.
 - Colored two lasers scanning done in 4 minutes
 - Fully automated calibration done in 30s !
 - Manual laser segmentation mode (to avoid calibration mistakes)
+- Two passes scanning mode for difficult objects
 - User friendly CLI
 
 
