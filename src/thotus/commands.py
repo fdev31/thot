@@ -10,7 +10,8 @@ from thotus.ui import gui
 from thotus import settings
 from thotus import control
 from thotus import calibration
-from thotus.cloudify import meshify, cloudify, iter_cloudify
+from thotus.cloudify import cloudify, iter_cloudify
+from thotus.mesh import meshify
 from thotus.calibration.data import CalibrationData
 from thotus.calibration.chessboard import chess_detect, chess_draw
 
@@ -169,11 +170,9 @@ def scan():
 
     capture(on_step=iterator, display=False)
     slices, colors = iterator()
-    pu.db
-    meshify(calibration_data, slices).save("model.ply")
+    r = meshify(calibration_data, slices, colors=colors).save("model.ply")
     gui.clear()
-
-    return recognize()
+    return r
 
 calibrate = calibration.calibrate
 

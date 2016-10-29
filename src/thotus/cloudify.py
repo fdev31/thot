@@ -4,7 +4,6 @@ from thotus import model
 from thotus.ui import gui
 from thotus import imtools
 from thotus import settings
-from thotus.mesh import meshify
 from thotus.linedetect import LineMaker
 
 import cv2
@@ -101,6 +100,8 @@ def iter_cloudify(calibration_data, folder, lasers, sequence, rotated=False, met
                     gui.display(cv2.addWeighted(pictures_todisplay[1][1], 0.5, pictures_todisplay[0][1], 0.5, 0), "lasers" if len(lasers) > 1 else "laser %d"%lasers[0],  resize=0.7)
                 else:
                     gui.display(pictures_todisplay[0][1], "lasers" if len(lasers) > 1 else "laser %d"%lasers[0],  resize=0.7)
+        else:
+            gui.redraw()
     if camera:
         yield sliced_lines
     else:

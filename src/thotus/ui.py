@@ -22,9 +22,9 @@ class GUI:
             cv2.destroyWindow(name)
             cv2.imshow(name, 0)
         self.secondary.clear()
-        self._wk()
+        self.redraw()
 
-    def _wk(self):
+    def redraw(self):
         for n in range(5):
             if cv2.waitKey(20) <= 0:
                 break
@@ -64,6 +64,6 @@ class GUI:
                 self.secondary.append(name)
         else:
             cv2.imshow(self.name, image)
-        self._wk()
+        self.redraw()
 
 gui = GUI()
