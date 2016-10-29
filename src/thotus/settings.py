@@ -135,7 +135,7 @@ def compare():
     SEP="\n"
     print("HORUS"+SEP+"THOT")
     for n in ('platform_rotation', 'platform_translation', 'camera_matrix', 'distortion_vector', 'laser_planes'):
-        print(("> %s <"%(n)).center(80, '-' ))
+        print(">>>> %s ::"%(n))
         v1 = settings[n]
         v2 = o[n]
         if n != 'laser_planes':
