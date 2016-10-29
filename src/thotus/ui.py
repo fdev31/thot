@@ -31,10 +31,10 @@ class GUI:
 
     def ok_cancel(self, duration=10, default=True):
         for n in range(duration):
-            x = cv2.waitKey(100)
-            if x == 27:
+            x = cv2.waitKey(100)&0xff
+            if x in (27, 8): # backspace or escape
                 return False
-            elif x&0xFF in (10, 32):
+            elif x in (10, 32): # enter or space
                 return True
         return default
 

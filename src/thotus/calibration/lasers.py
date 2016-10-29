@@ -1,4 +1,3 @@
-from thotus.ui import gui
 from thotus import settings
 from thotus.cloudify import cloudify
 from thotus.mesh import meshify

@@ -88,7 +88,7 @@ def scan(kind=ALL, definition=1, angle=360, calibration=False, on_step=None, dis
         if on_step:
             on_step()
         t = time() - t0
-        sleep(max(0, 0.1 - t)) # wait for motor
+        sleep(max(0, 0.15 - t)) # wait for motor
         s.wait_capture(2+SLOWDOWN)
         if kind & COLOR:
             disp( s.save('color_%03d.%s'%(n, settings.FILEFORMAT)) , '')
@@ -122,7 +122,7 @@ def capture_pattern(t):
     if not s:
         return
     try:
-        scan(s, t, angle=100, definition=3)
+        scan(t, angle=100, definition=3)
         print("")
     except KeyboardInterrupt:
         print("\naborting...")

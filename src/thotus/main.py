@@ -67,7 +67,6 @@ def toggle_advanced_mode():
 
 commands = dict(
     # calibrate
-    calibrate_full = cmds.fullcalibrate,
     calibrate      = cmds.stdcalibrate,
     advanced       = toggle_advanced_mode,
 

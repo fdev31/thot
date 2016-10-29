@@ -185,15 +185,8 @@ def calibrate_cam_from_shots():
     view_stop()
     return calibration.calibrate_cam_from_shots()
 
-def fullcalibrate():
-    """ start a full calibration, including camera intrinsics """
-    capture_pattern()
-    toggle_cam_calibration(False)
-    return calibrate()
-
 def stdcalibrate():
     """ start platform & laser calibration """
     capture_pattern()
-    toggle_cam_calibration(True)
     return calibrate()
 

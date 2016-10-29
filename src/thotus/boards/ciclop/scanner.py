@@ -54,6 +54,14 @@ class Scanner:
         self.writer_t = ImageSaver(out)
         self.writer_t.start()
 
+    def g_out(self):
+        return self.writer_t.out
+
+    def s_out(self, val):
+        self.writer_t.out = val
+
+    out = property(g_out, s_out)
+
     def __getattr__(self, name):
         return getattr(self.b, name)
 
