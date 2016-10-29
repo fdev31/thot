@@ -78,7 +78,7 @@ def iter_cloudify(calibration_data, folder, lasers, sequence, rotated=False, met
                     else:
                         sliced_lines[n][laser] = [ np.deg2rad(n), points, laser ]
                         if not pure_images:
-                            color_slices[n][laser] = fullcolor[(points[1], points[0])]
+                            color_slices[n][laser] = np.fliplr(fullcolor[(points[1], points[0])])
 
         # display
         if i%int(settings.ui_base_i*2) == 0 and pictures_todisplay:
