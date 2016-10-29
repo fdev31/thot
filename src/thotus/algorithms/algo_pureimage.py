@@ -3,7 +3,7 @@ from thotus.algorithms.ransac import ransac
 import numpy as np
 import cv2
 
-def compute(img, laser_nr, threshold=1, use_ransac=False):
+def compute(img, laser_nr, threshold=10, use_ransac=False):
     x = []
     y = []
     img = cv2.blur(img, (5, 5))
