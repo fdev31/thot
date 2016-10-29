@@ -66,10 +66,14 @@ def switch_lasers():
             b.lasers_off()
     return 3
 
-def scan(kind=ALL, definition=1, angle=360, calibration=False, on_step=None):
+def scan(kind=ALL, definition=1, angle=360, calibration=False, on_step=None, display=True):
     s = get_scanner()
-    def disp(img, text):
-        gui.display(np.rot90(img, 3), text=text, resize=(640,480))
+    if display:
+        def disp(img, text):
+            gui.display(np.rot90(img, 3), text=text, resize=(640,480))
+    else:
+        def disp(*a):
+            return
 
     s.lasers_off()
     s.current_rotation = 0

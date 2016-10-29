@@ -64,8 +64,9 @@ def view_stop():
         return True
 
 def stop():
-    if view_stop():
-        get_scanner().close()
+    view_stop()
+    if control.scanner:
+        control.scanner.close()
 
 def capture_pattern():
     " Capture chessboard pattern "
@@ -87,14 +88,14 @@ def capture_lasers():
     " Capture images (lasers only) [puremode friendly]"
     return capture(control.LASER1|control.LASER2)
 
-def capture(kind=control.ALL, on_step=None):
+def capture(kind=control.ALL, on_step=None, display=True):
     " Capture images "
     view_stop()
     s = get_scanner()
     if not s:
         return
     try:
-        control.scan(kind, on_step=on_step)
+        control.scan(kind, on_step=on_step, display=display)
         print("")
     except KeyboardInterrupt:
         print("\naborting...")
@@ -162,10 +163,13 @@ def scan():
 
     r = settings.get_laser_range()
 
-    cloudifier = iter_cloudify(calibration_data, settings.WORKDIR, r, range(360), False, False, method=settings.SEGMENTATION_METHOD)
+    cloudifier = iter_cloudify(calibration_data, settings.WORKDIR, r, range(360), False, method=settings.SEGMENTATION_METHOD)
+    from functools import partial
+    iterator = partial(next, cloudifier)
 
-    capture(on_step=cloudifier.next)
-    slices, colors = next(cloudifier)
+    capture(on_step=iterator, display=False)
+    slices, colors = iterator()
+    pu.db
     meshify(calibration_data, slices).save("model.ply")
     gui.clear()
 
