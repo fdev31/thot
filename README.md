@@ -8,17 +8,14 @@ This scanner is fully opensource, uses double lasers and is quite decent for the
 You can find some for [around $100](https://fr.aliexpress.com/w/wholesale-ciclop.html?initiative_id=SB_20161008042416&site=fra&groupsort=1&SortType=price_asc&g=y&SearchText=ciclop) on the web.
 This software only targets Linux users.
 
-## Status
+## Features
 
-Not giving very good calibration results yet, in heavy development.
+- Make Ciclop scanner work on Linux with standard OpenCV
+- Colored two lasers scanning done in 4 minutes
+- Fully automated calibration done in 30s !
+- Manual laser segmentation mode (to avoid calibration mistakes)
+- User friendly CLI
 
-Useable for some people already, probably developers:
-
-- No patched OpenCV needed / Linux compatible
-- Simple and friendly CLI
-- Python 2 & 3 compatible
-- fully automated calibration done in 30s !
-- scan complex models in less than 5min ! (with two lasers and good brightness)
 
 ## Help wanted!
 
