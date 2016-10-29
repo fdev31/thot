@@ -114,4 +114,7 @@ After poisson reconstruction and color transfer:
 ## Bugs
 
 - no release yet: may not work out of the box, consider unstable
+- Sometimes need to ^C to exit, a thread lies somewhere...
+- hue setter has issues
+- camera value getters are broken
 
