@@ -14,7 +14,7 @@ def calibration(calibration_data, images):
     found_nr = 0
 
     failed_serie = 0
-    term = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_COUNT, 30, 0.001)
+    term = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 100, 0.001)
     flags = cv2.CALIB_CB_FAST_CHECK
     pattern_points = settings.get_pattern_points()
 
@@ -38,9 +38,6 @@ def calibration(calibration_data, images):
                 break
             failed_serie += 1
             continue
-
-        if flags & cv2.CALIB_CB_FAST_CHECK:
-            flags -= cv2.CALIB_CB_FAST_CHECK
 
         failed_serie = 0
         found_nr += 1
@@ -75,7 +72,7 @@ def calibration(calibration_data, images):
     if not obj_points:
         raise ValueError("Unable to detect pattern on screen :(")
 
-    rms, camera_matrix, dist_coefs, rvecs, tvecs = cv2.calibrateCamera(np.array(obj_points), np.array(img_points), (w, h), None, None)
+    rms, camera_matrix, dist_coefs, rvecs, tvecs = cv2.calibrateCamera(obj_points, img_points, grey.shape, None, None)
     if rms:
         error = 0
         # Compute calibration error
@@ -87,11 +84,6 @@ def calibration(calibration_data, images):
                     )
         error /= len(obj_points)
         print("Camera calibration error = %.4fmm"%error)
-
-
-
-    w, h = 1280, 960
-    camera_matrix, roi = cv2.getOptimalNewCameraMatrix(camera_matrix, dist_coefs, (w, h), 1, (w,h))
 
     calibration_data.camera_matrix = camera_matrix
     calibration_data.distortion_vector = dist_coefs.ravel()

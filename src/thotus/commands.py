@@ -70,14 +70,17 @@ def stop():
 
 def capture_pattern():
     " Capture chessboard pattern "
+    view_stop()
     control.capture_pattern(control.ALL)
 
 def capture_pattern_lasers():
     " Capture chessboard pattern (lasers only) [puremode friendly]"
+    view_stop()
     control.capture_pattern(control.LASER1|control.LASER2)
 
 def capture_pattern_colors():
     " Capture chessboard pattern (color only)"
+    view_stop()
     control.capture_pattern(control.COLOR)
 
 def capture_color():
@@ -174,9 +177,13 @@ def scan():
     gui.clear()
     return r
 
-calibrate = calibration.calibrate
+def calibrate():
+    view_stop()
+    return calibration.calibrate()
 
-calibrate_cam_from_shots = calibration.calibrate_cam_from_shots
+def calibrate_cam_from_shots():
+    view_stop()
+    return calibration.calibrate_cam_from_shots()
 
 def fullcalibrate():
     """ start a full calibration, including camera intrinsics """
@@ -189,3 +196,4 @@ def stdcalibrate():
     capture_pattern()
     toggle_cam_calibration(True)
     return calibrate()
+
