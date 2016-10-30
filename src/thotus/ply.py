@@ -27,6 +27,8 @@ def save_scene(filename, _object):
 def save_scene_stream(stream, _object):
     m = _object._mesh
 
+    FACTOR = 10.0
+
     binary = True
 
     if m is not None:
@@ -46,6 +48,7 @@ def save_scene_stream(stream, _object):
         frame += "property list uchar int vertex_indices\n"
         frame += "end_header\n"
         stream.write(frame.encode())
+        m.vertexes /= FACTOR
         if m.vertex_count > 0:
             if binary:
                 for i in range(m.vertex_count):
