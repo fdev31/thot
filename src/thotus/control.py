@@ -24,7 +24,7 @@ def get_camera_controllers():
             if v:
                 print(v)
         return getsetter
-    for n in "exposure_absolute brightness gain saturation gain_auto contrast brightness".split():
+    for n in "exposure_absolute gain saturation white_balance_temperature".split():
         o["cam_"+n] = _shellwrapper(getattr(s.cap, "set_"+n))
     return o
 
@@ -35,8 +35,6 @@ def get_scanner():
             scanner = Scanner(out=settings.WORKDIR)
         except RuntimeError as e:
             print("Can't init board: %s"%e.args[0])
-        else:
-            scanner.refresh_params()
     return scanner
 
 def toggle_interactive_calibration():

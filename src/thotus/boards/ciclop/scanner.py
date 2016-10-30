@@ -35,16 +35,16 @@ class Scanner:
         self.b.motor_enable()
         self.set_speed(speed)
         self.cap = Camcorder()
-        for n in range(1000):
+        for n in range(150):
             try:
-                self.cap.set_exposure_auto(1)
+                self.cap.set_gain(1)
             except Exception:
                 sleep(0.1)
+        self.cap.set_exposure_auto(1)
         self.cap.set_auto_white_balance(0)
         self.cap.set_white_balance_temperature(0)
-        self.exposure = self.cap.set_exposure_absolute(333)
+        self.cap.set_exposure_absolute(333)
         self.cap.set_brightness(128)
-        self.cap.set_gain(1)
 #        self.cap.set_hue_auto(0)
 #        self.cap.set_hue(0)
         self.cap.set_contrast(32)
@@ -53,6 +53,7 @@ class Scanner:
         self.current_rotation = 0
         self.writer_t = ImageSaver(out)
         self.writer_t.start()
+
 
     def g_out(self):
         return self.writer_t.out
@@ -81,16 +82,13 @@ class Scanner:
             self.motor_move(-v)
         self.current_rotation = 0
 
-    def refresh_params(self):
-        self.exposure = self.cap.get_exposure_absolute()
-
     def set_speed(self, speed):
         self.b.motor_speed(speed/10)
         self.b.motor_acceleration(speed/10)
 
     @property
     def frame_interval(self):
-        return max(1/self.cap.fps, (self.exposure/5000.0))*1.1
+        return max(1/self.cap.fps, (self.cap.exposure/10000.0))*1.1
 
     def wait_capture(self, frames=2, min_val=0.150):
         x = self.frame_interval * frames

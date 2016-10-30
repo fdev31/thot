@@ -61,6 +61,10 @@ class Camcorder(Thread):
     def __getattr__(self, name):
         return getattr(self.video, name)
 
+    def set_exposure_absolute(self, val):
+        self.exposure = self.video.set_exposure_absolute(val)
+        return self.exposure
+
     def stop(self):
         self.terminate = True
 
