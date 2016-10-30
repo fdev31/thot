@@ -19,7 +19,8 @@ pure_mode = False
 ui_base_i = 2
 
 # algo settings
-algo_threshold = 10
+algo_threshold = 4
+algo_denoise = 5
 
 LASER_COUNT = 2
 ROI = (100, 150)
