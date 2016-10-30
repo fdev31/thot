@@ -2,8 +2,7 @@ from __future__ import print_function
 
 import os
 import json
-import pickle
-from time import sleep, time
+from time import time
 from threading import Thread
 from functools import partial
 
