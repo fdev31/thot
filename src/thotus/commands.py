@@ -5,6 +5,7 @@ import json
 import pickle
 from time import sleep, time
 from threading import Thread
+from functools import partial
 
 from thotus.ui import gui
 from thotus import settings
@@ -185,7 +186,6 @@ def scan():
     r = settings.get_laser_range()
 
     cloudifier = iter_cloudify(calibration_data, settings.WORKDIR, r, range(360), False, method=settings.SEGMENTATION_METHOD)
-    from functools import partial
     iterator = partial(next, cloudifier)
 
     capture(on_step=iterator, display=False)
