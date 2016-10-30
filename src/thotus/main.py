@@ -65,13 +65,21 @@ def toggle_advanced_mode():
         commands.update(adv_commands)
         print("Using advanced commands")
 
+def calibrate_manual():
+    """ Calibrate platform & scanner with user confirmation of laser lines """
+    ic = settings.interactive_calibration
+    settings.interactive_calibration = True
+    r =  cmds.stdcalibrate()
+    settings.interactive_calibration = ic
+    return r
+
 commands = dict(
     # calibrate
     calibrate      = cmds.stdcalibrate,
     advanced       = toggle_advanced_mode,
 
     # when it's not working...
-    calibrate_manual  = control.toggle_interactive_calibration,
+    calibrate_manual  = calibrate_manual,
 
     # all in one scan
     scan           = cmds.scan,
@@ -89,7 +97,7 @@ commands = dict(
 
 adv_commands = dict(
     algorithm      = cmds.set_algorithm,
-    algo_set       = cmds.set_algo_value,
+    algop          = cmds.set_algo_value,
     debug_settings = settings.compare,
     import_val     = settings.import_val,
     # take calibration data

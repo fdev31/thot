@@ -106,7 +106,7 @@ def capture(kind=control.ALL, on_step=None, display=True):
     s.reset_motor_rotation()
 
 def recognize(rotated=False):
-    " Compute mesh from images "
+    " Compute mesh from images (pure mode aware)"
     view_stop()
     calibration_data = settings.load_data(CalibrationData())
 
@@ -151,7 +151,16 @@ def set_thot_cfg():
     " Load thot calibration configuration "
     settings.configuration = 'thot'
 
-def set_algo_value(param, value):
+def set_algo_value(param=None, value=None):
+    """ List, get or set algorithm parameters """
+    if param is None:
+        for n in dir(settings):
+            if n.startswith('algo_'):
+                set_algo_value(n[5:])
+        return
+    if value is None:
+        print("%s = %s"%(param, getattr(settings, 'algo_' + param)))
+        return
     try:
         if '.' in value:
             value = float(value)
