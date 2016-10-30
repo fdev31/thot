@@ -75,7 +75,7 @@ def scan(kind=ALL, definition=1, angle=360, calibration=False, on_step=None, dis
     s.lasers_off()
     s.current_rotation = 0
 
-    IO_DELAY = 0.15
+    IO_DELAY = 0.15/2
 
     for n in range(angle):
         if definition > 1 and n%definition != 0:
@@ -87,8 +87,7 @@ def scan(kind=ALL, definition=1, angle=360, calibration=False, on_step=None, dis
         if on_step:
             on_step()
         t = time() - t0
-        sleep(max(0, (IO_DELAY + ((definition-1)*0.1)-t))) # wait for motor
-        sleep(IO_DELAY)
+        sleep(max(0, (definition*0.1)-t)) # wait for motor
         s.wait_capture(2)
         if kind & COLOR:
             disp( s.save('color_%03d.%s'%(n, settings.FILEFORMAT)) , '')
