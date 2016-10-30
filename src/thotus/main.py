@@ -78,9 +78,6 @@ commands = dict(
 
     # misc
     view           = cmds.view,
-    shot           = cmds.shot,
-    shots_remove   = cmds.shots_clear,
-    calibrate_shots= cmds.calibrate_cam_from_shots,
     rotate         = control.rotate,
     lasers         = control.switch_lasers,
     exit           = exit,
@@ -95,6 +92,10 @@ adv_commands = dict(
     algo_set       = cmds.set_algo_value,
     debug_settings = settings.compare,
     import_val     = settings.import_val,
+    # take calibration data
+    shot           = cmds.shot,
+    shots_remove   = cmds.shots_clear,
+    calibrate_shots= cmds.calibrate_cam_from_shots,
 
     # compute calibration data
     recalibrate      = cmds.calibrate,
