@@ -8,7 +8,6 @@ import numpy as np
 
 COLOR, LASER1, LASER2 = 1, 2, 4 # bit mask
 ALL = COLOR | LASER1 | LASER2
-SLOWDOWN = 0
 
 scanner = None
 lasers = False
@@ -76,6 +75,8 @@ def scan(kind=ALL, definition=1, angle=360, calibration=False, on_step=None, dis
     s.lasers_off()
     s.current_rotation = 0
 
+    IO_DELAY = 0.15
+
     for n in range(angle):
         if definition > 1 and n%definition != 0:
             continue
@@ -86,18 +87,18 @@ def scan(kind=ALL, definition=1, angle=360, calibration=False, on_step=None, dis
         if on_step:
             on_step()
         t = time() - t0
-        sleep(max(0, (definition*0.12)-t)) # wait for motor
-        s.wait_capture(2+SLOWDOWN)
+        sleep(max(0, (IO_DELAY + (definition-1)*0.1)-t)) # wait for motor
+        s.wait_capture(2)
         if kind & COLOR:
             disp( s.save('color_%03d.%s'%(n, settings.FILEFORMAT)) , '')
         if kind & LASER1:
             s.laser_on(0)
-            s.wait_capture(2+SLOWDOWN, min_val=0.15)
+            s.wait_capture(2, min_val=IO_DELAY)
             disp( s.save('laser0_%03d.%s'%(n, settings.FILEFORMAT)), 'laser 1')
             s.laser_off(0)
         if kind & LASER2:
             s.laser_on(1)
-            s.wait_capture(2+SLOWDOWN, min_val=0.15)
+            s.wait_capture(2, min_val=IO_DELAY)
             disp( s.save('laser1_%03d.%s'%(n, settings.FILEFORMAT)) , 'laser 2')
             s.laser_off(1)
     gui.clear()
