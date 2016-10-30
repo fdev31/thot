@@ -63,8 +63,8 @@ def calibration(calibration_data, images):
             settings.load_data(calibration_data)
         except Exception:
             # Data for Logitech C270
-            calibration_data.camera_matrix = [[1413.371, 0.0, 481.902], [0.0, 1416.431, 647.876], [0.0, 0.0, 1.0]]
-            calibration_data.distortion_vector = [-0.036, 0.294, -0.0, -0.001, -0.637]
+            calibration_data.camera_matrix = np.array(([1430.0, 0.0, 480.0], [0.0, 1430.0, 620.0], [0.0, 0.0, 1.0]))
+            calibration_data.distortion_vector = np.array((0.0, 0.0, 0.0, 0.0, 0.0))
         return temp_calibration_data
 
     print("\nComputing camera calibration...")
