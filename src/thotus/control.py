@@ -86,22 +86,20 @@ def scan(kind=ALL, definition=1, angle=360, calibration=False, on_step=None, dis
         if on_step:
             on_step()
         t = time() - t0
-        sleep(max(0, 0.1 - t)) # wait for motor
+        sleep(max(0, (definition*0.12)-t)) # wait for motor
         s.wait_capture(2+SLOWDOWN)
         if kind & COLOR:
             disp( s.save('color_%03d.%s'%(n, settings.FILEFORMAT)) , '')
         if kind & LASER1:
             s.laser_on(0)
-            s.wait_capture(2+SLOWDOWN)
+            s.wait_capture(2+SLOWDOWN, min_val=0.15)
             disp( s.save('laser0_%03d.%s'%(n, settings.FILEFORMAT)), 'laser 1')
             s.laser_off(0)
-            sleep(0.05)
         if kind & LASER2:
             s.laser_on(1)
-            s.wait_capture(2+SLOWDOWN) # sometimes a bit slow to react, so adding one frame
+            s.wait_capture(2+SLOWDOWN, min_val=0.15)
             disp( s.save('laser1_%03d.%s'%(n, settings.FILEFORMAT)) , 'laser 2')
             s.laser_off(1)
-            sleep(0.05)
     gui.clear()
 
 def rotate(val):
