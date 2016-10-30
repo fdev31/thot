@@ -33,13 +33,14 @@ def iter_cloudify(calibration_data, folder, lasers, sequence, rotated=False, met
 
     for i, n in enumerate(sequence):
         yield
+
+        fullcolor, ref_grey = imtools.imread(folder+'/color_%03d.%s'%(n, settings.FILEFORMAT), format="full", calibrated=undistort and calibration_data)
+        if ref_grey is None:
+            continue
+
         if pure_images:
-            fullcolor = None
             ref_grey = None
         else:
-            fullcolor, ref_grey = imtools.imread(folder+'/color_%03d.%s'%(n, settings.FILEFORMAT), format="full", calibrated=undistort and calibration_data)
-            if ref_grey is None:
-                continue
             ref_grey = ref_grey[:,:,2]
 
         pictures_todisplay = []
@@ -74,7 +75,7 @@ def iter_cloudify(calibration_data, folder, lasers, sequence, rotated=False, met
                         sliced_lines[n][laser] = [ points ] + camera[i]['plane']
                     else:
                         sliced_lines[n][laser] = [ np.deg2rad(n), points, laser ]
-                        if not pure_images:
+                        if fullcolor is not None:
                             color_slices[n][laser] = np.fliplr(fullcolor[(points[1], points[0])])
 
         # display
