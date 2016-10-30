@@ -118,7 +118,7 @@ def capture_pattern(t):
     old_out = s.out
     s.out = settings.CALIBDIR
     s.motor_move(-50)
-    sleep(0.7)
+    sleep(2)
     if not s:
         return
     try:
