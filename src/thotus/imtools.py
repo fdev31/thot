@@ -10,7 +10,10 @@ def compute_noise_mask(img, power=5, threshold=4):
     return denoise(img, power)
 
 def subtract(img1, img2, blur=None, mask=None):
-    img = cv2.subtract(img1, img2)
+    if img2:
+        img = cv2.subtract(img1, img2)
+    else:
+        img = img1
     if blur:
         img = cv2.blur(img, blur)
     if mask is not None:

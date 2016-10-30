@@ -111,7 +111,7 @@ adv_commands = dict(
     pattern_lasers   = cmds.capture_pattern_lasers,
 
     # pure mode
-    toggle_pure_mode = cmds.toggle_pure_mode,
+    pure = cmds.toggle_pure_mode,
 
     # build 3D mesh
     make          = cmds.recognize,

@@ -33,9 +33,10 @@ def iter_cloudify(calibration_data, folder, lasers, sequence, rotated=False, met
 
     for i, n in enumerate(sequence):
         yield
-        full_color = None
-        ref_grey = None
-        if not pure_images:
+        if pure_images:
+            fullcolor = None
+            ref_grey = None
+        else:
             fullcolor, ref_grey = imtools.imread(folder+'/color_%03d.%s'%(n, settings.FILEFORMAT), format="full", calibrated=undistort and calibration_data)
             if ref_grey is None:
                 continue
