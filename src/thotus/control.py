@@ -65,6 +65,11 @@ def scan(kind=ALL, definition=1, angle=360, calibration=False, on_step=None, dis
     s.lasers_off()
     s.current_rotation = 0
 
+    ftw = 2 # frames to wait
+    if calibration:
+        ftw += 1
+
+
     for n in range(angle):
         if definition > 1 and n%definition != 0:
             continue
@@ -75,7 +80,7 @@ def scan(kind=ALL, definition=1, angle=360, calibration=False, on_step=None, dis
         if on_step:
             on_step()
 
-        s.wait_capture(3 if calibration else 2,
+        s.wait_capture(ftw,
                 minus=time()-t0,
                 min_val=0.1
                 )
@@ -83,12 +88,12 @@ def scan(kind=ALL, definition=1, angle=360, calibration=False, on_step=None, dis
             disp( s.save('color_%03d.%s'%(n, settings.FILEFORMAT)) , '')
         if kind & LASER1:
             s.laser_on(0)
-            s.wait_capture(2)
+            s.wait_capture(ftw)
             disp( s.save('laser0_%03d.%s'%(n, settings.FILEFORMAT)), 'laser 1')
             s.laser_off(0)
         if kind & LASER2:
             s.laser_on(1)
-            s.wait_capture(2)
+            s.wait_capture(ftw)
             disp( s.save('laser1_%03d.%s'%(n, settings.FILEFORMAT)) , 'laser 2')
             s.laser_off(1)
     gui.clear()
