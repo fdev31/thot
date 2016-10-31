@@ -2,7 +2,7 @@ from __future__ import print_function
 
 import os
 import json
-from time import time
+from time import time, sleep
 from threading import Thread
 from functools import partial
 
