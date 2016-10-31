@@ -73,6 +73,14 @@ def calibrate_manual():
     settings.interactive_calibration = ic
     return r
 
+def recalibrate_manual():
+    """ Calibrate platform & scanner with user confirmation of laser lines """
+    ic = settings.interactive_calibration
+    settings.interactive_calibration = True
+    r =  cmds.calibrate()
+    settings.interactive_calibration = ic
+    return r
+
 commands = dict(
     # calibrate
     calibrate      = cmds.stdcalibrate,
@@ -107,16 +115,12 @@ adv_commands = dict(
 
     # compute calibration data
     recalibrate      = cmds.calibrate,
-    calibrate_cam    = control.toggle_cam_calibration,
+    recalibrate_manual  = recalibrate_manual,
 
     # acquire pictures
     capture          = cmds.capture,
     capture_color    = cmds.capture_color,
     capture_lasers   = cmds.capture_lasers,
-
-    pattern          = cmds.capture_pattern,
-    pattern_colors   = cmds.capture_pattern_colors,
-    pattern_lasers   = cmds.capture_pattern_lasers,
 
     # pure mode
     pure = cmds.toggle_pure_mode,

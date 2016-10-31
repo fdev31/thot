@@ -41,16 +41,6 @@ def toggle_interactive_calibration():
     print("Camera calibration set to %s"%("interactive" if settings.interactive_calibration else "automatic"))
     return 3
 
-def toggle_cam_calibration(force_skip=None):
-    """ Recompute camera intrinsics (in case you changed the hardware and want a full calibration) """
-    if force_skip is not None:
-        settings.skip_calibration = force_skip
-    else:
-        settings.skip_calibration = not settings.skip_calibration
-
-    print("Camera calibration %s"%("disabled" if settings.skip_calibration else "enabled"))
-    return 3
-
 def switch_lasers():
     """ Toggle lasers """
     global lasers
@@ -104,20 +94,3 @@ def rotate(val):
     s = get_scanner()
     if s:
         s.motor_move(int(val))
-
-def capture_pattern(t):
-    s = get_scanner()
-    s.current_rotation = 0
-    old_out = s.out
-    s.out = settings.CALIBDIR
-    s.motor_move(-50)
-    sleep(2)
-    if not s:
-        return
-    try:
-        scan(t, angle=100, definition=3)
-        print("")
-    except KeyboardInterrupt:
-        print("\naborting...")
-    s.out = old_out
-    s.reset_motor_rotation()

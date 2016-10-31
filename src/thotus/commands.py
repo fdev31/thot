@@ -70,18 +70,22 @@ def stop():
 
 def capture_pattern():
     " Capture chessboard pattern "
-    view_stop()
-    control.capture_pattern(control.ALL)
-
-def capture_pattern_lasers():
-    " Capture chessboard pattern (lasers only) [puremode friendly]"
-    view_stop()
-    control.capture_pattern(control.LASER1|control.LASER2)
-
-def capture_pattern_colors():
-    " Capture chessboard pattern (color only)"
-    view_stop()
-    control.capture_pattern(control.COLOR)
+    t = control.ALL
+    s = get_scanner()
+    s.current_rotation = 0
+    old_out = s.out
+    s.out = settings.CALIBDIR
+    s.motor_move(-50)
+    sleep(2)
+    if not s:
+        return
+    try:
+        scan(t, angle=100, definition=3)
+        print("")
+    except KeyboardInterrupt:
+        print("\naborting...")
+    s.out = old_out
+    s.reset_motor_rotation()
 
 def capture_color():
     " Capture images (color only)"
@@ -197,6 +201,7 @@ def scan():
     iterator = partial(next, cloudifier)
 
     capture(on_step=iterator, display=False)
+
     slices, colors = iterator()
     r = meshify(calibration_data, slices, colors=colors).save("model.ply")
     gui.clear()
