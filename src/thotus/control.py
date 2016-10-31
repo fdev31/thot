@@ -74,7 +74,11 @@ def scan(kind=ALL, definition=1, angle=360, calibration=False, on_step=None, dis
         t0 = time()
         if on_step:
             on_step()
-        s.wait_capture(2, minus=time()-t0, min_val=(definition-1)*0.2)
+
+        s.wait_capture(3 if calibration else 2,
+                minus=time()-t0,
+                min_val=0.1
+                )
         if kind & COLOR:
             disp( s.save('color_%03d.%s'%(n, settings.FILEFORMAT)) , '')
         if kind & LASER1:

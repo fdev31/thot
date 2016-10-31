@@ -92,8 +92,8 @@ class Scanner:
 
     def wait_capture(self, frames=2, min_val=0.150, minus=0):
         x = self.frame_interval * frames
-        x -= minus
         d = max(x, min_val)
+        x -= minus
         if x > 0:
             sleep(d)
             return d

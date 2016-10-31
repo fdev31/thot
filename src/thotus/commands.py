@@ -80,7 +80,7 @@ def capture_pattern():
     if not s:
         return
     try:
-        scan(t, angle=100, definition=3)
+        control.scan(t, angle=100, definition=3, calibration=True)
         print("")
     except KeyboardInterrupt:
         print("\naborting...")
