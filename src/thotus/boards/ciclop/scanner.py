@@ -90,10 +90,14 @@ class Scanner:
     def frame_interval(self):
         return max(1/self.cap.fps, (self.cap.exposure/10000.0))*1.1
 
-    def wait_capture(self, frames=2, min_val=0.150):
+    def wait_capture(self, frames=2, min_val=0.150, minus=0):
         x = self.frame_interval * frames
-        sleep(max(x, min_val))
-        return x
+        x -= minus
+        d = max(x, min_val)
+        if x > 0:
+            sleep(d)
+            return d
+        return 0
 
     def save(self, filename, processing=None):
         if not '.' in filename:
