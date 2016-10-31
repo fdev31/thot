@@ -37,7 +37,7 @@ class Scanner:
         self.cap = Camcorder()
         for n in range(150):
             try:
-                self.cap.set_gain(1)
+                self.cap.set_gain(128)
             except Exception:
                 sleep(0.1)
         self.cap.set_exposure_auto(1)
