@@ -1,5 +1,6 @@
 import os
 import json
+import glob
 import pickle
 import numpy as np
 
@@ -146,3 +147,31 @@ def compare():
             v1 = _view_matrix(v1)
             v2 = _view_matrix(v2)
         print("%s%s%s"%(v1 , SEP, v2))
+
+def get_serial_list():
+    """Obtain list of serial devices"""
+    baselist = []
+    if system == 'Windows':
+        import _winreg
+        try:
+            key = _winreg.OpenKey(
+                _winreg.HKEY_LOCAL_MACHINE, "HARDWARE\\DEVICEMAP\\SERIALCOMM")
+            i = 0
+            while True:
+                try:
+                    values = _winreg.EnumValue(key, i)
+                except:
+                    return baselist
+                if 'USBSER' in values[0] or \
+                   'VCP' in values[0] or \
+                   '\Device\Serial' in values[0]:
+                    baselist.append(values[1])
+                i += 1
+        except:
+            return baselist
+    else:
+        for device in ['/dev/ttyACM*', '/dev/ttyUSB*', '/dev/tty.usb*', '/dev/tty.wchusb*',
+                       '/dev/cu.*', '/dev/rfcomm*']:
+            baselist = baselist + glob.glob(device)
+    return baselist
+

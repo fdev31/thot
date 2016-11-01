@@ -6,7 +6,6 @@ __copyright__ = 'Copyright (C) 2014-2016 Mundo Reader S.L.'
 __license__ = 'GNU General Public License v2 http://www.gnu.org/licenses/gpl2.html'
 
 import time
-import glob
 import serial
 import threading
 import platform
@@ -15,6 +14,36 @@ import logging
 logger = logging.getLogger(__name__)
 
 system = platform.system()
+
+class CameraControl:
+    def __init__(self, cap):
+        self.__cap = cap
+        cap.set_white_balance_temperature(0)
+        cap.set_auto_white_balance(0)
+        cap.set_exposure_auto(1)
+        cap.set_saturation(20)
+        cap.set_contrast(32)
+        cap.set_gain(128)
+        self.brightness = 128
+        self.exposure = 300
+        cap.start()
+
+    def get_brightness(self):
+        return self._brightness
+
+    def set_brightness(self, value):
+        self._brightness = int(value)
+        self.cap.set_gain(self._brightness)
+
+    brightness = property(get_brightness, set_brightness)
+
+    def get_exposure(self):
+        return self._exposure
+
+    def set_exposure(self, value):
+        self._exposure = self.cap.set_exposure_absolue(int(self._exposure))
+
+    exposure = property(get_exposure, set_exposure)
 
 
 class WrongFirmware(Exception):
@@ -111,15 +140,6 @@ class Board(object):
                 logger.error("Error closing the port {0}\n".format(self.serial_name))
             logger.info(" Done")
 
-    def set_unplug_callback(self, value):
-        self.unplug_callback = value
-
-    def motor_invert(self, value):
-        if value:
-            self._motor_direction = -1
-        else:
-            self._motor_direction = +1
-
     def motor_speed(self, value):
         if self._is_connected:
             if self._motor_speed != value:
@@ -181,13 +201,6 @@ class Board(object):
         for i in range(self._laser_number):
             self.laser_off(i)
 
-    def ldr_sensor(self, pin):
-        value = self._send_command("M50T" + pin, read_lines=True).split("\n")[0]
-        try:
-            return int(value)
-        except ValueError:
-            return 0
-
     def send_command(self, req, nonblocking=False, callback=None, read_lines=False):
         if nonblocking:
             threading.Thread(target=self._send_command,
@@ -245,29 +258,3 @@ class Board(object):
         self._serial_port.write(b"\x18\r\n")  # Ctrl-x
         self._serial_port.readline()
 
-    def get_serial_list(self):
-        """Obtain list of serial devices"""
-        baselist = []
-        if system == 'Windows':
-            import _winreg
-            try:
-                key = _winreg.OpenKey(
-                    _winreg.HKEY_LOCAL_MACHINE, "HARDWARE\\DEVICEMAP\\SERIALCOMM")
-                i = 0
-                while True:
-                    try:
-                        values = _winreg.EnumValue(key, i)
-                    except:
-                        return baselist
-                    if 'USBSER' in values[0] or \
-                       'VCP' in values[0] or \
-                       '\Device\Serial' in values[0]:
-                        baselist.append(values[1])
-                    i += 1
-            except:
-                return baselist
-        else:
-            for device in ['/dev/ttyACM*', '/dev/ttyUSB*', '/dev/tty.usb*', '/dev/tty.wchusb*',
-                           '/dev/cu.*', '/dev/rfcomm*']:
-                baselist = baselist + glob.glob(device)
-        return baselist

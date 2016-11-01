@@ -54,9 +54,14 @@ class Camcorder(Thread):
                 if not ( e.args and e.args[0] == 11):
                     import traceback
                     traceback.print_exc()
-                sleep(1)
+                sleep(0.2)
+            except BlockingIOError:
+                import traceback
+                traceback.print_exc()
+                sleep(0.2)
         else:
             raise RuntimeError("Can't init camera")
+        print("ready!")
 
     def __getattr__(self, name):
         return getattr(self.video, name)
@@ -88,7 +93,15 @@ class Camcorder(Thread):
 
         while not self.terminate:
             select.select((self.video,), (), ())
-            self._cap()
+            for n in range(10):
+                try:
+                    self._cap()
+                    break
+                except BlockingIOError:
+                    sleep(0.2)
+                    pass
+            else:
+                print("failed")
 
         self.video.close()
 

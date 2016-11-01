@@ -12,19 +12,22 @@ ALL = COLOR | LASER1 | LASER2
 scanner = None
 lasers = False
 
+EXPOSED_CONTROLS = ["exposure", "brightness"]
+
 def get_camera_controllers():
     s = get_scanner()
     o = {}
     if not s:
         return o
-    def _shellwrapper(fn):
-        def getsetter(p):
-            v = fn(int(p))
-            if v:
-                print(v)
+    def _shellwrapper(control, prop):
+        def getsetter(p=None):
+            if p is None:
+                print(getattr(control, prop))
+            else:
+                setattr(control, prop, int(p))
         return getsetter
-    for n in "exposure_absolute gain saturation white_balance_temperature".split():
-        o["cam_"+n] = _shellwrapper(getattr(s.cap, "set_"+n))
+    for n in EXPOSED_CONTROLS:
+        o["cam_"+n] = _shellwrapper(s.cap_ctl, n)
     return o
 
 def get_scanner():
