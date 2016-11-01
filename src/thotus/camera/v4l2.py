@@ -98,7 +98,7 @@ class Camcorder(Thread):
                     self._cap()
                     break
                 except BlockingIOError:
-                    sleep(0.2)
+                    sleep(0.01)
                     pass
             else:
                 print("failed")
