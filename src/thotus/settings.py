@@ -23,6 +23,7 @@ ui_base_i = 2
 algo_threshold = 4
 algo_denoise = 5
 
+UI_RATIO = 0.8
 VIDEO_DEVICE = None
 SERIAL_DEVICE = None
 SERIAL_SPEED = None

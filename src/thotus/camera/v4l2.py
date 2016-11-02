@@ -2,6 +2,7 @@ from __future__ import print_function
 
 import glob
 import select
+import traceback
 from time import sleep
 from threading import Thread, Semaphore
 
@@ -41,18 +42,15 @@ class Camcorder(Thread):
         self.terminate = False
         self.video.start()
         print("Waiting for cam to be ready...")
-        for n in range(10):
+        for n in range(30):
             try:
                 self._cap()
                 break
             except Exception as e:
                 if not ( e.args and e.args[0] == 11):
-                    import traceback
                     traceback.print_exc()
                 sleep(0.2)
             except BlockingIOError:
-                import traceback
-                traceback.print_exc()
                 sleep(0.2)
         else:
             raise RuntimeError("Can't init camera")

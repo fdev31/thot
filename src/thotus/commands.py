@@ -35,7 +35,7 @@ def scan(kind=ALL, definition=1, angle=360, calibration=False, on_step=None, dis
     s = get_scanner()
     if display:
         def disp(img, text):
-            gui.display(np.rot90(img, 3), text=text, resize=(640,480))
+            gui.display(np.rot90(img, 3), text=text, resize=settings.UI_RATIO)
     else:
         def disp(*a):
             return
@@ -58,11 +58,11 @@ def scan(kind=ALL, definition=1, angle=360, calibration=False, on_step=None, dis
         if on_step:
             on_step()
 
-        s.wait_capture(ftw,
-                minus=time()-t0,
-                min_val=0.1
-                )
+        if calibration:
+            sleep(0.05*definition)
+
         if kind & COLOR:
+            s.wait_capture(ftw)
             disp( s.save('color_%03d.%s'%(n, settings.FILEFORMAT)) , '')
         if kind & LASER1:
             s.laser_on(0)
@@ -144,7 +144,10 @@ class Viewer(Thread):
 
         while self.running:
             s.wait_capture(1)
-            img = np.rot90(s.cap.buff, settings.ROTATE)
+            if settings.ROTATE:
+                img = np.rot90(s.cap.buff, 3)
+            else:
+                img = s.cap.buff
             grey = img[:,:,1]
             found, corners = chess_detect(grey)
             if found:

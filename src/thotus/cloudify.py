@@ -76,7 +76,7 @@ def iter_cloudify(calibration_data, folder, lasers, sequence, rotated=False, met
                 if interactive:
                     disp = cv2.merge( np.array(( laser_grey, processed, processed)) )
                     txt = "Esc=NOT OK, Enter=OK"
-                    gui.display(disp, txt,  resize=0.7)
+                    gui.display(disp, txt,  resize=settings.UI_RATIO)
                 pictures_todisplay.append((processed, laser_grey))
                 if interactive:
                     if not gui.ok_cancel(20):
@@ -105,12 +105,12 @@ def iter_cloudify(calibration_data, folder, lasers, sequence, rotated=False, met
                 r = cv2.bitwise_or(gref, nref)
                 disp = cv2.merge( np.array(( r, gref, r)) )
 
-                gui.display(disp, "lasers" if len(lasers) > 1 else "laser %d"%lasers[0],  resize=0.7)
+                gui.display(disp, "lasers" if len(lasers) > 1 else "laser %d"%lasers[0],  resize=settings.UI_RATIO)
             else:
                 if len(pictures_todisplay) > 1:
-                    gui.display(cv2.addWeighted(pictures_todisplay[1][1], 0.5, pictures_todisplay[0][1], 0.5, 0), "lasers" if len(lasers) > 1 else "laser %d"%lasers[0],  resize=0.7)
+                    gui.display(cv2.addWeighted(pictures_todisplay[1][1], 0.5, pictures_todisplay[0][1], 0.5, 0), "lasers" if len(lasers) > 1 else "laser %d"%lasers[0],  resize=settings.UI_RATIO)
                 else:
-                    gui.display(pictures_todisplay[0][1], "lasers" if len(lasers) > 1 else "laser %d"%lasers[0],  resize=0.7)
+                    gui.display(pictures_todisplay[0][1], "lasers" if len(lasers) > 1 else "laser %d"%lasers[0],  resize=settings.UI_RATIO)
         else:
             gui.redraw()
     if len(sliced_lines) == 0:
