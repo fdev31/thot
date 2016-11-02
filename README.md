@@ -21,7 +21,7 @@ This software only targets Linux users.
 
 On Archlinux system:
 
-    % yaourt -S opencv python-v4l2capture python-numpy libwebcam python-scipy
+    % yaourt -S --needed opencv python-numpy python-scipy
     % wget https://github.com/fdev31/thot/archive/master.zip
     % unzip master.zip
     % cd thot-master
