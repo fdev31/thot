@@ -77,10 +77,9 @@ def scan(kind=ALL, definition=1, angle=360, calibration=False, on_step=None, dis
             continue
         gui.progress("scan", n, angle)
         s.motor_move(1*definition)
-        if definition <= 2:
-            sleep(0.02)
-        else:
-            sleep(0.06* definition)
+        sleep(0.03)
+        if calibration:
+            sleep(0.05* definition)
 
         t0 = time()
         if on_step:

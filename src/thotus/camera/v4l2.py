@@ -18,7 +18,6 @@ MAX_HEIGHT=960
 
 definition = 1 # 1= highest quality
 
-
 class Camcorder(Thread):
     YUV = 0
     def __init__(self, width=MAX_WIDTH, height=MAX_HEIGHT):
@@ -83,7 +82,6 @@ class Camcorder(Thread):
         return self.buff
 
     def _cap(self):
-        sem = self.sem
         image_data = self.video.read_and_queue()
         buff = np.fromstring(image_data, dtype=np.uint8)
         if self.YUV:
@@ -92,8 +90,6 @@ class Camcorder(Thread):
             s = list(reversed(self.size))
             s.append(-1)
             self.buff = cv2.cvtColor(buff.reshape(*s), cv2.COLOR_RGB2BGR)
-        if sem:
-            self.sem.release()
 
     def run(self):
         # Start the device. This lights the LED if it's a camera that has one.
@@ -102,6 +98,7 @@ class Camcorder(Thread):
 
         while not self.terminate:
             select.select((self.video,), (), ())
+            sem = self.sem
             for n in range(10):
                 try:
                     self._cap()
@@ -111,6 +108,8 @@ class Camcorder(Thread):
                     pass
             else:
                 print("failed")
+            if sem:
+                self.sem.release()
 
         self.video.close()
 
