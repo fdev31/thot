@@ -169,12 +169,14 @@ class Viewer(Thread):
 
 def view_mode():
     Viewer.instance.line_mode = not Viewer.instance.line_mode
+    return 3
 
 def view():
     " toggle webcam output (show chessboard if detected)"
     if not view_stop():
         Viewer.instance = Viewer()
         Viewer.instance.start()
+    return 3
 
 def view_stop():
     if Viewer.instance and Viewer.instance.running:
@@ -213,6 +215,7 @@ def capture_pattern():
     else:
         s.out = old_out
         s.reset_motor_rotation()
+    return 3
 
 def capture_color():
     " Capture images (color only)"

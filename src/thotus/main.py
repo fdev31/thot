@@ -63,6 +63,7 @@ def toggle_advanced_mode():
     else:
         commands.update(adv_commands)
         print("Using advanced commands")
+    return 3
 
 def calibrate_manual():
     """ Calibrate platform & scanner with user confirmation of laser lines """
