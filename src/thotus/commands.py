@@ -144,12 +144,12 @@ class Viewer(Thread):
 
         while self.running:
             s.wait_capture(1)
-            img = np.rot90(s.cap.buff, 3)
+            img = np.rot90(s.cap.buff, settings.ROTATE)
             grey = img[:,:,1]
             found, corners = chess_detect(grey)
             if found:
                 img = chess_draw(grey, found, corners)
-            gui.display(img, "live", resize=(640,480))
+            gui.display(img, "live", resize=0.8)
 
 def view():
     " toggle webcam output (show chessboard if detected)"

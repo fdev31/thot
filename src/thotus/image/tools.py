@@ -1,6 +1,8 @@
 import cv2
 import numpy as np
 
+from thotus import settings
+
 def denoise(img, power=5):
     k = np.ones((power, power), np.uint8)
     return cv2.dilate(cv2.erode(img, k), k).astype(np.uint8)
@@ -32,9 +34,8 @@ def imread(path, format="rgb", calibrated=False):
         if format == "full":
             return None, None
         return
-    i = cv2.flip(cv2.transpose(i), 1)
-#    if calibrated:
-#        i = calibrated.undistort_image(i)
+    if settings.ROTATE:
+        i = cv2.flip(cv2.transpose(i), 1)
 
     if format == 'grey':
         return cv2.cvtColor(i, cv2.COLOR_RGB2HSV)[:,:,2]
