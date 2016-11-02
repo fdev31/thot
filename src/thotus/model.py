@@ -31,11 +31,11 @@ class Model(object):
         self._size = np.array([0.0, 0.0, 0.0])
 
     def _add_mesh(self):
-        self._mesh = Mesh(self)
+        self._mesh = BaseMesh(self)
         return self._mesh
 
 
-class Mesh(object):
+class BaseMesh(object):
     """
     A mesh is a list of 3D triangles build from vertexes.
     Each triangle has 3 vertexes. It can be also a point cloud.
