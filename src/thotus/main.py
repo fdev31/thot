@@ -107,6 +107,7 @@ adv_commands = dict(
     algop          = cmds.set_algo_value,
     debug_settings = settings.compare,
     import_val     = settings.import_val,
+    view_mode      = cmds.view_mode,
     # take calibration data
     shot           = cmds.shot,
     shots_remove   = cmds.shots_clear,

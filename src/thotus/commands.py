@@ -11,7 +11,7 @@ from thotus import settings
 from thotus import calibration
 from thotus.mesh import meshify
 from thotus.boards import Scanner, get_board
-from thotus.cloudify import cloudify, iter_cloudify
+from thotus.cloudify import cloudify, iter_cloudify, LineMaker
 from thotus.calibration.data import CalibrationData
 from thotus.calibration.chessboard import chess_detect, chess_draw
 
@@ -46,13 +46,14 @@ def scan(kind=ALL, definition=1, angle=360, calibration=False, on_step=None, dis
     if calibration:
         ftw += 1
 
-    sleep(0.1)
+    sleep(0.2)
 
     for n in range(angle):
         if definition > 1 and n%definition != 0:
             continue
         gui.progress("scan", n, angle)
         s.motor_move(1*definition)
+        slowdown = 1 if n == 0 else 0 # XXX: first frame needs more time (!)
 
         t0 = time()
         if on_step:
@@ -64,16 +65,16 @@ def scan(kind=ALL, definition=1, angle=360, calibration=False, on_step=None, dis
             sleep(0.05*definition)
 
         if kind & COLOR:
-            s.wait_capture(ftw)
+            s.wait_capture(ftw+slowdown)
             disp( s.save('color_%03d.%s'%(n, settings.FILEFORMAT)) , '')
         if kind & LASER1:
             s.laser_on(0)
-            s.wait_capture(ftw)
+            s.wait_capture(ftw+slowdown)
             disp( s.save('laser0_%03d.%s'%(n, settings.FILEFORMAT)), 'laser 1')
             s.laser_off(0)
         if kind & LASER2:
             s.laser_on(1)
-            s.wait_capture(ftw)
+            s.wait_capture(ftw+slowdown)
             disp( s.save('laser1_%03d.%s'%(n, settings.FILEFORMAT)) , 'laser 2')
             s.laser_off(1)
     gui.clear()
@@ -120,7 +121,6 @@ def switch_lasers():
             b.lasers_off()
     return 3
 
-
 def rotate(val):
     """ Rotates the platform by X degrees """
     s = get_scanner()
@@ -131,6 +131,8 @@ class Viewer(Thread):
     instance = None
     running = True
 
+    line_mode = False
+
     def stop(self):
         self.running = False
         self.join()
@@ -138,6 +140,7 @@ class Viewer(Thread):
         gui.clear()
 
     def run(self):
+        lm = LineMaker()
         try:
             s = get_scanner()
         except Exception as e:
@@ -145,16 +148,27 @@ class Viewer(Thread):
             self.running = False
 
         while self.running:
-            s.wait_capture(1)
+            img = s.cap.get(1)
             if settings.ROTATE:
-                img = np.rot90(s.cap.buff, 3)
+                img = np.rot90(img, 3)
+            if self.line_mode:
+                lineprocessor = getattr(lm, 'from_'+settings.SEGMENTATION_METHOD)
+                s.laser_on(0)
+                laser_image = s.cap.get(1)
+                if settings.ROTATE:
+                    laser_image = np.rot90(laser_image, 3)
+                s.laser_off(0)
+                points, processed = lineprocessor(laser_image, laser_image[:,:,0], img, img[:,:,0])
+                img = processed
             else:
-                img = s.cap.buff
-            grey = img[:,:,1]
-            found, corners = chess_detect(grey)
-            if found:
-                img = chess_draw(grey, found, corners)
+                grey = img[:,:,1]
+                found, corners = chess_detect(grey)
+                if found:
+                    img = chess_draw(grey, found, corners)
             gui.display(img, "live", resize=0.8)
+
+def view_mode():
+    Viewer.instance.line_mode = not Viewer.instance.line_mode
 
 def view():
     " toggle webcam output (show chessboard if detected)"

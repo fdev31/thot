@@ -5,7 +5,7 @@ from thotus import settings
 import numpy as np
 import cv2
 
-def compute(img, img_g, ref, ref_g, laser_nr, mask=None, use_ransac=False):
+def compute(img, img_g, ref, ref_g, laser_nr=0, mask=None, use_ransac=False):
     u = []
     v = []
 

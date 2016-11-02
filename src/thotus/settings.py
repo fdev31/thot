@@ -19,13 +19,13 @@ single_laser = None
 
 PATTERN_MATRIX_SIZE = (11, 6)
 PATTERN_SQUARE_SIZE = 13.0
-PATTERN_ORIGIN = 38.8 # distance plateau to second row of pattern
+PATTERN_ORIGIN = 38.9 # distance plateau to second row of pattern
 
 ui_base_i = 2 # UI speed factor
 
 # algo settings
-algo_threshold = 4
-algo_denoise = 5
+algo_threshold = 7
+algo_denoise = 2
 UI_RATIO = 0.8
 VIDEO_DEVICE = None
 SERIAL_DEVICE = None
@@ -35,7 +35,7 @@ ROTATE = 1 # 0=None, 1=90
 LASER_COUNT = 2
 ROI = (100, 150)
 
-SYNC_FRAME_FAST = 1
+SYNC_FRAME_FAST = 2
 SYNC_FRAME_STD = 2
 
 # Non persistent
