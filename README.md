@@ -145,5 +145,4 @@ In case you want to capture the pictures again, just type:
 
 - no release yet: may not work out of the box, consider unstable
 - camera value getters are broken
-- No easy way to change video & serial device in case it's not detected correctly
 
