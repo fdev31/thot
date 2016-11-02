@@ -10,21 +10,16 @@ This software only targets Linux users.
 
 ## Features
 
-- Make Ciclop scanner work on Linux with standard OpenCV
-- Colored two lasers scanning done in 4 minutes
+- Makes any scanner work on Linux (currently Ciclop is supported, any can be added in few hours)
+- Colored two lasers scanning done in 2.5 minutes (in bright condition)
 - Fully automated calibration done in 30s !
 - Manual laser segmentation mode (to avoid calibration mistakes)
 - Two passes scanning mode for difficult objects
 - User friendly CLI
 
-
-## Help wanted!
-
-To find why the two point clouds are slightly deformed, probably I'm missing some math in calibration...
-
 ## Installation
 
-On archlinux system:
+On Archlinux system:
 
     % yaourt -S opencv python-v4l2capture python-numpy libwebcam python-scipy
     % wget https://github.com/fdev31/thot/archive/master.zip
@@ -46,12 +41,9 @@ After installing all dependencies, unpack sources and open a terminal emulator:
     % cd thot-master
     % ./run.sh
 
-Calibrate software:
+Calibrate software (after changing exposure to get the pattern recognized):
 
-    Scan Bot> view
-    # You can change the camera settings with set* commands to get a stable pattern displayed
-    Scan Bot> setGain 5
-    Scan Bot> setExposureAbsolute 3000
+    Scan Bot> cam_exposure 3000
     Scan Bot> calibrate
 
 Scan 3D object
@@ -70,19 +62,15 @@ Reconstruct previously scanned mesh (to test new calibration):
 
 A special "exec" command allows command chaining from the command line:
 
-    $ thot exec setGain 5, calibrate, keep_laser 1 , make
+    $ thot exec calibrate, keep_laser 1 , make
 
 Rebuild mesh from previous scan, keeping first laser information only:
 
     $ thot exec keep_laser 1, make
 
-Recalibrate the laser manually (don't reshot the patter, just re-analyse asking for you to discard wrong lines)
+Rebuild mesh with different line detection threshold
 
-    $ thot exec calibrate_manual, recalibrate
-
-Rebuild mesh with different line detection algorithm
-
-    $ thot algorithm pureimage, make
+    $ thot exec algop threshold 5, make
 
 Images are saved into **capture/** folder
 Pointcloud is saved as **capture.ply**
@@ -119,6 +107,7 @@ Result of a 2 lasers scan (unprocessed point cloud):
 If you have a mesh inside another mesh, this is probably a camera calibration issue:
 take many shots with the `shot` command (changing position of chessboard each time to cover maximum surface), then use `calibrate_shots` to compute camera calibration again.
 
+    Scan Bot> advanced
     Scan Bot> shot
     Scan Bot> shot
     Scan Bot> shot
@@ -133,13 +122,13 @@ After this you will need to do standard calibration again (platform and lasers),
 ## Meshe is randomly distorted, but I can see two different shapes
 
 This is probably a laser calibration issue, some lines are probably badly detected.
-You can fix it by discarding the frames that are not well analysed:
+You can fix it by discarding the frames that are not well analyzed:
 
-    $ thot exec recalibrate_manual, recalibrate
+    $ thot recalibrate_manual
 
 In case you want to capture the pictures again, just type:
 
-    $ thot exec recalibrate_manual, calibrate
+    $ thot calibrate_manual
 
 ## Bugs
 
