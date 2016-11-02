@@ -11,33 +11,41 @@ import numpy as np
 ('distortion_vector', 'distortion_vector'),
 )
 
-configuration = 'thot'
-single_laser = None
-skip_calibration = True
-interactive_calibration = False
-pure_mode = False
+_persist = 'single_laser PATTERN_MATRIX_SIZE PATTERN_SQUARE_SIZE PATTERN_ORIGIN ui_base_i algo_threshold algo_denoise UI_RATIO VIDEO_DEVICE SERIAL_DEVICE SERIAL_SPEED ROTATE ROI SYNC_FRAME_FAST SYNC_FRAME_STD'.split()
+_algos_p = 'denoise threshold'.split()
 
-ui_base_i = 2
+# Possible persistent
+single_laser = None
+
+PATTERN_MATRIX_SIZE = (11, 6)
+PATTERN_SQUARE_SIZE = 13.0
+PATTERN_ORIGIN = 38.8 # distance plateau to second row of pattern
+
+ui_base_i = 2 # UI speed factor
 
 # algo settings
 algo_threshold = 4
 algo_denoise = 5
-
 UI_RATIO = 0.8
 VIDEO_DEVICE = None
 SERIAL_DEVICE = None
 SERIAL_SPEED = None
 
 ROTATE = 1 # 0=None, 1=90
-
 LASER_COUNT = 2
 ROI = (100, 150)
 
-PATTERN_MATRIX_SIZE = (11, 6)
-PATTERN_SQUARE_SIZE = 13.0
-PATTERN_ORIGIN = 38.8 # distance plateau to second row of pattern
+SYNC_FRAME_FAST = 1
+SYNC_FRAME_STD = 2
+
+# Non persistent
 
 SEGMENTATION_METHOD = 'pureimage'
+
+skip_calibration = True
+interactive_calibration = False
+configuration = 'thot'
+pure_mode = False
 
 def get_pattern_points():
     pattern_points = np.zeros((np.prod(PATTERN_MATRIX_SIZE), 3), np.float32)
@@ -56,6 +64,26 @@ for d in (WORKDIR, CALIBDIR, SHOTSDIR, CONF_DIR):
     except: pass
 
 CAMERA_SETTINGS_FILE = os.path.join(CONF_DIR, 'cam_data.bin')
+PROFILE_SETTINGS_FILE = os.path.join(CONF_DIR, 'profile.bin')
+
+try:
+    prof = pickle.load(open(PROFILE_SETTINGS_FILE, 'rb'))
+except Exception:
+    pass
+else:
+    g = globals()
+    for k, v in prof.items():
+        g[k] = v
+
+def save_profile():
+    g = globals()
+    d = {}
+    for k in _persist:
+        d[k] = g[k]
+    for k in _algos_p:
+        k = "algo_"+k
+        d[k] = g[k]
+    pickle.dump(d, open(PROFILE_SETTINGS_FILE, 'wb'))
 
 class Attribute(dict):
 

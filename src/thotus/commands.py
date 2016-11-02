@@ -30,7 +30,7 @@ lasers = False
 
 EXPOSED_CONTROLS = ["exposure", "brightness"]
 
-def scan(kind=ALL, definition=1, angle=360, calibration=False, on_step=None, display=True, ftw=2):
+def scan(kind=ALL, definition=1, angle=360, calibration=False, on_step=None, display=True, ftw=settings.SYNC_FRAME_STD):
     """ Low level scan function, main loop, not called directly by shell """
     s = get_scanner()
     if display:
@@ -169,6 +169,7 @@ def view_stop():
         return True
 
 def stop():
+    settings.save_profile()
     view_stop()
     if scanner:
         scanner.close()
@@ -207,7 +208,7 @@ def capture_lasers():
     " Capture images (lasers only) [puremode friendly]"
     return capture(LASER1|LASER2)
 
-def capture(kind=ALL, on_step=None, display=True, ftw=2):
+def capture(kind=ALL, on_step=None, display=True, ftw=settings.SYNC_FRAME_STD):
     " Capture images "
     view_stop()
     s = get_scanner()
@@ -312,7 +313,7 @@ def scan_object():
     cloudifier = iter_cloudify(calibration_data, settings.WORKDIR, r, range(360), False, method=settings.SEGMENTATION_METHOD)
     iterator = partial(next, cloudifier)
 
-    capture(on_step=iterator, display=False, ftw=1)
+    capture(on_step=iterator, display=False, ftw=settings.SYNC_FRAME_FAST)
 
     slices, colors = iterator()
     r = meshify(calibration_data, slices, colors=colors).save("model.ply")
