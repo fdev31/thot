@@ -8,9 +8,6 @@ import numpy as np
 
 def meshify(calibration_data, lines=None, colors=None, camera=False, lasers=range(2), cylinder=(100, 100)):
     pcg = PointCloudGeneration(calibration_data)
-    if not lines:
-        lines = pickle.load(open('lines2d.pyk', 'rb+'))
-
     obj = Mesh()
     computer = pcg.compute_camera_point_cloud if camera else pcg.compute_point_cloud
     params = dict(radius=cylinder[0], height=cylinder[1])
