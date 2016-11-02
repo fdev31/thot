@@ -269,13 +269,14 @@ def toggle_pure_mode():
 def set_roi(val1=None, val2=None):
     """ Set with and height of the scanning cylinder, in mm (only one value = height) """
     if val1 is None:
-        print("Diameter: %dmm Height: %dmm"%settings.ROI)
+        print("Diameter: %dcm Height: %dcm"%tuple(x/10 for x in settings.ROI))
     else:
         if not val2:
             val2 = val1
-            val1 = settings.ROI[0]
-        settings.ROI = (int(val1), int(val2))
-        set_roi()
+            val1 = settings.ROI[0]/10
+        settings.ROI = (int(float(val1)*10), int(float(val2)*10))
+        set_roi() # print
+    return 3
 
 def set_horus_cfg():
     " Load horus calibration configuration "
