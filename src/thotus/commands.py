@@ -43,10 +43,11 @@ def scan(kind=ALL, definition=1, angle=360, calibration=False, on_step=None, dis
     s.lasers_off()
     s.current_rotation = 0
 
-    ftw = 2 # frames to wait
+    ftw = 1 # frames to wait
     if calibration:
         ftw += 1
 
+    sleep(0.1)
 
     for n in range(angle):
         if definition > 1 and n%definition != 0:
