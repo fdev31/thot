@@ -23,6 +23,10 @@ ui_base_i = 2
 algo_threshold = 4
 algo_denoise = 5
 
+VIDEO_DEVICE = None
+SERIAL_DEVICE = None
+SERIAL_SPEED = None
+
 LASER_COUNT = 2
 ROI = (100, 150)
 
@@ -151,27 +155,8 @@ def compare():
 def get_serial_list():
     """Obtain list of serial devices"""
     baselist = []
-    if system == 'Windows':
-        import _winreg
-        try:
-            key = _winreg.OpenKey(
-                _winreg.HKEY_LOCAL_MACHINE, "HARDWARE\\DEVICEMAP\\SERIALCOMM")
-            i = 0
-            while True:
-                try:
-                    values = _winreg.EnumValue(key, i)
-                except:
-                    return baselist
-                if 'USBSER' in values[0] or \
-                   'VCP' in values[0] or \
-                   '\Device\Serial' in values[0]:
-                    baselist.append(values[1])
-                i += 1
-        except:
-            return baselist
-    else:
-        for device in ['/dev/ttyACM*', '/dev/ttyUSB*', '/dev/tty.usb*', '/dev/tty.wchusb*',
-                       '/dev/cu.*', '/dev/rfcomm*']:
-            baselist = baselist + glob.glob(device)
+    for device in ['/dev/ttyACM*', '/dev/ttyUSB*', '/dev/tty.usb*', '/dev/tty.wchusb*',
+                   '/dev/cu.*', '/dev/rfcomm*']:
+        baselist = baselist + glob.glob(device)
     return baselist
 

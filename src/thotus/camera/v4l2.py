@@ -8,32 +8,27 @@ from threading import Thread, Semaphore
 import numpy as np
 import cv2
 
-try:
-    import v4l2capture
-except ImportError:
-    import thotus.v4l2capture_alt as v4l2capture
-
-MAX_WIDTH=1280
-MAX_HEIGHT=960
+import v4l2capture
+from thotus import settings
 
 definition = 1 # 1= highest quality
 
 class Camcorder(Thread):
     YUV = 0
-    def __init__(self, width=MAX_WIDTH, height=MAX_HEIGHT):
+    def __init__(self):
         if not v4l2capture:
             raise RuntimeError("Can't find v4l2capture")
         Thread.__init__(self)
         self.setDaemon(True)
         # Open the video device.
         try:
-            self.dev = glob.glob("/dev/video*")[-1]
+            self.dev = settings.VIDEO_DEVICE or glob.glob("/dev/video*")[-1]
         except IndexError:
             raise RuntimeError("Check your webcam device (unplugged ?)")
         video = v4l2capture.Video_device(self.dev)
         # Suggest an image size to the device. The device may choose and
         # return another size if it doesn't support the suggested one.
-        size_x, size_y = video.set_format(width, height, self.YUV, fourcc='I')
+        size_x, size_y = video.set_format(1920, 1080, self.YUV, fourcc='I')
         self.size = (size_x, size_y)
         self.ppf = np.multiply(*self.size) # pixels per frame
         self.fps = video.set_fps(30)
@@ -109,7 +104,7 @@ class Camcorder(Thread):
             else:
                 print("failed")
             if sem:
-                self.sem.release()
+                sem.release()
 
         self.video.close()
 

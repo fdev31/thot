@@ -80,14 +80,21 @@ class Scanner:
         self.writer_t.join()
         self.cap.join()
 
+
+serial_devices = settings.get_serial_list()
+
+params = {
+    'baud_rate': settings.SERIAL_SPEED or 115200,
+    'serial_name': settings.SERIAL_DEVICE or (serial_devices[-1] if serial_devices else None)
+}
 try:
     from .ciclop.board import Board, CameraControl
-    _board = Board()
+    _board = Board(**params)
     _board.connect()
     print("Ciclop board connected")
 except Exception:
     from .dummy.board import Board, CameraControl
-    _board = Board()
+    _board = Board(**params)
     _board.connect()
     print("Using dummy (fake) board")
 
