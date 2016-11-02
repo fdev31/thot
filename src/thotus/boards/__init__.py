@@ -59,20 +59,15 @@ class Scanner:
     def frame_interval(self):
         return max(1/self.cap.fps, (self.cap_ctl.exposure/10000.0))*1.1
 
-    def wait_capture(self, frames=2, min_val=0.150, minus=0):
-        x = self.frame_interval * frames
-        d = max(x, min_val)
-        x -= minus
-        if x > 0:
-            sleep(d)
-            return d
-        return 0
+    def wait_capture(self, frames=2, minus=0):
+        # TODO improve with minus param
+        self.cap.get(frames)
 
     def save(self, filename, processing=None):
         if not '.' in filename:
             filename += '.' + settings.FILEFORMAT
 
-        img = self.cap.get()
+        img = self.cap.buff
         self.writer_t.q.put( (img, filename) )
         return img
 

@@ -66,36 +66,38 @@ def scan(kind=ALL, definition=1, angle=360, calibration=False, on_step=None, dis
             return
 
     s.lasers_off()
-    s.current_rotation = 0
+    D = 0.03
 
-    ftw = 2 # frames to wait
-    if calibration:
+    ftw = 1 # frames to wait
+    if calibration: # Be 100% sure :P
         ftw += 1
-
 
     for n in range(angle):
         if definition > 1 and n%definition != 0:
             continue
         gui.progress("scan", n, angle)
         s.motor_move(1*definition)
+        if definition <= 2:
+            sleep(0.02)
+        else:
+            sleep(0.06* definition)
 
         t0 = time()
         if on_step:
             on_step()
 
-        s.wait_capture(ftw,
-                minus=time()-t0,
-                min_val=0.1
-                )
+        s.wait_capture(ftw)
         if kind & COLOR:
             disp( s.save('color_%03d.%s'%(n, settings.FILEFORMAT)) , '')
         if kind & LASER1:
             s.laser_on(0)
+            sleep(D)
             s.wait_capture(ftw)
             disp( s.save('laser0_%03d.%s'%(n, settings.FILEFORMAT)), 'laser 1')
             s.laser_off(0)
         if kind & LASER2:
             s.laser_on(1)
+            sleep(D)
             s.wait_capture(ftw)
             disp( s.save('laser1_%03d.%s'%(n, settings.FILEFORMAT)) , 'laser 2')
             s.laser_off(1)

@@ -45,24 +45,20 @@ class CameraControl:
 
     exposure = property(get_exposure, set_exposure)
 
-
 class WrongFirmware(Exception):
 
     def __init__(self):
         Exception.__init__(self, "Wrong Firmware")
-
 
 class BoardNotConnected(Exception):
 
     def __init__(self):
         Exception.__init__(self, "Board Not Connected")
 
-
 class OldFirmware(Exception):
 
     def __init__(self):
         Exception.__init__(self, "Old Firmware")
-
 
 class Board(object):
 
@@ -78,7 +74,6 @@ class Board(object):
         M71 Tn  : switch on laser n
 
         M50 Tn  : read ldr sensor
-
     """
 
     def __init__(self, parent=None, serial_name='/dev/ttyUSB0', baud_rate=115200):

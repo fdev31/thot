@@ -72,20 +72,27 @@ def capture_pattern():
     " Capture chessboard pattern "
     t = control.ALL
     s = get_scanner()
-    s.current_rotation = 0
     old_out = s.out
     s.out = settings.CALIBDIR
+    s.current_rotation = 0
     s.motor_move(-50)
     sleep(2)
+    view_stop()
     if not s:
         return
     try:
         control.scan(t, angle=100, definition=3, calibration=True)
         print("")
     except KeyboardInterrupt:
+        s.reset_motor_rotation()
         print("\naborting...")
-    s.out = old_out
-    s.reset_motor_rotation()
+    except Exception:
+        s.out = old_out
+        s.reset_motor_rotation()
+        raise
+    else:
+        s.out = old_out
+        s.reset_motor_rotation()
 
 def capture_color():
     " Capture images (color only)"

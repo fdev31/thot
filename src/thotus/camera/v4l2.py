@@ -3,7 +3,7 @@ from __future__ import print_function
 import glob
 import select
 from time import sleep
-from threading import Thread
+from threading import Thread, Semaphore
 
 import numpy as np
 import cv2
@@ -38,6 +38,7 @@ class Camcorder(Thread):
         self.size = (size_x, size_y)
         self.ppf = np.multiply(*self.size) # pixels per frame
         self.fps = video.set_fps(30)
+        self.sem = None
 
         video.create_buffers(1)
 
@@ -73,10 +74,16 @@ class Camcorder(Thread):
     def stop(self):
         self.terminate = True
 
-    def get(self):
+    def get(self, frame_nr=1):
+        """ Get next `frame_nr` frame """
+        self.sem = Semaphore(0)
+        for n in range(frame_nr):
+            self.sem.acquire()
+        self.sem = None
         return self.buff
 
     def _cap(self):
+        sem = self.sem
         image_data = self.video.read_and_queue()
         buff = np.fromstring(image_data, dtype=np.uint8)
         if self.YUV:
@@ -85,6 +92,8 @@ class Camcorder(Thread):
             s = list(reversed(self.size))
             s.append(-1)
             self.buff = cv2.cvtColor(buff.reshape(*s), cv2.COLOR_RGB2BGR)
+        if sem:
+            self.sem.release()
 
     def run(self):
         # Start the device. This lights the LED if it's a camera that has one.

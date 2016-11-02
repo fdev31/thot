@@ -12,6 +12,7 @@ import numpy as np
 DEBUG = True
 
 def cloudify(*a, **k):
+    _ = None
     for _ in iter_cloudify(*a, **k):
         pass
     return _
@@ -101,6 +102,8 @@ def iter_cloudify(calibration_data, folder, lasers, sequence, rotated=False, met
                     gui.display(pictures_todisplay[0][1], "lasers" if len(lasers) > 1 else "laser %d"%lasers[0],  resize=0.7)
         else:
             gui.redraw()
+    if len(sliced_lines) == 0:
+        return None
     if camera:
         yield sliced_lines
     else:
