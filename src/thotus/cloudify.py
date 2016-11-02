@@ -28,10 +28,6 @@ def iter_cloudify(calibration_data, folder, lasers, sequence, rotated=False, met
 
     d_kern = np.ones((3,3),np.uint8)
 
-    calibration_data.width = 1280
-    calibration_data.height = 960
-
-
     for i, n in enumerate(sequence):
         yield
 
