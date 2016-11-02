@@ -30,7 +30,7 @@ lasers = False
 
 EXPOSED_CONTROLS = ["exposure", "brightness"]
 
-def scan(kind=ALL, definition=1, angle=360, calibration=False, on_step=None, display=True):
+def scan(kind=ALL, definition=1, angle=360, calibration=False, on_step=None, display=True, ftw=2):
     """ Low level scan function, main loop, not called directly by shell """
     s = get_scanner()
     if display:
@@ -43,7 +43,6 @@ def scan(kind=ALL, definition=1, angle=360, calibration=False, on_step=None, dis
     s.lasers_off()
     s.current_rotation = 0
 
-    ftw = 1 # frames to wait
     if calibration:
         ftw += 1
 
@@ -58,6 +57,8 @@ def scan(kind=ALL, definition=1, angle=360, calibration=False, on_step=None, dis
         t0 = time()
         if on_step:
             on_step()
+        else:
+            sleep(0.13) # wait motor
 
         if calibration:
             sleep(0.05*definition)
@@ -206,14 +207,14 @@ def capture_lasers():
     " Capture images (lasers only) [puremode friendly]"
     return capture(LASER1|LASER2)
 
-def capture(kind=ALL, on_step=None, display=True):
+def capture(kind=ALL, on_step=None, display=True, ftw=2):
     " Capture images "
     view_stop()
     s = get_scanner()
     if not s:
         return
     try:
-        scan(kind, on_step=on_step, display=display)
+        scan(kind, on_step=on_step, display=display, ftw=ftw)
         print("")
     except KeyboardInterrupt:
         print("\naborting...")
@@ -311,7 +312,7 @@ def scan_object():
     cloudifier = iter_cloudify(calibration_data, settings.WORKDIR, r, range(360), False, method=settings.SEGMENTATION_METHOD)
     iterator = partial(next, cloudifier)
 
-    capture(on_step=iterator, display=False)
+    capture(on_step=iterator, display=False, ftw=1)
 
     slices, colors = iterator()
     r = meshify(calibration_data, slices, colors=colors).save("model.ply")
