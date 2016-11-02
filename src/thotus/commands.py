@@ -250,7 +250,6 @@ def recognize(rotated=False):
     slices, colors = cloudify(calibration_data, settings.WORKDIR, r, range(360), rotated, method=settings.SEGMENTATION_METHOD)
     meshify(calibration_data, slices, colors=colors, cylinder=settings.ROI).save("model.ply")
     gui.clear()
-    return 3
 
 def shot():
     """ Save pattern image for later camera calibration """
@@ -276,11 +275,13 @@ def toggle_pure_mode():
 def set_roi(val1=None, val2=None):
     """ Set with and height of the scanning cylinder, in mm (only one value = height) """
     if val1 is None:
-        print("Diameter: %dcm Height: %dcm"%tuple(x/10 for x in settings.ROI))
+        h = settings.ROI[0]/10.0
+        d = settings.ROI[1]/10.0
+
+        print("Height: %.1fcm Diameter: %.1fcm"%(h, d))
     else:
         if not val2:
-            val2 = val1
-            val1 = settings.ROI[0]/10
+            val2 = settings.ROI[1]/5
         settings.ROI = (int(float(val1)*10), int(float(val2)*10))
         set_roi() # print
     return 3
@@ -348,7 +349,6 @@ def scan_object():
     slices, colors = iterator()
     meshify(calibration_data, slices, colors=colors).save("model.ply")
     gui.clear()
-    return 3
 
 def calibrate():
     view_stop()

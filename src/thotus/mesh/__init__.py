@@ -10,7 +10,7 @@ def meshify(calibration_data, lines=None, colors=None, camera=False, lasers=rang
     pcg = PointCloudGeneration(calibration_data)
     obj = Mesh()
     computer = pcg.compute_camera_point_cloud if camera else pcg.compute_point_cloud
-    params = dict(radius=cylinder[0], height=cylinder[1])
+    params = dict(radius=cylinder[1], height=cylinder[0])
 
     for angle, l in lines.items():
         for laser in lasers:

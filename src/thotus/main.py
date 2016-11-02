@@ -208,7 +208,7 @@ while not leave_now:
                 print("")
         except KeyboardInterrupt:
             gui.clear()
-            wanna_leave()
+            print("\nAborted!")
         except KeyError:
             print("Command not found: %s"%text)
         except Exception as e:
