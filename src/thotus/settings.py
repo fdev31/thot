@@ -24,7 +24,7 @@ PATTERN_ORIGIN = 38.9 # distance plateau to second row of pattern
 ui_base_i = 2 # UI speed factor
 
 # algo settings
-algo_threshold = 7
+algo_threshold = 8
 algo_denoise = 2
 UI_RATIO = 0.8
 VIDEO_DEVICE = None

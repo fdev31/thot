@@ -238,6 +238,7 @@ def capture(kind=ALL, on_step=None, display=True, ftw=settings.SYNC_FRAME_STD):
         print("\naborting...")
 
     s.reset_motor_rotation()
+    return 3
 
 def recognize(rotated=False):
     " Compute mesh from images (pure mode aware)"
@@ -249,22 +250,28 @@ def recognize(rotated=False):
     slices, colors = cloudify(calibration_data, settings.WORKDIR, r, range(360), rotated, method=settings.SEGMENTATION_METHOD)
     meshify(calibration_data, slices, colors=colors, cylinder=settings.ROI).save("model.ply")
     gui.clear()
+    return 3
 
 def shot():
     """ Save pattern image for later camera calibration """
     name = os.path.abspath( os.path.join(settings.SHOTSDIR, "%s.%s"%(int(time()), settings.FILEFORMAT)) )
     get_scanner().save(name)
+    print("ok")
+    return 3
 
 def shots_clear():
     """ Remove all shots """
     for fn in os.listdir(settings.SHOTSDIR):
         if fn.endswith(settings.FILEFORMAT):
             os.unlink(os.path.join(settings.SHOTSDIR, fn))
+    print("ok")
+    return 3
 
 def toggle_pure_mode():
     settings.pure_mode = not settings.pure_mode
     print("Pure mode on, you must capture lasers in obscurity now"
             if settings.pure_mode else "Pure mode off")
+    return 3
 
 def set_roi(val1=None, val2=None):
     """ Set with and height of the scanning cylinder, in mm (only one value = height) """
@@ -281,10 +288,12 @@ def set_roi(val1=None, val2=None):
 def set_horus_cfg():
     " Load horus calibration configuration "
     settings.configuration = 'horus'
+    return 3
 
 def set_thot_cfg():
     " Load thot calibration configuration "
     settings.configuration = 'thot'
+    return 3
 
 def set_algo_value(param=None, value=None):
     """ List, get or set algorithm parameters """
@@ -304,6 +313,7 @@ def set_algo_value(param=None, value=None):
     except TypeError:
         pass
     setattr(settings, 'algo_' + param, value)
+    return 3
 
 def set_single_laser(laser_number=None):
     """ Set dual scanning (no param) or a single laser (1 or 2)  """
@@ -314,6 +324,7 @@ def set_single_laser(laser_number=None):
         if i not in (1, 2):
             print("Laser number must be 1 or 2")
         settings.single_laser = i-1
+    return 3
 
 def set_algorithm(name=None):
     """ Change the algorithm for laser detection one of: uncanny, pureimages """
@@ -321,6 +332,7 @@ def set_algorithm(name=None):
         print(settings.SEGMENTATION_METHOD)
     else:
         settings.SEGMENTATION_METHOD = name.strip().lower()
+    return 3
 
 def scan_object():
     """ Scan object """
@@ -334,9 +346,9 @@ def scan_object():
     capture(on_step=iterator, display=False, ftw=settings.SYNC_FRAME_FAST)
 
     slices, colors = iterator()
-    r = meshify(calibration_data, slices, colors=colors).save("model.ply")
+    meshify(calibration_data, slices, colors=colors).save("model.ply")
     gui.clear()
-    return r
+    return 3
 
 def calibrate():
     view_stop()
