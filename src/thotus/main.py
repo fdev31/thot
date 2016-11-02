@@ -4,7 +4,6 @@ import traceback
 from time import time
 
 from thotus.ui import gui
-from thotus import control
 from thotus import settings
 from thotus import commands as cmds
 
@@ -90,12 +89,12 @@ commands = dict(
     calibrate_manual  = calibrate_manual,
 
     # all in one scan
-    scan           = cmds.scan,
+    scan           = cmds.scan_object,
 
     # misc
     view           = cmds.view,
-    rotate         = control.rotate,
-    lasers         = control.switch_lasers,
+    rotate         = cmds.rotate,
+    lasers         = cmds.switch_lasers,
     exit           = exit,
     quit           = exit,
     help           = help,
@@ -133,7 +132,7 @@ adv_commands = dict(
 )
 
 try:
-    commands.update(control.get_camera_controllers())
+    commands.update(cmds.get_camera_controllers())
 except IndexError:
     print("Unable to find camera, is it plugged ?")
 

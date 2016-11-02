@@ -1,15 +1,30 @@
+import importlib
 from collections import defaultdict
 
-from thotus import model
+from thotus.mesh import model
 from thotus.ui import gui
-from thotus import imtools
+from thotus.image import tools as imtools
 from thotus import settings
-from thotus.linedetect import LineMaker
 
 import cv2
 import numpy as np
 
 DEBUG = True
+
+class LineMaker:
+    points = None
+
+    registered_algos = {}
+
+    def __getattr__(self, name):
+        if name.startswith('from_'):
+            realname = name[5:]
+            if realname not in self.registered_algos:
+                mod = importlib.import_module('thotus.algorithms.algo_%s'%realname)
+                setattr(self, name, mod.compute)
+            return getattr(self, name)
+        raise
+
 
 def cloudify(*a, **k):
     _ = None

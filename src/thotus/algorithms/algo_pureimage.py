@@ -1,7 +1,7 @@
 from thotus.algorithms.utils import compute_line_image
 from thotus.algorithms.ransac import ransac
 from thotus import settings
-from thotus import imtools
+from thotus.image import tools as imtools
 import numpy as np
 import cv2
 

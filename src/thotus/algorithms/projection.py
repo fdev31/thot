@@ -10,8 +10,6 @@ import cv2
 import numpy as np
 from scipy import optimize
 
-from thotus.model import Model
-
 def residuals_circle(parameters, points, s, r, point):
     r_, s_, Ri = parameters
     plane_point = s_ * s + r_ * r + np.array(point)

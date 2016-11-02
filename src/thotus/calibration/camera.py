@@ -2,7 +2,7 @@ from collections import defaultdict
 
 from thotus.ui import gui
 from thotus import settings
-from thotus import imtools
+from thotus.image import tools as imtools
 from thotus.calibration.chessboard import chess_detect, chess_draw
 
 import cv2

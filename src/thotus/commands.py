@@ -8,10 +8,10 @@ from functools import partial
 
 from thotus.ui import gui
 from thotus import settings
-from thotus import control
 from thotus import calibration
-from thotus.cloudify import cloudify, iter_cloudify
 from thotus.mesh import meshify
+from thotus.boards import Scanner, get_board
+from thotus.cloudify import cloudify, iter_cloudify
 from thotus.calibration.data import CalibrationData
 from thotus.calibration.chessboard import chess_detect, chess_draw
 
@@ -22,8 +22,108 @@ try:
 except ImportError:
     pass
 
-# aliases
-get_scanner = control.get_scanner
+COLOR, LASER1, LASER2 = 1, 2, 4 # bit mask
+ALL = COLOR | LASER1 | LASER2
+
+scanner = None
+lasers = False
+
+EXPOSED_CONTROLS = ["exposure", "brightness"]
+
+def scan(kind=ALL, definition=1, angle=360, calibration=False, on_step=None, display=True):
+    """ Low level scan function, main loop, not called directly by shell """
+    s = get_scanner()
+    if display:
+        def disp(img, text):
+            gui.display(np.rot90(img, 3), text=text, resize=(640,480))
+    else:
+        def disp(*a):
+            return
+
+    s.lasers_off()
+    s.current_rotation = 0
+
+    ftw = 2 # frames to wait
+    if calibration:
+        ftw += 1
+
+
+    for n in range(angle):
+        if definition > 1 and n%definition != 0:
+            continue
+        gui.progress("scan", n, angle)
+        s.motor_move(1*definition)
+
+        t0 = time()
+        if on_step:
+            on_step()
+
+        s.wait_capture(ftw,
+                minus=time()-t0,
+                min_val=0.1
+                )
+        if kind & COLOR:
+            disp( s.save('color_%03d.%s'%(n, settings.FILEFORMAT)) , '')
+        if kind & LASER1:
+            s.laser_on(0)
+            s.wait_capture(ftw)
+            disp( s.save('laser0_%03d.%s'%(n, settings.FILEFORMAT)), 'laser 1')
+            s.laser_off(0)
+        if kind & LASER2:
+            s.laser_on(1)
+            s.wait_capture(ftw)
+            disp( s.save('laser1_%03d.%s'%(n, settings.FILEFORMAT)) , 'laser 2')
+            s.laser_off(1)
+    gui.clear()
+
+def get_camera_controllers():
+    s = get_scanner()
+    o = {}
+    if not s:
+        return o
+    def _shellwrapper(control, prop):
+        def getsetter(p=None):
+            if p is None:
+                print(getattr(control, prop))
+            else:
+                setattr(control, prop, int(p))
+        return getsetter
+    for n in EXPOSED_CONTROLS:
+        o["cam_"+n] = _shellwrapper(s.cap_ctl, n)
+    return o
+
+def get_scanner():
+    global scanner
+    if not scanner:
+        try:
+            scanner = Scanner(out=settings.WORKDIR)
+        except RuntimeError as e:
+            print("Can't init board: %s"%e.args[0])
+    return scanner
+
+def toggle_interactive_calibration():
+    settings.interactive_calibration = not settings.interactive_calibration
+    print("Camera calibration set to %s"%("interactive" if settings.interactive_calibration else "automatic"))
+    return 3
+
+def switch_lasers():
+    """ Toggle lasers """
+    global lasers
+    lasers = not lasers
+    b = get_board()
+    if b:
+        if lasers:
+            b.lasers_on()
+        else:
+            b.lasers_off()
+    return 3
+
+
+def rotate(val):
+    """ Rotates the platform by X degrees """
+    s = get_scanner()
+    if s:
+        s.motor_move(int(val))
 
 class Viewer(Thread):
     instance = None
@@ -65,12 +165,12 @@ def view_stop():
 
 def stop():
     view_stop()
-    if control.scanner:
-        control.scanner.close()
+    if scanner:
+        scanner.close()
 
 def capture_pattern():
     " Capture chessboard pattern "
-    t = control.ALL
+    t = ALL
     s = get_scanner()
     old_out = s.out
     s.out = settings.CALIBDIR
@@ -81,7 +181,7 @@ def capture_pattern():
     if not s:
         return
     try:
-        control.scan(t, angle=100, definition=3, calibration=True)
+        scan(t, angle=100, definition=3, calibration=True)
         print("")
     except KeyboardInterrupt:
         s.reset_motor_rotation()
@@ -96,20 +196,20 @@ def capture_pattern():
 
 def capture_color():
     " Capture images (color only)"
-    return capture(control.COLOR)
+    return capture(COLOR)
 
 def capture_lasers():
     " Capture images (lasers only) [puremode friendly]"
-    return capture(control.LASER1|control.LASER2)
+    return capture(LASER1|LASER2)
 
-def capture(kind=control.ALL, on_step=None, display=True):
+def capture(kind=ALL, on_step=None, display=True):
     " Capture images "
     view_stop()
     s = get_scanner()
     if not s:
         return
     try:
-        control.scan(kind, on_step=on_step, display=display)
+        scan(kind, on_step=on_step, display=display)
         print("")
     except KeyboardInterrupt:
         print("\naborting...")
@@ -198,7 +298,7 @@ def set_algorithm(name=None):
     else:
         settings.SEGMENTATION_METHOD = name.strip().lower()
 
-def scan():
+def scan_object():
     """ Scan object """
     calibration_data = settings.load_data(CalibrationData())
 

@@ -5,7 +5,7 @@ from time import sleep
 
 from thotus import settings
 from thotus.camera import Camcorder
-from thotus.workers import ImageSaver
+from thotus.image.workers import ImageSaver
 
 _board = None
 
