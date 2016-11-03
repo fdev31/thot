@@ -41,8 +41,6 @@ def compute(img, img_g, ref, ref_g, laser_nr=0, mask=None, threshold=None, strai
     y = np.array(y)
     x = np.array(x)
 
-
-
     if straight_lines:  # line calibration
         s = img.sum(axis=1)
         x = sgf(x, s).astype(np.uint)

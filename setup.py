@@ -2,7 +2,7 @@ from setuptools import setup, find_packages, Extension
 
 setup(
     name="thotus",
-    version="0.1.0",
+    version="0.1.1",
     author="Fabien Devaux",
     author_email="fdev31@gmail.com",
     license="MIT",
