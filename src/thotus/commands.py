@@ -294,7 +294,6 @@ def set_roi(val1=None, val2=None):
 
 def set_cfg(what=None, val=None, val2=None):
     " Set, get or list configuration settings "
-    print(what, val, val2)
     if what is None:
         for n in settings._persist:
             print("%s = %s"%(n, getattr(settings, n)))

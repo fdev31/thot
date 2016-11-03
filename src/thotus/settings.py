@@ -94,7 +94,7 @@ class Attribute(dict):
         try:
             return self[name]
         except KeyError:
-            raise AttributeError("name")
+            raise AttributeError(name)
 
     def __repr__(self):
         s = []

@@ -3,6 +3,8 @@ import os
 import subprocess
 from time import sleep
 
+import numpy as np
+
 from thotus import settings
 from thotus.camera import Camcorder
 from thotus.image.workers import ImageSaver
