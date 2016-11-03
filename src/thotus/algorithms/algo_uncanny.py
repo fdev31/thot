@@ -5,7 +5,7 @@ from thotus import settings
 import numpy as np
 import cv2
 
-def compute(img, img_g, ref, ref_g, laser_nr=0, mask=None, use_ransac=False):
+def compute(img, img_g, ref, ref_g, laser_nr=0, mask=None, straight_lines=False):
     u = []
     v = []
 
@@ -27,7 +27,7 @@ def compute(img, img_g, ref, ref_g, laser_nr=0, mask=None, use_ransac=False):
     if u:
         points = [np.array(u),np.array(v)]
 
-        if use_ransac:
+        if straight_lines:
             points[0] = ransac( points[0], points[1])
         return points, compute_line_image(points, img)
     return None, None

@@ -15,7 +15,7 @@ def find_nearest(a, a0):
     idx = np.abs(a - a0).argmin()
     return a.flat[idx]
 
-def compute(img, img_g, ref, ref_g, laser_nr=0, mask=None, threshold=None, use_ransac=False):
+def compute(img, img_g, ref, ref_g, laser_nr=0, mask=None, threshold=None, straight_lines=False):
     x = []
     y = []
     threshold = threshold if threshold is not None else settings.algo_threshold
@@ -43,12 +43,13 @@ def compute(img, img_g, ref, ref_g, laser_nr=0, mask=None, threshold=None, use_r
 
 
 
-    if use_ransac:  # line calibration
+    if straight_lines:  # line calibration
         s = img.sum(axis=1)
         x = sgf(x, s).astype(np.uint)
         x = ransac( x, y )
-
-    # TODO: line-denoiser
+    else:
+        # TODO: line-denoiser
+        pass
 
     points = (x, y)
     if points:
