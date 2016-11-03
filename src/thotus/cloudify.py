@@ -45,24 +45,24 @@ def iter_cloudify(calibration_data, folder, lasers, sequence, method=None, camer
     for i, n in enumerate(sequence):
         yield
 
-        fullcolor, ref_grey = imtools.imread(folder+'/color_%03d.%s'%(n, settings.FILEFORMAT), format="full", calibrated=undistort and calibration_data)
-        if ref_grey is None:
+        fullcolor = imtools.imread(folder+'/color_%03d.%s'%(n, settings.FILEFORMAT), format="rgb", calibrated=undistort and calibration_data)
+        if fullcolor is None:
             continue
 
         if pure_images:
             ref_grey = None
         else:
-            ref_grey = ref_grey[:,:,2]
+            ref_grey = fullcolor[:,:,0]
 
         pictures_todisplay = []
 
         for laser in lasers:
-            laser_image, laser_grey = imtools.imread(folder+'/laser%d_%03d.%s'%(laser, n, settings.FILEFORMAT), format="full", calibrated=undistort and calibration_data)
+            laser_image = imtools.imread(folder+'/laser%d_%03d.%s'%(laser, n, settings.FILEFORMAT), format="rgb", calibrated=undistort and calibration_data)
 
             if laser_image is None:
                 continue
 
-            laser_grey = laser_grey[:,:,2]
+            laser_grey = laser_image[:,:,2]
 
             gui.progress("analyse", i, len(sequence))
             points, processed = lineprocessor(laser_image, laser_grey, fullcolor, ref_grey, laser_nr=laser,
