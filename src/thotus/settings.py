@@ -11,7 +11,7 @@ import numpy as np
 ('distortion_vector', 'distortion_vector'),
 )
 
-_persist = 'single_laser PATTERN_MATRIX_SIZE PATTERN_SQUARE_SIZE PATTERN_ORIGIN ui_base_i UI_RATIO VIDEO_DEVICE SERIAL_DEVICE SERIAL_SPEED ROTATE ROI SYNC_FRAME_FAST SYNC_FRAME_STD'.split()
+_persist = 'single_laser PATTERN_MATRIX_SIZE PATTERN_SQUARE_SIZE PATTERN_ORIGIN ui_base_i UI_RATIO VIDEO_DEVICE SERIAL_DEVICE SERIAL_SPEED ROTATE ROI SYNC_FRAME_FAST SYNC_FRAME_STD BLUR'.split()
 _algos_p = 'denoise threshold'.split()
 
 # Possible persistent
@@ -26,6 +26,7 @@ ui_base_i = 2 # UI speed factor
 # algo settings
 algo_threshold = 8
 algo_denoise = 2
+
 UI_RATIO = 0.8
 VIDEO_DEVICE = ""
 SERIAL_DEVICE = ""
@@ -37,6 +38,8 @@ ROI = (100, 150)
 
 SYNC_FRAME_FAST = 1
 SYNC_FRAME_STD = 3
+
+BLUR = 3
 
 # Non persistent
 

@@ -12,12 +12,13 @@ def compute_noise_mask(img, power=5, threshold=4):
     return denoise(img, power)
 
 def subtract(img1, img2, blur=None, mask=None):
+    if blur:
+        img1 = cv2.blur(img1, blur)
+        img2 = cv2.blur(img2, blur)
     if img2 is not None:
         img = cv2.subtract(img1, img2)
     else:
         img = img1
-    if blur:
-        img = cv2.blur(img, blur)
     if mask is not None:
         img = mask_contours(img, mask)
     return img
