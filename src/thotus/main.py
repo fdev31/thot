@@ -165,7 +165,6 @@ if not leave_after:
     except Exception as e:
         pass
 
-from time import sleep
 script_commands = []
 while not leave_now:
     if not leave_after:

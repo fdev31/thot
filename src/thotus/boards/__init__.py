@@ -63,7 +63,7 @@ class Scanner:
         # TODO improve with minus param
         self.cap.get(frames)
 
-    def save(self, filename, processing=None):
+    def save(self, filename):
         if not '.' in filename:
             filename += '.' + settings.FILEFORMAT
 

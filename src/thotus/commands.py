@@ -1,7 +1,6 @@
 from __future__ import print_function
 
 import os
-import json
 from time import time, sleep
 from threading import Thread
 from functools import partial
@@ -15,7 +14,6 @@ from thotus.cloudify import cloudify, iter_cloudify, LineMaker
 from thotus.calibration.data import CalibrationData
 from thotus.calibration.chessboard import chess_detect, chess_draw
 
-import cv2
 import numpy as np
 try:
     import pudb
@@ -55,7 +53,6 @@ def scan(kind=ALL, definition=1, angle=360, calibration=False, on_step=None, dis
         s.motor_move(1*definition)
         slowdown = 1 if n == 0 else 0 # XXX: first frame needs more time (!)
 
-        t0 = time()
         if on_step:
             on_step()
         else:
@@ -143,6 +140,8 @@ class Viewer(Thread):
         lm = LineMaker()
         try:
             s = get_scanner()
+            if s is None:
+                raise ValueError()
         except Exception as e:
             print("Unable to init scanner, not starting viewer.")
             self.running = False
@@ -240,14 +239,14 @@ def capture(kind=ALL, on_step=None, display=True, ftw=settings.SYNC_FRAME_STD):
     s.reset_motor_rotation()
     return 3
 
-def recognize(rotated=False):
+def recognize():
     " Compute mesh from images (pure mode aware)"
     view_stop()
     calibration_data = settings.load_data(CalibrationData())
 
     r = settings.get_laser_range()
 
-    slices, colors = cloudify(calibration_data, settings.WORKDIR, r, range(360), rotated, method=settings.SEGMENTATION_METHOD)
+    slices, colors = cloudify(calibration_data, settings.WORKDIR, r, range(360), method=settings.SEGMENTATION_METHOD)
     meshify(calibration_data, slices, colors=colors, cylinder=settings.ROI).save("model.ply")
     gui.clear()
 
@@ -302,10 +301,10 @@ def set_algo_value(param=None, value=None):
         for n in dir(settings):
             if n.startswith('algo_'):
                 set_algo_value(n[5:])
-        return
+        return 3
     if value is None:
         print("%s = %s"%(param, getattr(settings, 'algo_' + param)))
-        return
+        return 3
     try:
         if '.' in value:
             value = float(value)

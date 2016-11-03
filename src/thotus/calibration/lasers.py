@@ -2,7 +2,6 @@ from thotus import settings
 from thotus.cloudify import cloudify
 from thotus.mesh import meshify
 
-import cv2
 import numpy as np
 
 try:

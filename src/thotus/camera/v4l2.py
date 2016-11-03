@@ -87,7 +87,6 @@ class Camcorder(Thread):
     def run(self):
         # Start the device. This lights the LED if it's a camera that has one.
         print("Starting capture")
-        size_x, size_y = self.size
 
         while not self.terminate:
             select.select((self.video,), (), ())
