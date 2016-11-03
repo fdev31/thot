@@ -340,7 +340,7 @@ def scan_object():
 
     r = settings.get_laser_range()
 
-    cloudifier = iter_cloudify(calibration_data, settings.WORKDIR, r, range(360), False, method=settings.SEGMENTATION_METHOD)
+    cloudifier = iter_cloudify(calibration_data, settings.WORKDIR, r, range(360), method=settings.SEGMENTATION_METHOD)
     iterator = partial(next, cloudifier)
 
     capture(on_step=iterator, display=False, ftw=settings.SYNC_FRAME_FAST)
