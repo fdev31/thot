@@ -1,7 +1,7 @@
 import numpy as np
 import cv2
 
-from thotus.algorithms.utils import compute_line_image
+from thotus.algorithms.utils import compute_line_image, sgf
 from thotus.algorithms.ransac import ransac
 from thotus import settings
 from thotus.image import tools as imtools
@@ -32,16 +32,23 @@ def compute(img, img_g, ref, ref_g, laser_nr=0, mask=None, threshold=None, use_r
 
     for n in range(img.shape[0]):
         max_val = np.max(img[n])
-        if max_val > 1:
+        if max_val > threshold:
             peaks = np.where(img[n] == max_val)[0]
-            y.append(n)
-            x.append(find_nearest(peaks, mid))
+            if peaks.size == 1:
+                y.append(n)
+                x.append(peaks[0])
 
     y = np.array(y)
     x = np.array(x)
 
+
+
     if use_ransac:  # line calibration
+        s = img.sum(axis=1)
+        x = sgf(x, s).astype(np.uint)
         x = ransac( x, y )
+
+    # TODO: line-denoiser
 
     points = (x, y)
     if points:

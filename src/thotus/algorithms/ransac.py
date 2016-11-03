@@ -3,6 +3,7 @@
 
 import math
 
+import scipy.ndimage
 import numpy as np
 
 def sgf(u, s):
