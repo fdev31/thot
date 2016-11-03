@@ -55,7 +55,7 @@ def calibration(calibration_data, images):
 
         if idx%settings.ui_base_i == 0:
             chess_draw(img, found, corners)
-            gui.display(img[int(img.shape[0]/3):-100,], 'chess')
+            gui.display(img, 'chess', resize=True)
 
     if settings.skip_calibration:
         print("\nskipping camera calibration...")

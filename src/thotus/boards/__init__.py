@@ -105,6 +105,8 @@ class Scanner:
             filename += '.' + settings.FILEFORMAT
 
         img = self.cap.buff
+        if settings.ROTATE:
+            img = np.rot90(img, settings.ROTATE)
         self.writer_t.q.put( (img, filename) )
         return img
 

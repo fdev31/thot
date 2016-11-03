@@ -3,6 +3,7 @@ from __future__ import print_function
 import sys
 import cv2
 from scipy.misc import imresize
+from thotus import settings
 
 class GUI:
 
@@ -38,12 +39,12 @@ class GUI:
                 return True
         return default
 
-    def display(self, image, text, resize=None, crop=False, disp_number=0):
-        if crop:
-            image = image[crop[0] or slice(None, None), crop[1] or slice(None, None)]
+    def display(self, image, text, resize=False, crop=False, disp_number=0):
 
         if resize:
             image = image.copy()
+            if resize == True:
+                resize = settings.UI_RATIO
             if isinstance(resize, float):
                 resize = tuple(int(x*resize) for x in image.shape[:2])
 
@@ -57,6 +58,7 @@ class GUI:
 
         if resize:
             image = imresize(image, resize)
+
         if disp_number:
             name = "%s %d"%(self.name, disp_number)
             cv2.imshow(name, image)

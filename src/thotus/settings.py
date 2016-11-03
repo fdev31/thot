@@ -11,11 +11,11 @@ import numpy as np
 ('distortion_vector', 'distortion_vector'),
 )
 
-_persist = 'single_laser PATTERN_MATRIX_SIZE PATTERN_SQUARE_SIZE PATTERN_ORIGIN ui_base_i algo_threshold algo_denoise UI_RATIO VIDEO_DEVICE SERIAL_DEVICE SERIAL_SPEED ROTATE ROI SYNC_FRAME_FAST SYNC_FRAME_STD'.split()
+_persist = 'single_laser PATTERN_MATRIX_SIZE PATTERN_SQUARE_SIZE PATTERN_ORIGIN ui_base_i UI_RATIO VIDEO_DEVICE SERIAL_DEVICE SERIAL_SPEED ROTATE ROI SYNC_FRAME_FAST SYNC_FRAME_STD'.split()
 _algos_p = 'denoise threshold'.split()
 
 # Possible persistent
-single_laser = None
+single_laser = 0
 
 PATTERN_MATRIX_SIZE = (11, 6)
 PATTERN_SQUARE_SIZE = 13.0
@@ -27,16 +27,16 @@ ui_base_i = 2 # UI speed factor
 algo_threshold = 8
 algo_denoise = 2
 UI_RATIO = 0.8
-VIDEO_DEVICE = None
-SERIAL_DEVICE = None
-SERIAL_SPEED = None
+VIDEO_DEVICE = ""
+SERIAL_DEVICE = ""
+SERIAL_SPEED = 115200
 
-ROTATE = 1 # 0=None, 1=90
+ROTATE = 3 # 0=None, 1=90, ... counter-clockwise
 LASER_COUNT = 2
 ROI = (100, 150)
 
-SYNC_FRAME_FAST = 2
-SYNC_FRAME_STD = 2
+SYNC_FRAME_FAST = 1
+SYNC_FRAME_STD = 3
 
 # Non persistent
 
@@ -107,10 +107,10 @@ def _cast(val):
     return val
 
 def get_laser_range():
-    if single_laser is None:
+    if single_laser == 0:
         return range(LASER_COUNT)
     else:
-        return [single_laser]
+        return [single_laser-1]
 
 def load_data(calibration_data):
     src = _from_horus() if configuration[0] == 'h' else  pickle.load( open(CAMERA_SETTINGS_FILE, 'rb'))

@@ -28,18 +28,23 @@ lasers = False
 
 EXPOSED_CONTROLS = ["exposure", "brightness"]
 
-def scan(kind=ALL, definition=1, angle=360, calibration=False, on_step=None, display=True, ftw=settings.SYNC_FRAME_STD):
+def scan(kind=ALL, definition=1, angle=360, calibration=False, on_step=None, display=True, ftw=None):
     """ Low level scan function, main loop, not called directly by shell """
     s = get_scanner()
     if display:
         def disp(img, text):
-            gui.display(np.rot90(img, 3), text=text, resize=settings.UI_RATIO)
+            if settings.ROTATE:
+                img = np.rot90(img, settings.ROTATE)
+            gui.display(img, text=text, resize=True)
     else:
         def disp(*a):
             return
 
     s.lasers_off()
     s.current_rotation = 0
+
+    if ftw is None:
+        ftw = settings.SYNC_FRAME_STD
 
     if calibration:
         ftw += 1
@@ -149,13 +154,13 @@ class Viewer(Thread):
         while self.running:
             img = s.cap.get(1)
             if settings.ROTATE:
-                img = np.rot90(img, 3)
+                img = np.rot90(img, settings.ROTATE)
             if self.line_mode:
                 lineprocessor = getattr(lm, 'from_'+settings.SEGMENTATION_METHOD)
                 s.laser_on(0)
                 laser_image = s.cap.get(1)
                 if settings.ROTATE:
-                    laser_image = np.rot90(laser_image, 3)
+                    laser_image = np.rot90(laser_image, settings.ROTATE)
                 s.laser_off(0)
                 points, processed = lineprocessor(laser_image, laser_image[:,:,0], img, img[:,:,0])
                 img = processed
@@ -164,7 +169,7 @@ class Viewer(Thread):
                 found, corners = chess_detect(grey)
                 if found:
                     img = chess_draw(grey, found, corners)
-            gui.display(img, "live", resize=0.8)
+            gui.display(img, "live", resize=True)
 
 def view_mode():
     Viewer.instance.line_mode = not Viewer.instance.line_mode
@@ -224,8 +229,10 @@ def capture_lasers():
     " Capture images (lasers only) [puremode friendly]"
     return capture(LASER1|LASER2)
 
-def capture(kind=ALL, on_step=None, display=True, ftw=settings.SYNC_FRAME_STD):
+def capture(kind=ALL, on_step=None, display=True, ftw=None):
     " Capture images "
+    if ftw is None:
+        ftw = settings.SYNC_FRAME_STD
     view_stop()
     s = get_scanner()
     if not s:
@@ -284,6 +291,35 @@ def set_roi(val1=None, val2=None):
         settings.ROI = (int(float(val1)*10), int(float(val2)*10))
         set_roi() # print
     return 3
+
+def set_cfg(what=None, val=None, val2=None):
+    " Set, get or list configuration settings "
+    print(what, val, val2)
+    if what is None:
+        for n in settings._persist:
+            print("%s = %s"%(n, getattr(settings, n)))
+    elif val is None:
+        print("%s = %s"%(what, getattr(settings, what)))
+    else: # set
+        o = getattr(settings, what)
+        if isinstance(o, int):
+            val = int(val)
+        elif isinstance(o, float):
+            val = float(val)
+        elif isinstance(o, str):
+            pass
+        else: # array of int
+            if val2 is None:
+                val2 = o[1]
+            else:
+                val2 = int(val2)
+            val = int(val)
+        if val2:
+            setattr(settings, what, (val, val2))
+        else:
+            setattr(settings, what, val)
+    return 3
+
 
 def set_horus_cfg():
     " Load horus calibration configuration "

@@ -68,14 +68,13 @@ def iter_cloudify(calibration_data, folder, lasers, sequence, method=None, camer
             points, processed = lineprocessor(laser_image, laser_grey, fullcolor, ref_grey, laser_nr=laser,
                     mask=camera[i]['chess_contour'] if camera else None)
 
-
             # validate & store
             if points is not None and points[0].size:
                 nosave = False
                 if interactive:
                     disp = cv2.merge( np.array(( laser_grey, processed, processed)) )
                     txt = "Esc=NOT OK, Enter=OK"
-                    gui.display(disp, txt,  resize=settings.UI_RATIO)
+                    gui.display(disp, txt,  resize=True)
                 pictures_todisplay.append((processed, laser_grey))
                 if interactive:
                     if not gui.ok_cancel(20):
@@ -104,12 +103,12 @@ def iter_cloudify(calibration_data, folder, lasers, sequence, method=None, camer
                 r = cv2.bitwise_or(gref, nref)
                 disp = cv2.merge( np.array(( r, gref, r)) )
 
-                gui.display(disp, "lasers" if len(lasers) > 1 else "laser %d"%lasers[0],  resize=settings.UI_RATIO)
+                gui.display(disp, "lasers" if len(lasers) > 1 else "laser %d"%lasers[0],  resize=True)
             else:
                 if len(pictures_todisplay) > 1:
-                    gui.display(cv2.addWeighted(pictures_todisplay[1][1], 0.5, pictures_todisplay[0][1], 0.5, 0), "lasers" if len(lasers) > 1 else "laser %d"%lasers[0],  resize=settings.UI_RATIO)
+                    gui.display(cv2.addWeighted(pictures_todisplay[1][1], 0.5, pictures_todisplay[0][1], 0.5, 0), "lasers" if len(lasers) > 1 else "laser %d"%lasers[0],  resize=True)
                 else:
-                    gui.display(pictures_todisplay[0][1], "lasers" if len(lasers) > 1 else "laser %d"%lasers[0],  resize=settings.UI_RATIO)
+                    gui.display(pictures_todisplay[0][1], "lasers" if len(lasers) > 1 else "laser %d"%lasers[0],  resize=True)
         else:
             gui.redraw()
     if len(sliced_lines) == 0:
