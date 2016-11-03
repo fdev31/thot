@@ -27,6 +27,7 @@ def find_laser_plane(X):
     return (dist, normal, std)
 
 def calibration(calibration_data, calibration_settings, images):
+    tot_deviation = 0.0
     for laser in settings.get_laser_range():
         selected_planes = []
         ranges = []
@@ -51,7 +52,23 @@ def calibration(calibration_data, calibration_settings, images):
         obj = meshify(calibration_data, slices, camera=im, cylinder=(1000, 1000))
 
         dist, normal, std = find_laser_plane(np.array(obj.vertices))
+        tot_deviation += std
+        print("Laser %d deviation: %.2f"%(laser, std))
 
         calibration_data.laser_planes[laser].normal = normal
         calibration_data.laser_planes[laser].distance = dist
-        obj.save("calibration_laser_%d.ply"%laser)
+        obj.save("laser%d.ply"%laser)
+
+    if tot_deviation < 0.01:
+        txt = ("Excellent !!")
+    elif tot_deviation < 0.05:
+        txt = ("Good !")
+    elif tot_deviation < 0.1:
+        txt = ("Not bad ;)")
+    elif tot_deviation < 0.3:
+        txt = ("Expect shift between lasers")
+    else:
+        txt = ("Consider recalibrating, result is very bad")
+
+    print("\nDeviation is %.2f. %s"%(tot_deviation, txt))
+
