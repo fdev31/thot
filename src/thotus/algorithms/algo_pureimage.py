@@ -23,7 +23,8 @@ def compute(img, img_g, ref, ref_g, laser_nr=0, mask=None, threshold=None, use_r
 
     bound = 0 if laser_nr == 0 else -1
 
-    img = imtools.subtract(img_g, ref_g, mask=mask, blur=(settings.BLUR, settings.BLUR))
+    blur = (settings.BLUR, settings.BLUR) if settings.BLUR else None
+    img = imtools.subtract(img_g, ref_g, mask=mask, blur=blur)
     mask = imtools.compute_noise_mask(img, power=denoise, threshold=threshold)
     img = imtools.mask_contours(img, mask=mask)
 
