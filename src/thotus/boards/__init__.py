@@ -8,18 +8,55 @@ from thotus.camera import Camcorder
 from thotus.image.workers import ImageSaver
 
 _board = None
+_camera = None
+_recorder = None
+
+def get_camera():
+    global _recorder
+    global _camera
+    if _camera is None:
+        _recorder = Camcorder()
+        from thotus.webcams.logitech_c270 import CameraControl
+        try:
+            _camera = CameraControl(_recorder)
+            print("Logitech c270 detected")
+        except Exception:
+            from thotus.webcams.generic import CameraControl
+            _camera = CameraControl(_recorder)
+            print("Generic v4l2 camera detected")
+
+    return _recorder, _camera
 
 def get_board():
+    global _board
+    if _board is None:
+
+        serial_devices = settings.get_serial_list()
+
+        params = {
+            'baud_rate': settings.SERIAL_SPEED or 115200,
+            'serial_name': settings.SERIAL_DEVICE or (serial_devices[-1] if serial_devices else None)
+        }
+        try:
+            from .ciclop.board import Board
+            _board = Board(**params)
+            _board.connect()
+            print("Ciclop board connected")
+        except Exception:
+            from .dummy.board import Board
+            _board = Board(**params)
+            _board.connect()
+            print("Using dummy (fake) board")
+
     return _board
 
 class Scanner:
     def __init__(self, speed=2000, out=os.path.curdir):
+        self.cap, self.cap_ctl = get_camera()
         self.b = get_board()
         self.b.lasers_off()
         self.b.motor_enable()
         self.set_speed(speed)
-        self.cap = Camcorder()
-        self.cap_ctl = CameraControl(self.cap)
         self.current_rotation = 0
         self.writer_t = ImageSaver(out)
         self.writer_t.start()
@@ -80,21 +117,4 @@ class Scanner:
         self.writer_t.join()
         self.cap.join()
 
-
-serial_devices = settings.get_serial_list()
-
-params = {
-    'baud_rate': settings.SERIAL_SPEED or 115200,
-    'serial_name': settings.SERIAL_DEVICE or (serial_devices[-1] if serial_devices else None)
-}
-try:
-    from .ciclop.board import Board, CameraControl
-    _board = Board(**params)
-    _board.connect()
-    print("Ciclop board connected")
-except Exception:
-    from .dummy.board import Board, CameraControl
-    _board = Board(**params)
-    _board.connect()
-    print("Using dummy (fake) board")
 
