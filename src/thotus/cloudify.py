@@ -62,7 +62,7 @@ def iter_cloudify(calibration_data, folder, lasers, sequence, method=None, camer
             if laser_image is None:
                 continue
 
-            laser_grey = laser_image[:,:,2]
+            laser_grey = laser_image[:,:,0]
 
             gui.progress("analyse", i, len(sequence))
             points, processed = lineprocessor(laser_image, laser_grey, fullcolor, ref_grey, laser_nr=laser,
@@ -117,4 +117,3 @@ def iter_cloudify(calibration_data, folder, lasers, sequence, method=None, camer
         yield sliced_lines
     else:
         yield sliced_lines, color_slices
-
