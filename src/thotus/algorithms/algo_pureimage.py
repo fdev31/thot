@@ -6,15 +6,6 @@ from thotus.algorithms.ransac import ransac
 from thotus import settings
 from thotus.image import tools as imtools
 
-def find_nearest(array,value):
-    idx = (np.abs(array-value)).argmin()
-    return array[idx]
-
-def find_nearest(a, a0):
-    "Element in nd array `a` closest to the scalar value `a0`"
-    idx = np.abs(a - a0).argmin()
-    return a.flat[idx]
-
 def compute(img, img_g, ref, ref_g, laser_nr=0, mask=None, threshold=None, straight_lines=False):
     x = []
     y = []

@@ -95,7 +95,7 @@ def iter_cloudify(calibration_data, folder, lasers, sequence, method=None, camer
             if DEBUG:
                 if len(pictures_todisplay) > 1:
                     pictures_todisplay = np.array(pictures_todisplay)
-                    gref = cv2.addWeighted(pictures_todisplay[0,1], 0.3, pictures_todisplay[1,1], 0.3, 0)
+                    gref = cv2.addWeighted(pictures_todisplay[0,1], 0.5, pictures_todisplay[1,1], 0.5, 0)
                     nref = cv2.addWeighted(pictures_todisplay[0,0], 0.5, pictures_todisplay[1,0], 0.5, 0)
                 else:
                     gref = pictures_todisplay[0][1]

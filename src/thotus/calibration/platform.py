@@ -67,7 +67,7 @@ def calibration(calibration_data, calibration_settings):
         t = center - settings.PATTERN_ORIGIN * np.array(normal) # set ground level
         if t is not None:
             if np.linalg.norm(t - ESTIMATED_PLATFORM_TRANSLAT) > 100:
-                print("\n\n!!!!!!!! ISNOGOOD !! %s !~= %s\n\n!!!"%(t, ESTIMATED_PLATFORM_TRANSLAT))
+                print("Doesn't fit Ciclop scanner specifications")
 
             calibration_data.platform_rotation = R
             calibration_data.platform_translation = t

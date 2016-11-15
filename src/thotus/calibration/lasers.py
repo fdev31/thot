@@ -47,7 +47,7 @@ def calibration(calibration_data, calibration_settings, images):
         assert len(ranges) == len(im)
 
         slices = cloudify(calibration_data, settings.CALIBDIR, [laser], ranges,
-                method='straightpureimage', camera=im, interactive=settings.interactive_calibration, undistort=True)
+                method='straighttralala', camera=im, interactive=settings.interactive_calibration, undistort=True)
 
         obj = meshify(calibration_data, slices, camera=im, cylinder=(1000, 1000))
 
@@ -59,14 +59,15 @@ def calibration(calibration_data, calibration_settings, images):
         calibration_data.laser_planes[laser].distance = dist
         obj.save("laser%d.ply"%laser)
 
+    tot_deviation /= 2
     if tot_deviation < 0.01:
-        txt = ("Excellent !!")
+        txt = ("Perfect !!")
     elif tot_deviation < 0.05:
-        txt = ("Good !")
+        txt = ("Excellent !")
     elif tot_deviation < 0.1:
-        txt = ("Not bad ;)")
+        txt = ("Good :)")
     elif tot_deviation < 0.3:
-        txt = ("Expect shift between lasers")
+        txt = ("Expect shift between lasers :(")
     else:
         txt = ("Consider recalibrating, result is very bad")
 
