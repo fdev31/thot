@@ -194,9 +194,18 @@ def stop():
     if scanner:
         scanner.close()
 
-def capture_pattern():
+def capture_pattern_lasers():
+    " Capture chessboard pattern (lasers only) [puremode friendly]"
+    view_stop()
+    capture_pattern(LASER1|LASER2)
+
+def capture_pattern_colors():
+    " Capture chessboard pattern (color only)"
+    view_stop()
+    capture_pattern(COLOR)
+
+def capture_pattern(t=ALL):
     " Capture chessboard pattern "
-    t = ALL
     s = get_scanner()
     old_out = s.out
     s.out = settings.CALIBDIR

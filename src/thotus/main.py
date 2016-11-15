@@ -104,6 +104,8 @@ commands = dict(
     )
 
 adv_commands = dict(
+   pattern_colors   = cmds.capture_pattern_colors,
+  pattern_lasers   = cmds.capture_pattern_lasers,
     cfg            = cmds.set_cfg,
     algorithm      = cmds.set_algorithm,
     algop          = cmds.set_algo_value,
