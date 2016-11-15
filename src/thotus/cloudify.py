@@ -42,6 +42,8 @@ def iter_cloudify(calibration_data, folder, lasers, sequence, method=None, camer
 
     d_kern = np.ones((3,3),np.uint8)
 
+    RED = 2 # position of red layer
+
     for i, n in enumerate(sequence):
         yield
 
@@ -52,7 +54,7 @@ def iter_cloudify(calibration_data, folder, lasers, sequence, method=None, camer
         if pure_images:
             ref_grey = None
         else:
-            ref_grey = fullcolor[:,:,0]
+            ref_grey = fullcolor[:,:,RED]
 
         pictures_todisplay = []
 
@@ -62,7 +64,7 @@ def iter_cloudify(calibration_data, folder, lasers, sequence, method=None, camer
             if laser_image is None:
                 continue
 
-            laser_grey = laser_image[:,:,0]
+            laser_grey = laser_image[:,:,RED]
 
             gui.progress("analyse", i, len(sequence))
             points, processed = lineprocessor(laser_image, laser_grey, fullcolor, ref_grey, laser_nr=laser,
