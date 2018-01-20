@@ -52,6 +52,8 @@ Scan 3D object
 
 ## Advanced usages
 
+From the shell you can enable more commands using **advanced** command, the most useful is probably the **cfg** command.
+
 You can also call the application from the command line:
 
     $ thot recalibrate
