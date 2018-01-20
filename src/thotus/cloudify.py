@@ -10,6 +10,8 @@ import numpy as np
 
 DEBUG = True
 
+class AnalyseError(Exception): pass
+
 class LineMaker:
     points = None
 
@@ -75,7 +77,7 @@ def iter_cloudify(calibration_data, folder, lasers, sequence, method=None, camer
                 nosave = False
                 if interactive:
                     disp = cv2.merge( np.array(( laser_grey, processed, processed)) )
-                    txt = "Esc=NOT OK, Enter=OK"
+                    txt = "Esc=SKIP, Space=OK"
                     gui.display(disp, txt,  resize=True)
                 pictures_todisplay.append((processed, laser_grey))
                 if interactive:
@@ -114,7 +116,7 @@ def iter_cloudify(calibration_data, folder, lasers, sequence, method=None, camer
         else:
             gui.redraw()
     if len(sliced_lines) == 0:
-        return None
+        raise AnalyseError("Unable to recognize lines in picture")
     if camera:
         yield sliced_lines
     else:
