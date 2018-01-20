@@ -36,7 +36,7 @@ def compute(img, img_g, ref, ref_g, laser_nr=0, mask=None, threshold=None):
                 D = 10
                 if abs(cur-prev) > D:
                     off = max(0, prev-D)
-                    new_peak = np.max(line[off:min(line.size, prev+D)])
+                    new_peak = np.max(line[int(off):int(min(line.size, prev+D))])
                     if line[new_peak] >= line[cur]/3:
                         cur = new_peak
                 append_point(n, cur)
