@@ -22,7 +22,7 @@ def compute(img, img_g, ref, ref_g, laser_nr=0, mask=None, threshold=None):
     blur = (settings.BLUR, settings.BLUR) if settings.BLUR else None
     img = imtools.subtract(img_g, ref_g, mask=mask, blur=blur)
 
-    prev = img.shape[1]/2
+    prev = int(img.shape[1]/2)
 
     def append_point(nr, val):
         Y = 10
@@ -54,12 +54,11 @@ def compute(img, img_g, ref, ref_g, laser_nr=0, mask=None, threshold=None):
     y = np.array(y)
     x = np.array(x)
 
-    max_entro = img.shape[1]/4
-    if np.std(x) < max_entro:
+    max_entro = img.shape[1]/3.5
+    points = (x, y)
+    if len(x) and np.std(x) < max_entro:
 #        s = img_g.sum(axis=1)
 #        x = sgf(x, s).astype(np.uint)
-        points = (x, y)
-        if points:
-            return (points, compute_line_image(points, img))
+        return (points, compute_line_image(points, img))
     return None, None
 
