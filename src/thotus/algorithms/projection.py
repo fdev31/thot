@@ -90,30 +90,17 @@ class PointCloudGeneration(object):
         d = self.calibration_data.laser_planes[index].distance
         # Camera system
         Xc = self.compute_camera_point_cloud(points_2d, d, n)
-        # Transformation to platform system 
+        # Compute platform transformation
         return R.T * Xc - R.T * t
 
     def compute_camera_point_cloud(self, points_2d, d, n):
         # Load calibration values
-        if points_2d[0].size == 0 or points_2d[1].size == 0:
-            return np.array([]).reshape(3, 0)
+        fx = self.calibration_data.camera_matrix[0][0]
+        fy = self.calibration_data.camera_matrix[1][1]
+        cx = self.calibration_data.camera_matrix[0][2]
+        cy = self.calibration_data.camera_matrix[1][2]
         # Compute projection point
         u, v = points_2d
-        points_for_undistort = np.array([np.concatenate((u, v)).reshape(2, len(u)).T])
-
-        # use opencv's undistortPoints, which incorporates the distortion coefficients
-        import cv2
-        points_undistorted = cv2.undistortPoints(points_for_undistort, self.calibration_data.camera_matrix, self.calibration_data.distortion_vector)
-
-        u, v = np.hsplit(points_undistorted[0], points_undistorted[0].shape[1])
-
-        # make homogenous coordinates
-        x = np.concatenate((u.T[0], v.T[0], np.ones(len(u)))).reshape(3, len(u))
-        # normalize to get unit direction vectors
-        cam_point_direction = x / np.linalg.norm(x, axis=0)
-
-        # Compute laser intersection:
-        # dlc = dot(laser_normal, cam_point_direction) = projection of camera ray on laser-plane normal
-        # d / dlc = distance from cam center to 3D point
-        # cam_point_direction * d / dlc = 3D point
-        return d / np.dot(n, cam_point_direction) * cam_point_direction
+        x = np.concatenate(((u - cx) / fx, (v - cy) / fy, np.ones(len(u)))).reshape(3, len(u))
+        # Compute laser intersection
+        return d / np.dot(n, x) * x
