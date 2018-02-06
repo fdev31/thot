@@ -9,11 +9,10 @@ def compute(img, img_g, ref, ref_g, laser_nr=0, mask=None, straight_lines=False)
     u = []
     v = []
 
-    threshold = threshold if threshold is not None else settings.algo_threshold
     denoise = settings.algo_denoise
 
     img = imtools.subtract(img_g, ref_g, blur=(5, 10), mask=mask)
-    mask = imtools.compute_noise_mask(img, power=denoise, threshold=threshold)
+    mask = imtools.compute_noise_mask(img, power=denoise, threshold=settings.algo_threshold)
     img = imtools.mask_contours(img, mask=mask)
 
     line_map = cv2.Canny(img,50,200)
