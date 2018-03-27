@@ -41,9 +41,12 @@ def compute(img, img_g, ref, ref_g, laser_nr=0, mask=None, threshold=None):
                 D = 10
                 if abs(cur-prev) > D:
                     off = max(0, prev-D)
-                    new_peak = np.max(line[off:min(line.size, prev+D)])
-                    if line[new_peak] >= line[cur]/3:
-                        cur = new_peak
+                    new_peak = np.max(line[int(off):int(min(line.size, prev+D))])
+                    try:
+                        if line[new_peak] >= line[cur]/3:
+                            cur = new_peak
+                    except IndexError as e:
+                        print("%s > %d : %s"%(cur, len(line), e))
                 append_point(n, cur)
             else:
                 for p in peaks:
