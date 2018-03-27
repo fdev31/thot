@@ -43,7 +43,7 @@ BLUR = 3
 
 # Non persistent
 
-SEGMENTATION_METHOD = 'tralala'
+SEGMENTATION_METHOD = 'pureimage'
 
 skip_calibration = True
 interactive_calibration = False
