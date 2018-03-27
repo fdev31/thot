@@ -114,7 +114,7 @@ def toggle_interactive_calibration():
 def switch_lasers():
     """ Toggle lasers """
     global lasers
-    lasers = not lasers
+    lasers = bool(not lasers)
     b = get_board()
     if b:
         if lasers:
@@ -367,7 +367,9 @@ def set_single_laser(laser_number=None):
         i = int(laser_number)
         if i not in (1, 2):
             print("Laser number must be 1 or 2")
-        settings.single_laser = i-1
+        settings.single_laser = i
+    switch_lasers()
+    switch_lasers()
     return 3
 
 def set_algorithm(name=None):

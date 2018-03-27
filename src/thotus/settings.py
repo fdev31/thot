@@ -110,7 +110,7 @@ def _cast(val):
     return val
 
 def get_laser_range():
-    if single_laser == 0:
+    if single_laser is None:
         return range(LASER_COUNT)
     else:
         return [single_laser-1]

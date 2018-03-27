@@ -12,6 +12,8 @@ import threading
 import logging
 logger = logging.getLogger(__name__)
 
+from thotus import settings
+
 class WrongFirmware(Exception):
 
     def __init__(self):
@@ -156,7 +158,7 @@ class Board(object):
                 self._send_command("M70T" + str(index + 1))
 
     def lasers_on(self):
-        for i in range(self._laser_number):
+        for i in settings.get_laser_range():
             self.laser_on(i)
 
     def lasers_off(self):
