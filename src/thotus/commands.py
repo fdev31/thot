@@ -163,7 +163,10 @@ class Viewer(Thread):
                     laser_image = np.rot90(laser_image, settings.ROTATE)
                 s.laser_off(0)
                 points, processed = lineprocessor(laser_image, laser_image[:,:,0], img, img[:,:,0])
-                img = processed
+                if processed is None:
+                    pass # img = black picture ??
+                else:
+                    img = processed
             else:
                 grey = img[:,:,1]
                 found, corners = chess_detect(grey)
