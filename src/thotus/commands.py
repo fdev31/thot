@@ -172,11 +172,16 @@ class Viewer(Thread):
             gui.display(img, "live", resize=True)
 
 def view_mode():
-    Viewer.instance.line_mode = not Viewer.instance.line_mode
+    "Toggle between chessboard detection & laser lines detection"
+    if not Viewer.instance:
+        print("No viewer found, doing nothing")
+    else:
+        Viewer.instance.line_mode = not Viewer.instance.line_mode
+        print("Line mode = %s" % Viewer.instance.line_mode)
     return 3
 
 def view():
-    " toggle webcam output (show chessboard if detected)"
+    "Toggle webcam output (show chessboard if detected)"
     if not view_stop():
         Viewer.instance = Viewer()
         Viewer.instance.start()

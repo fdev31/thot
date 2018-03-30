@@ -53,7 +53,7 @@ def calibration(calibration_data, calibration_settings, images):
 
         dist, normal, std = find_laser_plane(np.array(obj.vertices))
         tot_deviation += std
-        print("Laser %d deviation: %.2f"%(laser, std))
+        print("\nLaser %d deviation: %.2f"%(laser+1, std))
 
         calibration_data.laser_planes[laser].normal = normal
         calibration_data.laser_planes[laser].distance = dist
