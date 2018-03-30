@@ -1,7 +1,7 @@
 #!/usr/bin/python2
 import sys
 import traceback
-from time import time
+from time import time, sleep
 
 from thotus.ui import gui
 from thotus import settings
@@ -65,6 +65,10 @@ def toggle_advanced_mode():
         print("Using advanced commands")
     return 3
 
+def cmd_sleep(delay):
+    sleep(float(delay))
+    return 3
+
 def calibrate_manual():
     """ Calibrate platform & scanner with user confirmation of laser lines """
     ic = settings.interactive_calibration
@@ -104,8 +108,10 @@ commands = dict(
     )
 
 adv_commands = dict(
-   pattern_colors   = cmds.capture_pattern_colors,
-  pattern_lasers   = cmds.capture_pattern_lasers,
+    wait =  lambda: 3,
+    sleep          = cmd_sleep,
+    pattern_colors   = cmds.capture_pattern_colors,
+    pattern_lasers   = cmds.capture_pattern_lasers,
     cfg            = cmds.set_cfg,
     algorithm      = cmds.set_algorithm,
     algop          = cmds.set_algo_value,
@@ -187,6 +193,9 @@ while not leave_now:
     else:
         if script_commands:
             text = script_commands.pop(0)
+            if text == 'wait':
+                leave_now = False
+                leave_after = False
 
     if leave_now and not script_commands:
         break
