@@ -57,7 +57,7 @@ def compute(img, img_g, ref, ref_g, laser_nr=0, mask=None, threshold=None):
     y = np.array(y)
     x = np.array(x)
 
-    max_entro = img.shape[1]/3.5
+    max_entro = img.shape[1]/3
     points = (x, y)
     if len(x) and np.std(x) < max_entro:
 #        s = img_g.sum(axis=1)
