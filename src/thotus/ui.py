@@ -1,9 +1,14 @@
 from __future__ import print_function
 
 import sys
+import numpy as np
+# import skimage.transform
 import cv2
-from scipy.misc import imresize
 from thotus import settings
+
+def imresize(img, size):
+    return cv2.resize(img, dsize=size)
+#     return skimage.transform.resize(img, size, order=3)
 
 class GUI:
 
@@ -19,16 +24,15 @@ class GUI:
 
     def clear(self):
         names = [self.name] + self.secondary
+        cv2.waitKey(100)
         for name in names:
             cv2.destroyWindow(name)
             cv2.imshow(name, 0)
         self.secondary.clear()
-        self.redraw()
+        cv2.destroyAllWindows()
 
     def redraw(self):
-        for n in range(5):
-            if cv2.waitKey(20) <= 0:
-                break
+        cv2.waitKey(1)
 
     def ok_cancel(self, duration=10, default=True):
         for n in range(duration):
@@ -40,9 +44,7 @@ class GUI:
         return default
 
     def display(self, image, text, resize=False, crop=False, disp_number=0):
-
         if resize:
-            image = image.copy()
             if resize == True:
                 resize = settings.UI_RATIO
             if isinstance(resize, float):

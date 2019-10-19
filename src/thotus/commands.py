@@ -7,12 +7,12 @@ from functools import partial
 
 from thotus.ui import gui
 from thotus import settings
+from thotus.task import Task, GuiFeedback
 from thotus import calibration
 from thotus.mesh import meshify
 from thotus.boards import Scanner, get_board
-from thotus.cloudify import cloudify, iter_cloudify, LineMaker
+from thotus.cloudify import cloudify, iter_cloudify
 from thotus.calibration.data import CalibrationData
-from thotus.calibration.chessboard import chess_detect, chess_draw
 
 import numpy as np
 try:
@@ -129,72 +129,24 @@ def rotate(val):
     if s:
         s.motor_move(int(val))
 
-class Viewer(Thread):
-    instance = None
-    running = True
-
-    line_mode = False
-
-    def stop(self):
-        self.running = False
-        self.join()
-        self.__class__.instance = None
-        gui.clear()
-
-    def run(self):
-        lm = LineMaker()
-        try:
-            s = get_scanner()
-            if s is None:
-                raise ValueError()
-        except Exception as e:
-            print("Unable to init scanner, not starting viewer.")
-            self.running = False
-
-        while self.running:
-            img = s.cap.get(1)
-            if settings.ROTATE:
-                img = np.rot90(img, settings.ROTATE)
-            if self.line_mode:
-                lineprocessor = getattr(lm, 'from_'+settings.SEGMENTATION_METHOD)
-                s.laser_on(0)
-                laser_image = s.cap.get(1)
-                if settings.ROTATE:
-                    laser_image = np.rot90(laser_image, settings.ROTATE)
-                s.laser_off(0)
-                points, processed = lineprocessor(laser_image, laser_image[:,:,0], img, img[:,:,0])
-                if processed is None:
-                    pass # img = black picture ??
-                else:
-                    img = processed
-            else:
-                grey = img[:,:,1]
-                found, corners = chess_detect(grey)
-                if found:
-                    img = chess_draw(grey, found, corners)
-            gui.display(img, "live", resize=True)
 
 def view_mode():
     "Toggle between chessboard detection & laser lines detection"
-    if not Viewer.instance:
-        print("No viewer found, doing nothing")
-    else:
-        Viewer.instance.line_mode = not Viewer.instance.line_mode
-        print("Line mode = %s" % Viewer.instance.line_mode)
-    return 3
+    def toggle_line_mode(app):
+        app.line_mode = not app.line_mode
+        print("Line mode = %s" % app.line_mode)
+    return GuiFeedback(toggle_line_mode)
 
 def view():
     "Toggle webcam output (show chessboard if detected)"
-    if not view_stop():
-        Viewer.instance = Viewer()
-        Viewer.instance.start()
-    return 3
+    def toggle_visibility(app):
+        app.visible = not getattr(app, 'visible', False)
+    return GuiFeedback(toggle_visibility)
 
 def view_stop():
-    if Viewer.instance and Viewer.instance.running:
-        get_scanner() # sync scanner startup
-        Viewer.instance.stop()
-        return True
+    def off(app):
+        app.visible = False
+    return GuiFeedback(off)
 
 def stop():
     settings.save_profile()

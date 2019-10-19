@@ -1,237 +1,164 @@
-#!/usr/bin/python2
 import sys
+import asyncio
 import traceback
-from time import time, sleep
+from time import time
+from asyncio import CancelledError
+from concurrent.futures import ThreadPoolExecutor
 
+import numpy as np
+
+import prompt_toolkit
+from prompt_toolkit.completion import WordCompleter
+from prompt_toolkit.eventloop import use_asyncio_event_loop
+
+from thotus.task import Task, GuiFeedback
+from thotus.shell_commands import commands, cmds
+from thotus.cloudify import LineMaker
+from thotus.calibration.chessboard import chess_detect, chess_draw
 from thotus.ui import gui
 from thotus import settings
-from thotus import commands as cmds
 
-from prompt_toolkit import prompt
-from prompt_toolkit.contrib.completers import WordCompleter
-from prompt_toolkit.history import InMemoryHistory
-from prompt_toolkit.token import Token
-from prompt_toolkit.styles import style_from_dict
 
-history = InMemoryHistory()
-
-def s2h(t):
-    if t > 80:
-        return "%d min %ds"%divmod(t, 60)
-    else:
-        return "%.1fs"%t
-
-def get_bottom_toolbar_tokens(cli):
-    if not timers:
-        txt = ' Welcome!'
-    else:
-        txt = "Last command executed in %s"%(s2h(timers['end_execution']-timers['execution']))
-    return [(Token.Toolbar, txt)]
-
-style = style_from_dict({
-    Token.Toolbar: '#ffffff bg:#333333',
-})
-
-leave_now = False
 DEBUG = True
 
-def exit():
-    global leave_now
-    leave_now = True
-    return 3
-
-def help():
-    print("Commands:")
-    for c in sorted(commands):
-        if c.startswith('cam_'):
-            d = 'get or set camera %s'%c[4:].strip()
-        else:
-            d = commands[c].__doc__
-        if d:
-            d = d.strip().title()
-        else:
-            d = ""
-        print(" %-20s  %s"%(c, d.title()))
-    return 3
-
-def toggle_advanced_mode():
-    """ toggle advanced command set """
-    if 'debug_settings' in commands:
-        for cmd in adv_commands:
-            del commands[cmd]
-        print("Using simple commands")
-    else:
-        commands.update(adv_commands)
-        print("Using advanced commands")
-    return 3
-
-def cmd_sleep(delay):
-    sleep(float(delay))
-    return 3
-
-def calibrate_manual():
-    """ Calibrate platform & scanner with user confirmation of laser lines """
-    ic = settings.interactive_calibration
-    settings.interactive_calibration = True
-    r =  cmds.stdcalibrate()
-    settings.interactive_calibration = ic
-    return r
-
-def recalibrate_manual():
-    """ Calibrate platform & scanner with user confirmation of laser lines """
-    ic = settings.interactive_calibration
-    settings.interactive_calibration = True
-    r =  cmds.calibrate()
-    settings.interactive_calibration = ic
-    return r
-
-commands = dict(
-    # calibrate
-    calibrate      = cmds.stdcalibrate,
-    advanced       = toggle_advanced_mode,
-
-    # when it's not working...
-    calibrate_manual  = calibrate_manual,
-
-    # all in one scan
-    scan           = cmds.scan_object,
-
-    # misc
-    view           = cmds.view,
-    rotate         = cmds.rotate,
-    lasers         = cmds.switch_lasers,
-    exit           = exit,
-    quit           = exit,
-    help           = help,
-    keep_laser     = cmds.set_single_laser,
-    roi            = cmds.set_roi,
-    )
-
-adv_commands = dict(
-    wait =  lambda: 3,
-    sleep          = cmd_sleep,
-    pattern_colors   = cmds.capture_pattern_colors,
-    pattern_lasers   = cmds.capture_pattern_lasers,
-    cfg            = cmds.set_cfg,
-    algorithm      = cmds.set_algorithm,
-    algop          = cmds.set_algo_value,
-    debug_settings = settings.compare,
-    import_val     = settings.import_val,
-    view_mode      = cmds.view_mode,
-    # take calibration data
-    shot           = cmds.shot,
-    shots_remove   = cmds.shots_clear,
-    calibrate_shots= cmds.calibrate_cam_from_shots,
-
-    # compute calibration data
-    recalibrate      = cmds.calibrate,
-    recalibrate_manual  = recalibrate_manual,
-
-    # acquire pictures
-    capture          = cmds.capture,
-    capture_color    = cmds.capture_color,
-    capture_lasers   = cmds.capture_lasers,
-
-    # pure mode
-    pure = cmds.toggle_pure_mode,
-
-    # build 3D mesh
-    make          = cmds.recognize,
-
-    use_horus_cfg    = cmds.set_horus_cfg,
-    use_thot_cfg     = cmds.set_thot_cfg,
-)
-
-try:
-    commands.update(cmds.get_camera_controllers())
-except IndexError:
-    print("Unable to find camera, is it plugged ?")
-
 timers = dict()
+use_asyncio_event_loop()
+session = prompt_toolkit.PromptSession()
+executor = ThreadPoolExecutor(max_workers=3)
+loop = asyncio.get_event_loop()
 
-def wanna_leave():
-    global leave_now
-    print("Aborted !")
-    try:
-        text = prompt(u'Exit (Y/n) ? ', completer=WordCompleter( ('yes', 'no') , ignore_case=True
-        ))
-    except (KeyboardInterrupt, EOFError):
-        leave_now = True
-    else:
-        if not text or text.lower()[0] != 'n':
-            leave_now = True
+def prompt(*a, **kw):
+    return session.prompt(*a, **kw, async_=True)
 
-leave_after = False
-if len(sys.argv) > 1:
-    text = ' '.join(sys.argv[1:])
-    sys.argv[:] = [sys.argv[0]]
-    leave_after = True
-    toggle_advanced_mode()
+def run_in_thread(proc, **kw):
+    return asyncio.wrap_future(executor.submit(proc, **kw))
 
-if not leave_after:
-    try:
-        cmds.view()
-    except Exception as e:
-        pass
+class MainGUi:
+    running = True
+    visible = True
+    line_mode = False
 
-script_commands = []
-while not leave_now:
-    if not leave_after:
+    async def viewer(self):
+        lm = LineMaker()
         try:
-            text = prompt(u'Scan Bot> ',
-                history=history,
-                get_bottom_toolbar_tokens=get_bottom_toolbar_tokens,
-                style=style,
-                completer = WordCompleter(commands, ignore_case=True, match_middle=False,
-                    )
-                )
-        except EOFError:
-            break
-        except KeyboardInterrupt:
-            wanna_leave()
-
-    else:
-        if script_commands:
-            text = script_commands.pop(0)
-            if text == 'wait':
-                leave_now = False
-                leave_after = False
-
-    if leave_now and not script_commands:
-        break
-
-    timers['execution'] = time()
-
-    if text.strip():
-        orig_text = text
-        if ' ' in text:
-            params = text.split()
-            text = params[0]
-            params = [x.strip() for x in params[1:]]
-        else:
-            params = ()
-        text = text.strip()
-        if text == "exec":
-            script_commands[:] = [x.strip() for x in ' '.join(params).split(',') if x.strip()]
-            continue
-        try:
-            if commands[text](*params) != 3:
-                print("")
-        except KeyboardInterrupt:
-            gui.clear()
-            print("\nAborted!")
-        except KeyError:
-            print("Command not found: %s"%text)
+            s = cmds.get_scanner()
+            if s is None:
+                raise ValueError()
         except Exception as e:
-            gui.clear()
-            print("")
-            if DEBUG:
-                traceback.print_exc()
+            print("Unable to init scanner, not starting viewer.")
+            self.stop()
+            return
+
+        def process_image():
+            img = s.cap.get(0)
+            if settings.ROTATE:
+                img = np.ascontiguousarray(np.rot90(img, settings.ROTATE))
+            if self.line_mode:
+                lineprocessor = getattr(lm, 'from_'+settings.SEGMENTATION_METHOD)
+                s.laser_on(0)
+                laser_image = s.cap.get(1)
+                if settings.ROTATE:
+                    laser_image = np.ascontiguousarray(np.rot90(laser_image, settings.ROTATE))
+                s.laser_off(0)
+                points, processed = lineprocessor(laser_image, laser_image[:,:,0], img, img[:,:,0])
+                if processed is None:
+                    pass # img = black picture ??
+                else:
+                    img = processed
             else:
-                print("Error occured")
-    timers['end_execution'] = time()
+                grey = img[:,:,1]
+                found, corners = chess_detect(grey)
+                if found:
+                    chess_draw(img, found, corners)
+            return img
 
-    if leave_after and not script_commands:
-        leave_now = True
+        while self.running:
+            if self.visible:
+                img = await run_in_thread(process_image)
+                # process display
+                gui.display(img, "live", resize=(96*5, 128*5))
+            try:
+                await self.wait_interval()
+            except CancelledError:
+                return
 
-cmds.stop()
+    async def wait_interval(self):
+        await asyncio.sleep(1/60 if self.visible else 1)
+
+    async def cli(self):
+        script_commands = []
+        while self.running:
+            try:
+                text = await prompt(u'Scan> ', completer = WordCompleter(commands, ignore_case=True, match_middle=False))
+            except CancelledError:
+                return
+            except EOFError:
+                try:
+                    text = await prompt(u'Exit (Y/n) ? ', completer=WordCompleter( ('yes', 'no')))
+                except (KeyboardInterrupt, EOFError):
+                    self.stop()
+                    return
+                else:
+                    if not text or text.lower()[0] != 'n':
+                        self.stop()
+                        return
+
+            if self.running:
+                if text.strip():
+                    orig_text = text
+                    if ' ' in text:
+                        params = text.split()
+                        text = params[0]
+                        params = [x.strip() for x in params[1:]]
+                    else:
+                        params = ()
+                    text = text.strip()
+                    if text == "exec":
+                        script_commands[:] = [x.strip() for x in ' '.join(params).split(',') if x.strip()]
+                        continue
+                    try:
+                        if text == "exit":
+                            self.stop()
+                            return
+                        t = commands[text](*params)
+                        if isinstance(t, GuiFeedback):
+                            t.run(self)
+                        if t != 3:
+                            print("")
+                    except KeyboardInterrupt:
+                        gui.clear()
+                        print("\nAborted!")
+                    except KeyError:
+                        print("Command not found: %s"%text)
+                    except Exception as e:
+                        gui.clear()
+                        print("")
+                        if DEBUG:
+                            traceback.print_exc()
+                        else:
+                            print("Error occured")
+                timers['end_execution'] = time()
+
+    async def maincoro(self):
+        self._cli = self.cli()
+        self._viewer = self.viewer()
+        self._coro = asyncio.gather(self._cli, self._viewer)
+        await self._coro
+
+    def stop(self):
+        if not self.running:
+            print("App already stopped!")
+            traceback.print_exc()
+        self.running = False
+        self._coro.cancel()
+        commands['exit']()
+
+if __name__ == "__main__":
+    app = MainGUi()
+    try:
+        asyncio.get_event_loop().run_until_complete(app.maincoro())
+    except CancelledError:
+        pass
+    except Exception as e:
+        traceback.print_exc()
+    print("bye")

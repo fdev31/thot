@@ -85,7 +85,10 @@ class Board(object):
             else:
                 raise BoardNotConnected()
         except Exception as exception:
-            logger.error("Error opening the port {0}\n".format(self.serial_name))
+            if self.serial_name == None:
+                logger.error("No board detected!\n")
+            else:
+                logger.error("Error opening the port {0}\n".format(self.serial_name))
             self._serial_port = None
             raise exception
 
