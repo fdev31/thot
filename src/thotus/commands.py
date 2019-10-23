@@ -355,9 +355,9 @@ def scan_object():
     meshify(calibration_data, slices, colors=colors).save("model.ply")
     gui.clear()
 
-def calibrate():
+def calibrate(interactive=False):
     view_stop()
-    return calibration.calibrate()
+    return calibration.calibrate(interactive)
 
 def calibrate_cam_from_shots():
     view_stop()
@@ -367,8 +367,8 @@ def calibrate_cam_from_shots():
     except Exception:
         print("Don't forget to make the calibration again !")
 
-def stdcalibrate():
+def stdcalibrate(interactive=None):
     """ start platform & laser calibration """
     capture_pattern()
-    return calibrate()
+    return calibrate(settings.interactive_calibration if interactive is None else interactive)
 

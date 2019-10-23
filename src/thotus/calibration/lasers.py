@@ -26,7 +26,7 @@ def find_laser_plane(X):
     std = np.dot(M.T, normal).std()
     return (dist, normal, std)
 
-def calibration(calibration_data, calibration_settings, images):
+def calibration(calibration_data, calibration_settings, images, interactive=True):
     tot_deviation = 0.0
     for laser in settings.get_laser_range():
         selected_planes = []
@@ -47,7 +47,7 @@ def calibration(calibration_data, calibration_settings, images):
         assert len(ranges) == len(im)
 
         slices = cloudify(calibration_data, settings.CALIBDIR, [laser], ranges,
-                method='straighttralala', camera=im, interactive=settings.interactive_calibration, undistort=True)
+                method='straighttralala', camera=im, interactive=interactive, undistort=True)
 
         obj = meshify(calibration_data, slices, camera=im, cylinder=(1000, 1000))
 

@@ -25,7 +25,7 @@ def calibrate_cam_from_shots():
     settings.skip_calibration = sk
     gui.clear()
 
-def calibrate():
+def calibrate(interactive):
     " Compute calibration data from images "
     from . import camera, platform, lasers, data
 
@@ -42,6 +42,6 @@ def calibrate():
     good_images = list(good_images)
     good_images.sort()
 
-    lasers.calibration(calibration_data, calib_settings, good_images)
+    lasers.calibration(calibration_data, calib_settings, good_images, interactive)
     settings.save_data(calibration_data)
     gui.clear()

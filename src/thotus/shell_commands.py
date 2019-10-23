@@ -43,19 +43,12 @@ def cmd_sleep(delay):
 
 def calibrate_manual():
     """ Calibrate platform & scanner with user confirmation of laser lines """
-    ic = settings.interactive_calibration
-    settings.interactive_calibration = True
-    r =  cmds.stdcalibrate()
-    settings.interactive_calibration = ic
-    return r
+    return  cmds.stdcalibrate(True)
 
 def recalibrate_manual():
     """ Calibrate platform & scanner with user confirmation of laser lines """
-    ic = settings.interactive_calibration
-    settings.interactive_calibration = True
-    r =  cmds.calibrate()
-    settings.interactive_calibration = ic
-    return r
+    return  cmds.calibrate(True)
+
 
 commands = dict(
     # calibrate
