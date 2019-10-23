@@ -55,11 +55,11 @@ class MainGUi:
                 img = np.ascontiguousarray(np.rot90(img, settings.ROTATE))
             if self.line_mode:
                 lineprocessor = getattr(lm, 'from_'+settings.SEGMENTATION_METHOD)
-                s.laser_on(0)
+                s.lasers_on()
                 laser_image = s.cap.get(1)
                 if settings.ROTATE:
                     laser_image = np.ascontiguousarray(np.rot90(laser_image, settings.ROTATE))
-                s.laser_off(0)
+                s.lasers_off()
                 points, processed = lineprocessor(laser_image, laser_image[:,:,0], img, img[:,:,0])
                 if processed is None:
                     pass # img = black picture ??
