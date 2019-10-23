@@ -93,15 +93,8 @@ class MainGUi:
             except CancelledError:
                 return
             except EOFError:
-                try:
-                    text = await prompt(u'Exit (Y/n) ? ', completer=WordCompleter( ('yes', 'no')))
-                except (KeyboardInterrupt, EOFError):
-                    self.stop()
-                    return
-                else:
-                    if not text or text.lower()[0] != 'n':
-                        self.stop()
-                        return
+                self.stop()
+                return
 
             if self.running:
                 if text.strip():
