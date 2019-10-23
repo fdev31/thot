@@ -81,7 +81,13 @@ def iter_cloudify(calibration_data, folder, lasers, sequence, method=None, camer
                     gui.display(disp, txt,  resize=True)
                 pictures_todisplay.append((processed, laser_grey))
                 if interactive:
-                    if not gui.ok_cancel(20):
+                    # detect the chess board
+                    term = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 200, 0.001)
+                    found, corners = cv2.findChessboardCorners(ref_grey, settings.PATTERN_MATRIX_SIZE)
+                    if found:
+                        if not gui.ok_cancel(20):
+                            nosave = True
+                    else:
                         nosave = True
 
                 if not interactive or not nosave:
