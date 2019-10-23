@@ -45,7 +45,7 @@ class GUI:
             if resize == True:
                 resize = settings.UI_RATIO
             if isinstance(resize, float):
-                resize = tuple(int(x*resize) for x in image.shape[:2])
+                resize = tuple(reversed([int(x*resize) for x in image.shape[:2]]))
 
         if text:
             black = (0, 0, 0)

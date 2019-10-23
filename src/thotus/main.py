@@ -76,7 +76,7 @@ class MainGUi:
             if self.visible:
                 img = await run_in_thread(process_image)
                 # process display
-                gui.display(img, "live", resize=(96*5, 128*5))
+                gui.display(img, "live", resize=True)
             try:
                 await self.wait_interval()
             except CancelledError:
