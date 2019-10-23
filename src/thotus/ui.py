@@ -25,9 +25,6 @@ class GUI:
     def clear(self):
         names = [self.name] + self.secondary
         cv2.waitKey(100)
-        for name in names:
-            cv2.destroyWindow(name)
-            cv2.imshow(name, 0)
         self.secondary.clear()
         cv2.destroyAllWindows()
 
