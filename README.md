@@ -140,5 +140,3 @@ Try reversing your motor wires and retry.
 ## Bugs
 
 - no release yet: may not work out of the box, consider unstable
-- camera value getters are broken
-- opencv changed, a quick fix has been done to use it in the mainthread but a bigger refactor would be required
