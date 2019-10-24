@@ -2,6 +2,7 @@ __all__ = ['run_in_thread', 'Task', 'GuiFeedback']
 
 import asyncio
 import threading
+from concurrent.futures import ThreadPoolExecutor
 
 executor = ThreadPoolExecutor(max_workers=3)
 

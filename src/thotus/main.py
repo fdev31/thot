@@ -4,7 +4,6 @@ import asyncio
 import traceback
 from time import time
 from asyncio import CancelledError
-from concurrent.futures import ThreadPoolExecutor
 
 import numpy as np
 
