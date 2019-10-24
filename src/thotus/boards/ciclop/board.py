@@ -153,14 +153,12 @@ class Board(object):
             if not self._laser_enabled[index]:
                 self._laser_enabled[index] = True
                 self._send_command("M71T" + str(index + 1))
-            time.sleep(0.05)
 
     def laser_off(self, index):
         if self._is_connected:
             if self._laser_enabled[index]:
                 self._laser_enabled[index] = False
                 self._send_command("M70T" + str(index + 1))
-            time.sleep(0.05)
 
     def lasers_on(self):
         for i in settings.get_laser_range():
