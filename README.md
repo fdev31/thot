@@ -121,7 +121,7 @@ After this you will need to do standard calibration again (platform and lasers),
 
     $ thot recalibrate
 
-## Meshe is randomly distorted, but I can see two different shapes
+## The mesh is randomly distorted, but I can see two different shapes
 
 This is probably a laser calibration issue, some lines are probably badly detected.
 You can fix it by discarding the frames that are not well analyzed:
