@@ -1,3 +1,4 @@
+import os
 import sys
 import asyncio
 import traceback
@@ -11,27 +12,15 @@ import prompt_toolkit
 from prompt_toolkit.completion import WordCompleter
 from prompt_toolkit.eventloop import use_asyncio_event_loop
 
-from thotus.task import Task, GuiFeedback
+from thotus.task import Task, GuiFeedback, run_in_thread
 from thotus.shell_commands import commands, cmds
 from thotus.cloudify import LineMaker
 from thotus.calibration.chessboard import chess_detect, chess_draw
 from thotus.ui import gui
 from thotus import settings
 
-
-DEBUG = True
-
-timers = dict()
+DEBUG = os.getenv('DEBUG', False)
 use_asyncio_event_loop()
-session = prompt_toolkit.PromptSession()
-executor = ThreadPoolExecutor(max_workers=3)
-loop = asyncio.get_event_loop()
-
-def prompt(*a, **kw):
-    return session.prompt(*a, **kw, async_=True)
-
-def run_in_thread(proc, **kw):
-    return asyncio.wrap_future(executor.submit(proc, **kw))
 
 def s2h(t):
     if t > 80:
@@ -93,16 +82,18 @@ class MainGUi:
 
     async def cli(self):
         script_commands = []
+        session = prompt_toolkit.PromptSession()
+
         while self.running:
             try:
-                text = await prompt(u'Scan> ', completer = WordCompleter(commands, ignore_case=True, match_middle=False))
+                text = await session.prompt(u'Scan> ', completer = WordCompleter(commands, ignore_case=True, match_middle=False), async_=True)
             except CancelledError:
                 return
             except EOFError:
                 self.stop()
                 return
 
-            timers['start_execution'] = time()
+            start_execution_ts = time()
             if self.running:
                 if text.strip():
                     orig_text = text
@@ -137,9 +128,10 @@ class MainGUi:
                             traceback.print_exc()
                         else:
                             print("Error occured")
-                duration = time() - timers['start_execution']
-                if duration > 1:
-                    print("Command %s executed in %ds"%(text, s2h(duration)))
+                    else:
+                        duration = time() - start_execution_ts
+                        if duration > 1:
+                            print("Command %s executed in %ds"%(text, s2h(duration)))
 
     async def maincoro(self):
         self._cli = self.cli()

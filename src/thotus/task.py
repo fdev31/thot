@@ -1,4 +1,12 @@
+__all__ = ['run_in_thread', 'Task', 'GuiFeedback']
+
+import asyncio
 import threading
+
+executor = ThreadPoolExecutor(max_workers=3)
+
+def run_in_thread(proc, **kw):
+    return asyncio.wrap_future(executor.submit(proc, **kw))
 
 class Task:
     def __init__(self, fn, args):
