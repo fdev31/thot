@@ -81,16 +81,21 @@ class MainGUi:
 
     async def cli(self):
         script_commands = []
+        if len(sys.argv) > 2 and sys.argv[1] == 'exec':
+            script_commands.extend(x.strip() for x in ' '.join(sys.argv[2:]).split(','))
         session = prompt_toolkit.PromptSession()
 
         while self.running:
-            try:
-                text = await session.prompt(u'Scan> ', completer = WordCompleter(commands, ignore_case=True, match_middle=False), async_=True)
-            except CancelledError:
-                return
-            except EOFError:
-                self.stop()
-                return
+            if script_commands:
+                text = script_commands.pop(0)
+            else:
+                try:
+                    text = await session.prompt(u'Scan> ', completer = WordCompleter(commands, ignore_case=True, match_middle=False), async_=True)
+                except CancelledError:
+                    return
+                except EOFError:
+                    self.stop()
+                    return
 
             start_execution_ts = time()
             if self.running:
