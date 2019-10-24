@@ -50,7 +50,7 @@ class MainGUi:
             return
 
         def process_image():
-            img = s.cap.get(0)
+            img = s.cap.get(-1)
             if settings.ROTATE:
                 img = np.ascontiguousarray(np.rot90(img, settings.ROTATE))
             if self.line_mode:

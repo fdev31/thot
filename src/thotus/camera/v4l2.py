@@ -69,7 +69,7 @@ class Camcorder(Thread):
     def get(self, frame_nr=1):
         """ Get next `frame_nr` frame """
         self.sem = Semaphore(0)
-        for n in range(frame_nr):
+        for n in range(frame_nr+1):
             self.sem.acquire()
         self.sem = None
         return self.buff
