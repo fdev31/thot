@@ -12,7 +12,8 @@ from prompt_toolkit.completion import WordCompleter
 from prompt_toolkit.eventloop import use_asyncio_event_loop
 
 from thotus.task import Task, GuiFeedback, run_in_thread
-from thotus.shell_commands import commands, cmds, toggle_advanced_mode
+from thotus.shell_commands import commands, toggle_advanced_mode
+from thotus.commands import get_scanner
 from thotus.cloudify import LineMaker
 from thotus.calibration.chessboard import chess_detect, chess_draw
 from thotus.ui import gui
@@ -35,7 +36,7 @@ class MainGUi:
     async def viewer(self):
         lm = LineMaker()
         try:
-            s = cmds.get_scanner()
+            s = get_scanner()
             if s is None:
                 raise ValueError()
         except Exception as e:
