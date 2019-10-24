@@ -12,7 +12,7 @@ from prompt_toolkit.completion import WordCompleter
 from prompt_toolkit.eventloop import use_asyncio_event_loop
 
 from thotus.task import Task, GuiFeedback, run_in_thread
-from thotus.shell_commands import commands, cmds
+from thotus.shell_commands import commands, cmds, toggle_advanced_mode
 from thotus.cloudify import LineMaker
 from thotus.calibration.chessboard import chess_detect, chess_draw
 from thotus.ui import gui
@@ -83,6 +83,7 @@ class MainGUi:
         script_commands = []
         if len(sys.argv) > 2 and sys.argv[1] == 'exec':
             script_commands.extend(x.strip() for x in ' '.join(sys.argv[2:]).split(','))
+            toggle_advanced_mode()
         session = prompt_toolkit.PromptSession()
 
         while self.running:
