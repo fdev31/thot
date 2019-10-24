@@ -50,6 +50,8 @@ Scan 3D object
 
     Scan Bot> scan
 
+**The 3D (.ply) file will be saved as "model.ply" in the current working directory**
+
 ## Advanced usages
 
 From the shell you can enable more commands using **advanced** command, the most useful is probably the **cfg** command.
