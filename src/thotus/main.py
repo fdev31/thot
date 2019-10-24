@@ -33,6 +33,12 @@ def prompt(*a, **kw):
 def run_in_thread(proc, **kw):
     return asyncio.wrap_future(executor.submit(proc, **kw))
 
+def s2h(t):
+    if t > 80:
+        return "%d min %ds"%divmod(t, 60)
+    else:
+        return "%.1fs"%t
+
 class MainGUi:
     running = True
     visible = True
@@ -96,6 +102,7 @@ class MainGUi:
                 self.stop()
                 return
 
+            timers['start_execution'] = time()
             if self.running:
                 if text.strip():
                     orig_text = text
@@ -130,7 +137,9 @@ class MainGUi:
                             traceback.print_exc()
                         else:
                             print("Error occured")
-                timers['end_execution'] = time()
+                duration = time() - timers['start_execution']
+                if duration > 1:
+                    print("Command %s executed in %ds"%(text, s2h(duration)))
 
     async def maincoro(self):
         self._cli = self.cli()
