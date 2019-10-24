@@ -132,6 +132,11 @@ In case you want to capture the pictures again, just type:
 
     $ thot calibrate_manual
 
+## If I keep only one lazer I get good results, but with two I have "mirrored" point clouds
+
+The angles are probably inverted.
+Try reversing your motor wires and retry.
+
 ## Bugs
 
 - no release yet: may not work out of the box, consider unstable
