@@ -28,7 +28,7 @@ algo_threshold = 8
 algo_denoise = 2
 
 UI_RATIO = 0.8
-VIDEO_DEVICE = ""
+VIDEO_DEVICE = os.environ.get('VIDEO_DEVICE', '')
 SERIAL_DEVICE = ""
 SERIAL_SPEED = 115200
 
