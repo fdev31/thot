@@ -9,7 +9,6 @@ import numpy as np
 
 import prompt_toolkit
 from prompt_toolkit.completion import WordCompleter
-from prompt_toolkit.eventloop import use_asyncio_event_loop
 
 from thotus.task import Task, GuiFeedback, run_in_thread
 from thotus.shell_commands import commands, toggle_advanced_mode
@@ -20,7 +19,6 @@ from thotus.ui import gui
 from thotus import settings
 
 DEBUG = os.getenv('DEBUG', False)
-use_asyncio_event_loop()
 
 def s2h(t):
     if t > 80:
@@ -92,7 +90,7 @@ class MainGUi:
                 text = script_commands.pop(0)
             else:
                 try:
-                    text = await session.prompt(u'Scan> ', completer = WordCompleter(commands, ignore_case=True, match_middle=False), async_=True)
+                    text = await session.prompt_async(u'Scan> ', completer = WordCompleter(commands, ignore_case=True, match_middle=False))
                 except CancelledError:
                     return
                 except EOFError:
