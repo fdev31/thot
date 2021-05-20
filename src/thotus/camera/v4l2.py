@@ -29,7 +29,11 @@ class Camcorder(Thread):
         video = v4l2capture.Video_device(self.dev)
         # Suggest an image size to the device. The device may choose and
         # return another size if it doesn't support the suggested one.
-        size_x, size_y = video.set_format(1920, 1080, self.YUV, fourcc='I')
+        try:
+            size_x, size_y = video.set_format(1920, 1080, self.YUV, fourcc='I')
+        except OSError:
+            print("WARNING: couldn't set webcam pixel format")
+            size_x, size_y = video.set_format(1920, 1080)
         self.size = (size_x, size_y)
         self.ppf = np.multiply(*self.size) # pixels per frame
         self.fps = video.set_fps(30)
