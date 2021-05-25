@@ -96,6 +96,10 @@ class MainGUi:
                 except EOFError:
                     self.stop()
                     return
+                except OSError:
+                    print("Unexpected occurred!")
+                    self.stop()
+                    return
 
             start_execution_ts = time()
             if self.running:
@@ -135,7 +139,7 @@ class MainGUi:
                     else:
                         duration = time() - start_execution_ts
                         if duration > 1:
-                            print("Command %s executed in %ds"%(text, s2h(duration)))
+                            print("Command %s executed in %s"%(text, s2h(duration)))
 
     async def maincoro(self):
         self._cli = self.cli()
