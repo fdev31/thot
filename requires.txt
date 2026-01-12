@@ -1,5 +1,0 @@
-numpy==1.17.3
-opencv-python==4.1.1.26
-prompt-toolkit==2.0.10
-pyserial==3.4
-scipy==1.3.1

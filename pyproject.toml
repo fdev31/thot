@@ -1,0 +1,39 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "thotus"
+version = "0.1.2"
+description = "A 3D scanning application"
+readme = "README.md"
+license = { text = "MIT" }
+authors = [{ name = "Fabien Devaux", email = "fdev31@gmail.com" }]
+urls = { Homepage = "https://github.com/fdev31/thot" }
+requires-python = ">=3.9"
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Environment :: Console",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Topic :: Scientific/Engineering :: Image Processing",
+]
+dependencies = [
+  "numpy>=1.0.0",
+  "opencv-python>=4.0",
+  "prompt-toolkit>2.0.0",
+  "pyserial>=3.0.0",
+  "scipy>=0.10.0"
+]
+
+[project.scripts]
+thot = "thotus.main:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-dir]
+"" = "src"
